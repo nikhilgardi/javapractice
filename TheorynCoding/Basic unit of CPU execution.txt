@@ -1,0 +1,21 @@
+Basic unit of CPU execution
+merge two sorted array:2 pointing
+
+
+1)find task
+a)sort an array
+2)create a class - Sorter
+3)implement callable to return value--class sorter implements callable
+generics
+Callable<T>  t return data type of array
+
+Class Sorter implements Callable<List<Integer>>
+4)implement the call method
+Class Sorter implements Callable<List<Integer>>
+{
+	
+}
+
+https://github.com/Naman-Bhalla/threadsMar23/tree/master/src/main/java/com/scaler
+
+https://github.com/Naman-Bhalla/threadsMar23/tree/master/src/main/java/com/scaler

@@ -1,0 +1,35 @@
+📚 Topic-wise Interview Preparation Table
+#	Topic	Simple 50	Advanced 50	Tough 50	Tricky 50	MNC Style 50	Total Questions
+1	Spring Boot	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+2	Object-Oriented Programming (OOP)	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+3	Collections	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+4	Collections Add-on (Advanced topics)	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+5	Multithreading	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+6	SOLID Principles	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+7	Design Patterns	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+8	ACID Properties	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+9	SQL Join	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+10	Normalization	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+11	SQL Queries – Employee Management	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+12	SQL Injection	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+13	HTTPS & Browser Behavior	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+14	Request Mapping (Spring MVC)	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+15	Session Management & Tokens	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+16	Error Handling & Logging	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+17	Security Tools (WAF, etc.)	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+18	Attack Vectors (XSS, CSRF)	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+19	Input Validation & Sanitization	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+20	Database Security (Prepared Statements, etc.)	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+21	Architecture & Best Practices	Pending	Pending	Pending	Pending	Pending	0 / ≥250
+22  Java Basic Pending	Pending	Pending	Pending	Pending	0 / ≥250
+23 Bean Scope Pending	Pending	Pending	Pending	0 / ≥250
+
+
+
+
+
+
+
+
+
+
