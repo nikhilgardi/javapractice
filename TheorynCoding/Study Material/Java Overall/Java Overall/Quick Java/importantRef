@@ -4,3 +4,5 @@ Backed by PermGen (Permanent Generation)
 🧠 Modern JVM (Java 8+)
 Stored in Metaspace
 Uses native memory (outside heap)
+
+what happend you modify a key after putting in hashmap
