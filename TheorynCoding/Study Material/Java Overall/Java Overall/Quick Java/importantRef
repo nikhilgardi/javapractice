@@ -1,0 +1,6 @@
+🧠 Old JVM (Java 7 and earlier)
+Stored in Method Area
+Backed by PermGen (Permanent Generation)
+🧠 Modern JVM (Java 8+)
+Stored in Metaspace
+Uses native memory (outside heap)
