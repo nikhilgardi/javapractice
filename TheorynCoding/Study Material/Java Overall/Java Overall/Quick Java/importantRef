@@ -29,3 +29,36 @@ Ankit Kumar
  
  9+ years experience with Java, Spring Boot, microservices, Redis caching, and authentication (OAuth2, JWT, SSO)
 Design and develop scalable microservices, implement authentication, optimize Redis caching, build RESTful APIs, participate in system design and code reviews, troubleshoot production issues
+
+
+Strong in Java 8+ Programming, Multi-threading aspect
+Strong with Design Patterns and Architectural patterns
+Experience in using Kafka or other message queuing systems
+Good with Relational and Non-relational Databases - Postgres, Mongo, Redis, Cassandra
+Experience with Elastic search, Kibana, MqTT, IOT
+Good to have Banking / Card / Payment domain
+
+
+9+ years experience with Java, Spring Boot, microservices, Redis caching, and authentication (OAuth2, JWT, SSO)
+Design and develop scalable microservices, implement authentication, optimize Redis caching, build RESTful APIs, participate in system design and code reviews, troubleshoot production issues
+
+?? Round 1: Online Coding Round
+2 DSA coding problems + MCQs on DBMS, code output, etc.
+
+?? Round 2: 1:1 DSA Interview
+2 coding problems focused on Binary Search and Greedy logic.
+
+?? Round 3: 1:1 DSA Interview
+Problems around Maximum Subarray and Binary Search.
+
+?? Round 4: Managerial Round 
+Started with a simple DSA question, followed by a deep discussion on one project and behavioral questions like "Why Amazon?" and "How do you learn?"
+
+
+JVM
+Heap
+Stack
+Metaspace
+Garbage Collection
+Memory Leak
+OutOfMemoryError
