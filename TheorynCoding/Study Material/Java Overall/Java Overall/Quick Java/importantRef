@@ -22,7 +22,13 @@ Ankit Kumar
  
  Shameer Ahamad
  
+ 7.95%
  
+ 30 march 2022
+ 
+ 302 M/C-2,A/64,KURARABAD CO-OP CHS LTD,KURAR,MALAD(E), SOUTHSIDE of Daftary R, VILLAGE KURAR, MUMBAI 400097
+ 
+ ICICI Bank Ltd., Sadguru Darshan, Road No. 3, Malad W, Liberty Garden, Mumbai, Maharashtra 400064
  
  https://secure.icicidirect.com/Customer/login?urlpara=customer%252fotherdetails
  
@@ -62,3 +68,168 @@ Metaspace
 Garbage Collection
 Memory Leak
 OutOfMemoryError
+
+
+
+package com.code.array;
+
+import java.util.Arrays;
+
+public class BasicArray {
+	
+	public static void main(String[] args)
+	{
+		 int[] arrs = {10, 20, 30, 40, 50,17};
+		 
+		 System.out.println("---------Print all elements of an array---------");
+		 
+		 for(int i=0;i<arrs.length;i++)
+		 {
+			 System.out.println("Nums are "+arrs[i]);
+		 }
+		 
+		 System.out.println("---------Print all elements of an array for each---------");
+		 
+		 for(int arr:arrs)
+		 {
+			 System.out.println("Nums are using for each "+arr);
+		 }
+		 
+		 System.out.println("---------Find the sum of all elements in an array---------");
+		 
+		 int sum=0;
+		 
+		 for(int arr:arrs)
+		 {
+			 sum+=arr;
+		 }
+		 
+		 System.out.println("sum of all elements "+sum);
+		 
+		 System.out.println("---------Find the largest element in an array---------");
+		 
+		 int largestElement=arrs[0];
+		 
+		 for(int i=1;i<arrs.length;i++)
+		 {
+			 if(arrs[i]>largestElement)
+			 {
+				 largestElement=arrs[i];
+			 }
+		 }
+		
+		 System.out.println("largest element "+largestElement);
+		 
+		 System.out.println("---------Find the smallest element in an array---------");
+		 
+		 int smallestElement=arrs[0];
+		 
+		 for(int i=1;i<arrs.length;i++)
+		 {
+			 if(arrs[i]<smallestElement)
+			 {
+				 smallestElement=arrs[i];
+			 }
+		 }
+		 
+		 System.out.println("smallest element "+smallestElement);
+		 
+		 System.out.println("---------Find the average of array elements---------");
+		 
+		 int average=sum/2;
+		 
+		 System.out.println("average element "+average);
+		 
+		 System.out.println("---------Count even and odd numbers in an array---------");
+		 
+		 int evenElement=0,oddElement=0;
+		 
+		 for(int i=0;i<arrs.length;i++)
+		 {
+			 if(arrs[i] % 2 ==0)
+			 {
+				 evenElement++;
+			 }
+			 else
+			 {
+				 oddElement++;
+			 }
+		 }
+		 
+		 System.out.println("Even Element Count "+evenElement+" Odd Element Count "+oddElement);
+		 
+		 System.out.println("---------Search for an element in an array---------");
+		 
+		 int searchableElement=35;
+		 boolean searchFound=false;
+		 
+		 for(int i=0;i<arrs.length;i++)
+		 {
+			 if(arrs[i]==searchableElement)
+			 {
+				 System.out.println("Element found in array"+arrs[i]);
+				 searchFound=true;
+				 break;
+			 }
+		 }
+		 
+		 if(!searchFound)
+		 {
+			 System.out.println("Element "+searchableElement+" is not found in array");
+		 }
+		 
+		 
+		 System.out.println("---------Reverse an array wait---------");
+		 
+		 
+		 System.out.println("---------Copy one array into another---------");
+		 
+		 int[] newArr = new int[arrs.length];
+		 
+		 for(int i=0;i<arrs.length;i++)
+		 {
+			 newArr[i]=arrs[i];
+		 }
+		 
+		 System.out.println("Copied Array"+Arrays.toString(newArr));
+		 
+		 System.out.println("---------Find the second largest element in an array---------");
+		 
+		 int[] arrs1 = {10,50,40,45,55,88};
+		 
+		 int secondlargeElement=arrs1[0];	
+		 int largeElement=arrs1[0];	 
+		 
+		 System.out.println("largestElement"+largeElement);
+		 
+		 
+		 for(int i=1;i<arrs1.length;i++)
+		 {
+			 if(arrs1[i]>largeElement)
+			 {
+				 secondlargeElement=largeElement;
+				 largeElement=arrs1[i];
+				 
+				 
+			 }
+			 else if(arrs[i]>secondlargeElement && arrs[i]<largeElement)
+			 {
+				 secondlargeElement=arrs1[i];
+			 }
+		 }
+		 
+		 System.out.println("Largest Element "+largeElement+" Second Largest "+secondlargeElement);
+		 
+		 Arrays.sort(arrs1);
+		 
+		 System.out.println("Sorted Element in Ascending"+Arrays.toString(arrs1));
+		 
+		 int n=4;
+		 
+		 System.out.println(n+" Largest Element is "+arrs1[arrs1.length-n]);
+		 
+		 
+		 
+	}
+
+}
