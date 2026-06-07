@@ -233,3 +233,6 @@ public class BasicArray {
 	}
 
 }
+
+
+Formula: newCapacity = old + (old >> 1)
