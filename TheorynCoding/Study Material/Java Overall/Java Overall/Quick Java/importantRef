@@ -28,6 +28,8 @@ Ankit Kumar
  
  302 M/C-2,A/64,KURARABAD CO-OP CHS LTD,KURAR,MALAD(E), SOUTHSIDE of Daftary R, VILLAGE KURAR, MUMBAI 400097
  
+ expleoindiapayroll
+ 
  ICICI Bank Ltd., Sadguru Darshan, Road No. 3, Malad W, Liberty Garden, Mumbai, Maharashtra 400064
  
  https://secure.icicidirect.com/Customer/login?urlpara=customer%252fotherdetails
@@ -236,3 +238,186 @@ public class BasicArray {
 
 
 Formula: newCapacity = old + (old >> 1)
+
+
+
+Job Title:
+
+ Java Technical Lead - Collateral IT - Global Markets
+
+Date:
+
+ 
+
+ 
+
+Department:
+
+ 
+
+GMIT
+
+Location:
+
+Mumbai
+
+Business Line / Function:
+
+ 
+
+Position, Risk & Collateral - Collateral Management
+
+Reports to:
+
+(Direct)
+
+ 
+
+Grade: 
+
+(if applicable)
+
+ Manager / AVP
+
+(Functional)
+
+ 
+
+Number of Direct Reports:
+
+NA
+
+Directorship / Registration:
+
+NA
+
+ 
+
+Position Purpose
+
+The bank aims to build the best Collateral Management application in the world. We are looking for an innovative and an extraordinarily talented developer who can lead the efforts in achieving this mission. Collateral Management is a very critical function of the bank, the application is used by about 300-400 users worldwide where special focus is on reactivity to clients. You will be joining a team of highly motivated developers based out of India, Lisbon and London who want to achieve the same goal. The role requires rearchitecting the current application and proposing newer technologies to upgrade the current tech stack and making it more robust, scalable and performant. Special focus is on removing tech obsolescence and driving secure coding practices. Good knowledge of software engineering practices is required to be able to coach and inspire other team members to drive for better quality coding both from an architectural and process point of view. Knowledge of DevSecOps and observability tools is an added advantage.
+
+Responsibilities
+
+ 
+
+Direct Responsibilities
+
+ 
+
+Rearchitecting the existing application by identifying drawbacks and proposing performant, scalable designs with new technologies of choice.
+Building features from scratch to demonstrate how frameworks function.
+Championing and communicating best practices for coding.
+Conducting constructive Peer Review of code to improve the team's knowledge and overall code quality improvement.
+ 
+
+ 
+
+Contributing Responsibilities
+
+Onboard/Train existing team members on target technology and mentor other team members.
+Improve the current DevOps pipeline to Production including robust testing pipelines.
+ 
+
+Technical & Behavioral Competencies
+
+ 
+
+Mandatory
+
+Java 11 and above
+Database development, SQL and Stored Procedures in Sybase/Oracle or MongoDB.
+Spring framework, Rest APIs and any ORM technology
+JUnit, mocking techniques (e.g., easymock, jmock, mockito,..), Cucumber, BDD
+Knowledge of Apache Camel/Kafka or any messaging technology
+Ability to communicate with team having broad range of knowledge and experience
+Ability to understand complex systems and take the initiative, to seek out and accept new responsibilities 
+Possess drive, self-motivation, good interpersonal and team skills
+ 
+
+Good to Have
+
+Experience with deployment models like modular, monolith and microservice 
+Knowledge of performance tuning of java applications
+Knowledge of Agile methodologies, e.g., TDD, XP, Scrum.
+Experience with Architectural Paradigms like DDD, notions of division by domain/sub-domain, API First
+Knowledge of Integration Patterns - Event Driven Architecture
+Knowledge of Docker/Kubernetes
+Experience with DevSecOps tools like Jenkins, Fortify and Sonar
+
+
+--------------------
+
+Job highlights
+Expertise in Microservice architecture, Java, Spring Boot, AWS CDK, Event Driven architecture with Kafka/AWS SQS, and cloud-native AWS solutions
+Lead design and architecture of scalable enterprise applications, collaborate with stakeholders, provide technical leadership and mentorship, implement automation and Gen AI, and resolve critical production issues
+Job match score
+Early Applicant
+Keyskills
+Location
+Work Experience
+Job description
+Role & responsibilities
+
+Lead the design and architecture of scalable, reliable, and secure enterprise applications and microservices.
+
+Collaborate with product owners, business analysts, and developers to translate business requirement to technical solution.
+
+Define and govern the architecture scalability, performance, and compliance. Work with all relevant stake holders to define software architecture for all solutions.
+
+Provide technical leadership and mentorship to a team of developers, ensuring adherence to best practices and high-quality code standards.
+
+Provide guidance to team to implement automation, Gen AI in development, testing and maintenance of the application.
+
+Provide technical assistance for critical production issues.
+
+
+
+Skills and Experience:
+
+Hands-on experience in Microservice architecture and API design and development.
+
+Strong knowledge in design and development of applications utilizing Java, Angular/React JS, Spring boot, Spring JPA, Spring Security, AWS CDK.
+
+Experience in Event Driven architecture. Should have strong knowledge in developing applications utilizing Kafka/AWS SQS/Solace.
+
+Experience in Cloud Native Solutions. Design target-state cloud architecture leveraging AWS services (e.g., EC2, S3, RDS, Lambda, CloudWatch).
+
+Strong knowledge of batch processing frameworks like Spring Batch.
+
+Experience in performance tuning large/complex applications. Exposure to load testing tools and methodologies.
+
+Experience in understanding security requirement and provide solution to fix security vulnerabilities (Eg: OWASP top 10 compliance). Exposure to static and dynamic code analysis tools.
+
+Proven experience in utilizing design patterns and microservices design pattern in software development.
+
+Strong experience in configuration management and release management. Exposure to Docker, Kubernetes, Nexus, Bitbucket, Github, Grafana, Splunk, Datadog.
+
+Exposure to build tools like Maven, Gradle.
+
+Architect CI/CD pipelines for automated build, test, and deployment processes using Jenkins/Github/Bitbucket.
+
+Excellent communication skills, with the ability to clearly convey complex technical concepts to both technical and non-technical stakeholders.
+
+----------
+
+
+Key Responsibilities:
+
+Lead the design and development of scalable microservices-based applications
+Drive system architecture, performance optimization, and security (OWASP)
+Hands-on coding using Java and Spring Boot with best practices (TDD)
+Implement Kafka-based streaming, Redis caching, and multithreading solutions
+Mentor team members, conduct code reviews, and ensure high-quality delivery
+Collaborate with Product, QA, and DevOps teams in an Agile environment
+Troubleshoot and resolve critical production issues
+Qualifications and Skill
+
+Strong experience in Java (8/11+), Spring Boot, Microservices, and REST APIs
+Hands-on experience with Kafka, Redis, multithreading, and performance tuning
+Proficiency in SQL (PostgreSQL/Oracle) and NoSQL (MongoDB)
+Experience with Cloud platforms (AWS/Azure) and CI/CD tools
+Strong understanding of system design and application security practices (OWASP)
+Proven experience in team handling and technical leadership
+Excellent problem-solving and communication skills
+Experience in the payments or banking domain is a plus
