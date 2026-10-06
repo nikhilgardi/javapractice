@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complete Microservices Request Flow</title>
+<style>
+    body {
+        margin: 0;
+        padding: 24px;
+        background: #f5f5f5;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .container {
+        max-width: 1400px;
+        margin: auto;
+        background: white;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    }
+    h1 {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+    .subtitle {
+        text-align: center;
+        font-size: 15px;
+        margin-bottom: 25px;
+    }
+    pre {
+        white-space: pre;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 13px;
+        line-height: 1.35;
+        overflow-x: auto;
+        background: #fafafa;
+        border: 1px solid #ddd;
+        padding: 20px;
+        tab-size: 4;
+    }
+    .note {
+        margin-top: 20px;
+        padding: 15px;
+        border-left: 4px solid #555;
+        background: #f1f1f1;
+        font-size: 14px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Complete Microservices Request Flow</h1>
+<div class="subtitle">
+Nikhil + Rohit → API Gateway → Exit Service → Employee Management<br>
+Kubernetes Cluster + L7 + L4 + Load Balancing + Eureka
+</div>
+<pre>========================================================================================================================
+              COMPLETE MICROSERVICES REQUEST FLOW
+              NIKHIL + ROHIT -&gt; API GATEWAY -&gt; EXIT SERVICE -&gt; EMPLOYEE MANAGEMENT
+              KUBERNETES CLUSTER + L7 + L4 + LOAD BALANCING + EUREKA
+========================================================================================================================
+
+
+NIKHIL - BROWSER                                      ROHIT - BROWSER
+      |                                                      |
+      | POST /exit                                           | POST /exit
+      | Authorization: Bearer &lt;JWT-NIKHIL&gt;                  | Authorization: Bearer &lt;JWT-ROHIT&gt;
+      |                                                      |
+      | HTTPS                                               | HTTPS
+      | // TLS encryption                                   | // TLS encryption
+      |                                                      |
+      +--------------------------+---------------------------+
+                                 |
+                                 v
+
+
+========================================================================================================================
+                              INTERNET / PUBLIC NETWORK
+========================================================================================================================
+
+                                 |
+                                 |
+                                 v
+
+                 +------------------------------------------------+
+                 |          EXTERNAL LOAD BALANCER                |
+                 |                                                |
+                 |          L7 - APPLICATION LAYER                |
+                 |                                                |
+                 |  Understands:                                   |
+                 |  - HTTP / HTTPS                                 |
+                 |  - URL                                          |
+                 |  - HTTP Method                                  |
+                 |  - Headers                                      |
+                 |                                                |
+                 |  Load Balancing Algorithms:                    |
+                 |  - Round Robin                                  |
+                 |  - Least Connections                            |
+                 |  - Weighted                                     |
+                 |                                                |
+                 |  // Chooses which API Gateway Pod receives      |
+                 |  // the incoming HTTP/HTTPS request              |
+                 +----------------------+-------------------------+
+                                        |
+                         +--------------+--------------+
+                         |                             |
+                         | L7 Load Balancing           |
+                         |                             |
+                         v                             v
+
+                +----------------------+      +----------------------+
+                | API GATEWAY POD-1    |      | API GATEWAY POD-2    |
+                |                      |      |                      |
+                | PUBLIC NETWORK / DMZ |      | PUBLIC NETWORK / DMZ |
+                |                      |      |                      |
+                | PUBLIC ENTRY POINT   |      | PUBLIC ENTRY POINT   |
+                +----------+-----------+      +----------+-----------+
+                           |                             |
+                           +--------------+--------------+
+                                          |
+                                          v
+
+
+========================================================================================================================
+                         PUBLIC NETWORK / DMZ
+                         API GATEWAY LAYER
+========================================================================================================================
+
+
+                    +------------------------------------------+
+                    |              API GATEWAY                 |
+                    |                                          |
+                    |          REVERSE PROXY                   |
+                    |                                          |
+                    | // Client communicates with Gateway      |
+                    | // Client does NOT directly access       |
+                    | // private microservices                 |
+                    +------------------+-----------------------+
+                                       |
+                                       |
+                                       | SSL TERMINATION
+                                       | // HTTPS decrypted
+                                       | // TLS handled here
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |             GATEWAY SECURITY              |
+                    |                                          |
+                    | 1. JWT VALIDATION                         |
+                    | 2. AUTHENTICATION                         |
+                    | 3. AUTHORIZATION / RBAC                   |
+                    | 4. RATE LIMITING                          |
+                    | 5. LOGGING                                |
+                    | 6. REQUEST ROUTING                        |
+                    |                                          |
+                    | Invalid JWT       -&gt; 401                 |
+                    | No Permission     -&gt; 403                 |
+                    | Too Many Requests -&gt; 429                 |
+                    +------------------+-----------------------+
+                                       |
+                                       |
+                                       | Valid JWT
+                                       | Route = /exit/**
+                                       |
+                                       v
+
+
+========================================================================================================================
+                         PRIVATE NETWORK
+                         KUBERNETES CLUSTER
+========================================================================================================================
+
+
+              IMPORTANT:
+              API Gateway = PUBLIC / DMZ NETWORK
+
+              Exit Service + Employee Management
+              = PRIVATE NETWORK
+
+              Client CANNOT directly access private services.
+
+
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |          EUREKA SERVER                   |
+                    |                                          |
+                    |       SERVICE DISCOVERY                   |
+                    |                                          |
+                    | &quot;Where is Exit Service?&quot;                  |
+                    |                                          |
+                    | // Services register themselves           |
+                    | // Gateway/clients discover service       |
+                    +------------------+-----------------------+
+                                       |
+                                       v
+
+
+========================================================================================================================
+                         EXIT SERVICE LOAD BALANCING
+========================================================================================================================
+
+
+                    +------------------------------------------+
+                    |        EXIT SERVICE DISCOVERY             |
+                    |                                          |
+                    | Eureka returns available Exit instances |
+                    +------------------+-----------------------+
+                                       |
+                                       |
+                                       | Internal L4-oriented
+                                       | Service Networking
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |     KUBERNETES SERVICE                   |
+                    |     exit-service:8080                    |
+                    |                                          |
+                    | // Stable Service endpoint               |
+                    | // Selects eligible Exit Pod             |
+                    | // Internal load balancing               |
+                    +------------------+-----------------------+
+                                       |
+                         +-------------+-------------+
+                         |                           |
+                         | Internal Load Balancing   |
+                         |                           |
+                         v                           v
+
+                +----------------------+      +----------------------+
+                | EXIT SERVICE POD-1   |      | EXIT SERVICE POD-2   |
+                |                      |      |                      |
+                | Kubernetes Node-1    |      | Kubernetes Node-2    |
+                |                      |      |                      |
+                | Nikhil Request       |      | Rohit Request        |
+                +----------+-----------+      +----------+-----------+
+                           |                             |
+                           +--------------+--------------+
+                                          |
+                                          v
+
+
+========================================================================================================================
+                         EXIT SERVICE PROCESSING
+========================================================================================================================
+
+
+                    +------------------------------------------+
+                    |         DispatcherServlet                 |
+                    |                                          |
+                    | Spring MVC Front Controller               |
+                    | // Receives HTTP request                  |
+                    | // Finds appropriate Controller           |
+                    +------------------+-----------------------+
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |          EXIT CONTROLLER                  |
+                    |                                          |
+                    |          POST /exit                       |
+                    +------------------+-----------------------+
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |            EXIT SERVICE                  |
+                    |                                          |
+                    | Business Logic                            |
+                    |                                          |
+                    | Stateless Service                         |
+                    | // JWT carries user identity              |
+                    +------------------+-----------------------+
+                                       |
+                                       |
+                                       | LOCAL DB TRANSACTION
+                                       | BEGIN
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |                EXIT DB                   |
+                    |                                          |
+                    | Nikhil -&gt; PENDING                        |
+                    | Rohit  -&gt; PENDING                        |
+                    +------------------+-----------------------+
+                                       |
+                                       |
+                                       | COMMIT
+                                       |
+                                       v
+
+
+========================================================================================================================
+                EXIT SERVICE -&gt; EMPLOYEE MANAGEMENT SERVICE
+========================================================================================================================
+
+
+                    +------------------------------------------+
+                    |             EXIT SERVICE                 |
+                    |                                          |
+                    | Feign Client / REST                      |
+                    |                                          |
+                    | // Calls Employee Management Service     |
+                    +------------------+-----------------------+
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |          EUREKA SERVER                   |
+                    |                                          |
+                    | SERVICE DISCOVERY                         |
+                    |                                          |
+                    | &quot;Where is Employee Management?&quot;          |
+                    +------------------+-----------------------+
+                                       |
+                                       v
+
+
+========================================================================================================================
+                    INTERNAL PRIVATE NETWORK
+                    EMPLOYEE MANAGEMENT LOAD BALANCING
+========================================================================================================================
+
+
+                    +------------------------------------------+
+                    |     KUBERNETES SERVICE                   |
+                    |                                          |
+                    | employee-management:8080                 |
+                    |                                          |
+                    | // Stable Service endpoint               |
+                    | // Finds eligible Employee Pods          |
+                    +------------------+-----------------------+
+                                       |
+                                       |
+                                       | L4 / INTERNAL NETWORK
+                                       | // TCP/IP + PORT
+                                       | // Internal traffic
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |      INTERNAL LOAD BALANCING              |
+                    |                                          |
+                    | // Chooses one eligible Employee Pod     |
+                    | // Exact mechanism depends on the        |
+                    | // Kubernetes/service-proxy configuration |
+                    +------------------+-----------------------+
+                                       |
+                         +-------------+-------------+
+                         |                           |
+                         v                           v
+
+                +----------------------+      +----------------------+
+                | EMPLOYEE POD-1       |      | EMPLOYEE POD-2       |
+                |                      |      |                      |
+                | Kubernetes Node-1    |      | Kubernetes Node-2    |
+                |                      |      |                      |
+                | Employee Management  |      | Employee Management  |
+                | Service              |      | Service              |
+                +----------+-----------+      +----------+-----------+
+                           |                             |
+                           +--------------+--------------+
+                                          |
+                                          v
+
+
+========================================================================================================================
+                       EMPLOYEE MANAGEMENT PROCESSING
+========================================================================================================================
+
+
+                    +------------------------------------------+
+                    |        DispatcherServlet                 |
+                    |        Spring MVC                         |
+                    +------------------+-----------------------+
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |        EMPLOYEE CONTROLLER               |
+                    +------------------+-----------------------+
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |        EMPLOYEE SERVICE                 |
+                    |        Business Logic                    |
+                    +------------------+-----------------------+
+                                       |
+                                       |
+                                       | DB Operation
+                                       v
+
+                    +------------------------------------------+
+                    |             EMPLOYEE DB                  |
+                    |                                          |
+                    | Nikhil Employee Data                     |
+                    | Rohit Employee Data                      |
+                    |                                          |
+                    | Exit Update                              |
+                    +------------------+-----------------------+
+                                       |
+                                       |
+                                       | RESPONSE
+                                       v
+
+
+                    +------------------------------------------+
+                    |      EMPLOYEE MANAGEMENT SERVICE          |
+                    |                                          |
+                    | SUCCESS / FAILURE                        |
+                    +------------------+-----------------------+
+                                       |
+                                       v
+
+                    +------------------------------------------+
+                    |            EXIT SERVICE                  |
+                    +------------------+-----------------------+
+                                       |
+                         +-------------+-------------+
+                         |                           |
+                         | SUCCESS                   | FAILURE
+                         v                           v
+
+
+              +------------------------+       +--------------------------+
+              | UPDATE EXIT DB         |       | TIMEOUT / EXCEPTION      |
+              |                        |       |                          |
+              | STATUS = COMPLETED     |       | Is failure transient?    |
+              +-----------+------------+       +------------+-------------+
+                          |                                 |
+                          |                          +------+------+
+                          |                          |             |
+                          |                         YES            NO
+                          |                          |             |
+                          |                          v             v
+                          |                       RETRY          FAIL
+                          |                       // Backoff
+                          |                          |
+                          |                          v
+                          |                  +------------------+
+                          |                  | CIRCUIT BREAKER  |
+                          |                  |                  |
+                          |                  | CLOSED           |
+                          |                  |    |             |
+                          |                  |    v             |
+                          |                  | OPEN             |
+                          |                  |    |             |
+                          |                  |    v             |
+                          |                  | HALF-OPEN        |
+                          |                  |    |             |
+                          |                  |    v             |
+                          |                  | Test Recovery    |
+                          |                  +--------+---------+
+                          |                           |
+                          |                           v
+                          |                  +------------------+
+                          |                  | FALLBACK         |
+                          |                  |                  |
+                          |                  | Controlled       |
+                          |                  | Response         |
+                          |                  +------------------+
+                          |
+                          v
+
+              +------------------------+
+              | COMMIT TRANSACTION    |
+              +-----------+------------+
+                          |
+                          v
+
+
+========================================================================================================================
+                              RESPONSE FLOW
+========================================================================================================================
+
+
+              EXIT SERVICE
+                    |
+                    v
+              API GATEWAY
+                    |
+                    | HTTPS / TLS
+                    |
+                    v
+              EXTERNAL L7
+              LOAD BALANCER
+                    |
+                    v
+              INTERNET
+                    |
+             +------+------+
+             |             |
+             v             v
+          NIKHIL         ROHIT
+         Completed      Completed
+
+
+
+========================================================================================================================
+                         KUBERNETES CLUSTER
+                         SCALING + NODE + POD
+========================================================================================================================
+
+
+                    +------------------------------------------------+
+                    |              KUBERNETES CLUSTER                 |
+                    |                                                |
+                    |  +-------------------+                         |
+                    |  | KUBERNETES NODE 1 |                         |
+                    |  |                   |                         |
+                    |  | +---------------+ |                         |
+                    |  | | EXIT POD-1    | |                         |
+                    |  | +---------------+ |                         |
+                    |  |                   |                         |
+                    |  | +---------------+ |                         |
+                    |  | | EMPLOYEE POD-1| |                         |
+                    |  | +---------------+ |                         |
+                    |  +-------------------+                         |
+                    |                                                |
+                    |  +-------------------+                         |
+                    |  | KUBERNETES NODE 2 |                         |
+                    |  |                   |                         |
+                    |  | +---------------+ |                         |
+                    |  | | EXIT POD-2    | |                         |
+                    |  | +---------------+ |                         |
+                    |  |                   |                         |
+                    |  | +---------------+ |                         |
+                    |  | | EMPLOYEE POD-2| |                         |
+                    |  | +---------------+ |                         |
+                    |  +-------------------+                         |
+                    |                                                |
+                    +----------------------+-------------------------+
+                                           |
+                                           v
+                                    +--------------+
+                                    |     HPA      |
+                                    |              |
+                                    | Horizontal   |
+                                    | Pod Autoscaler
+                                    |              |
+                                    | Decides      |
+                                    | NUMBER OF    |
+                                    | POD REPLICAS |
+                                    |              |
+                                    | CPU / Memory |
+                                    | Custom Metric|
+                                    +------+-------+
+                                           |
+                                           | More Traffic
+                                           v
+                                    +--------------+
+                                    | More Pods    |
+                                    +------+-------+
+                                           |
+                                           v
+                                    +--------------+
+                                    | Kubernetes   |
+                                    | Scheduler    |
+                                    |              |
+                                    | Chooses Node |
+                                    | for new Pod  |
+                                    +--------------+
+
+
+
+========================================================================================================================
+                              L7 vs L4
+========================================================================================================================
+
+
+L7 - APPLICATION LAYER
+|
++-- HTTP / HTTPS
+|
++-- URL
+|
++-- HTTP Method
+|
++-- Headers
+|
++-- Application-aware
+|
++-- External Load Balancer
+|
++-- API Gateway
+|
++-- Example:
+|      POST /exit
+|      Authorization: Bearer &lt;JWT&gt;
+|
+
+
+L4 - TRANSPORT / CONNECTION LEVEL
+|
++-- TCP / UDP
+|
++-- IP + PORT
+|
++-- Connection-aware
+|
++-- Does NOT need to understand HTTP URL
+|
++-- Internal Kubernetes networking
+|
++-- Kubernetes Service
+|
++-- Internal load balancing
+|
++-- Example:
+       10.10.2.15:8080
+
+
+
+========================================================================================================================
+                         PUBLIC vs PRIVATE NETWORK
+========================================================================================================================
+
+
+                         INTERNET
+                            |
+                            v
+                    +---------------+
+                    | PUBLIC NETWORK |
+                    | / DMZ          |
+                    +-------+-------+
+                            |
+                            v
+                  +-------------------+
+                  | External L7 Load  |
+                  | Balancer           |
+                  +---------+---------+
+                            |
+                            v
+                  +-------------------+
+                  | API GATEWAY       |
+                  |                   |
+                  | PUBLIC / DMZ       |
+                  |                   |
+                  | Reverse Proxy     |
+                  | SSL Termination   |
+                  | JWT / RBAC        |
+                  | Rate Limiting     |
+                  | Routing           |
+                  +---------+---------+
+                            |
+                            | PRIVATE NETWORK
+                            |
+                            v
+        =====================================================
+                         KUBERNETES CLUSTER
+        =====================================================
+                            |
+              +-------------+-------------+
+              |                           |
+              v                           v
+       +-------------+             +-------------+
+       | Exit Service|             | Employee    |
+       | Pods        |             | Mgmt Pods   |
+       | PRIVATE     |             | PRIVATE     |
+       +------+------+             +------+------+
+              |                           |
+              v                           v
+          Exit DB                    Employee DB
+
+
+MEMORY:
+
+PUBLIC:
+Internet -&gt; External L7 Load Balancer -&gt; API Gateway
+
+PRIVATE:
+API Gateway -&gt; Kubernetes Service -&gt; Microservice Pods -&gt; Database</pre>
+<div class="note">
+<b>Architecture memory:</b><br>
+PUBLIC: Internet → External L7 Load Balancer → API Gateway (Public/DMZ)<br>
+PRIVATE: API Gateway → Eureka → Kubernetes Service → Microservice Pods → Database<br><br>
+<b>Load balancing:</b> External L7 Load Balancer chooses the API Gateway Pod. Internal Kubernetes Service/load-balancing chooses an eligible microservice Pod. HPA decides the number of Pod replicas.
+</div>
+</div>
+</body>
+</html>
