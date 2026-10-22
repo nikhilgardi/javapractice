@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Java equals(), hashCode() and HashSet — Complete Guide</title>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:18px}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#222;background:#fff}
+header{height:68px;border-bottom:1px solid #dbe2ea;padding:14px 22px;background:#fff;position:sticky;top:0;z-index:10;display:flex;flex-direction:column;justify-content:center}
+header h1{margin:0;font-size:clamp(1.1rem,2vw,1.45rem);color:#17365d}
+header p{margin:2px 0 0;color:#64748b;font-size:.85rem}
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr);height:calc(100vh - 68px);min-height:0}
+aside{position:sticky;top:68px;height:calc(100vh - 68px);overflow-y:auto;border-right:1px solid #dbe2ea;padding:18px 12px;background:#f8fafc}
+.sidebar-title{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:0 9px 12px}
+aside a{display:block;text-decoration:none;color:#334155;font-size:.87rem;line-height:1.4;padding:9px 10px;border-radius:6px;margin:3px 0;border-left:3px solid transparent}
+aside a:hover,aside a:focus{background:#eaf1fb;color:#174ea6;border-left-color:#2563eb;outline:none}
+.main{min-width:0;overflow-y:auto;padding:28px clamp(18px,4vw,48px) 42px;max-width:1150px;width:100%;margin:0 auto}
+section{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:22px;margin:0 0 22px;scroll-margin-top:20px}
+h2{margin-top:0;color:#17365d;font-size:1.25rem}
+h3{margin-bottom:8px;color:#294b70;font-size:1.05rem}
+p{margin:10px 0}ul,ol{padding-left:24px}li{margin:6px 0}
+pre{overflow-x:auto;background:#f1f5f9;border:1px solid #d9e2ec;border-radius:7px;padding:14px;line-height:1.45;white-space:pre}
+code{font-family:Consolas,"Courier New",monospace;font-size:.94em}.inline-code{background:#eef2f7;padding:2px 5px;border-radius:4px}
+.output{background:#f0fdf4;border-left:4px solid #16a34a;padding:10px 14px}.note{background:#fff7e6;border-left:4px solid #d97706;padding:10px 14px;margin-top:12px}
+table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #cbd5e1;padding:10px;text-align:left;vertical-align:top}th{background:#eaf0f7}
+footer{text-align:center;color:#64748b;padding:18px;font-size:.9rem}
+@media(max-width:760px){header{height:auto;min-height:68px;padding:12px 16px}.layout{display:block;height:auto;min-height:calc(100vh - 68px)}aside{position:sticky;top:68px;z-index:8;height:auto;max-height:34vh;overflow-y:auto;border-right:0;border-bottom:1px solid #dbe2ea;padding:10px;background:#f8fafc}.sidebar-title{margin:2px 8px 6px}aside a{display:inline-block;margin:2px;padding:7px 9px;font-size:.8rem}.main{overflow:visible;padding:18px 12px 30px}section{padding:16px;margin-bottom:16px}th,td{padding:7px;font-size:.9rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Java equals(), hashCode() and HashSet</h1>
+  <p>Complete guide with examples, outputs, explanations, and interview rules</p>
+</header>
+<div class="layout">
+<aside aria-label="Guide navigation">
+<p class="sidebar-title">On this page</p>
+
+  <a href="#basics">1. Basics</a><a href="#both-methods">2. Remove name from both</a>
+  <a href="#collision">3. Remove name from hashCode</a><a href="#missing-hashcode">4. Missing hashCode</a>
+  <a href="#correct">5. Correct implementation</a><a href="#employee1">6. Employee1 mistake</a>
+  <a href="#internal">7. HashSet internals</a><a href="#table">8. Reference table</a>
+  <a href="#rules">9. Interview rules</a>
+
+</aside>
+<main class="main">
+
+
+<section id="basics">
+<h2>1. Difference Between <code>==</code>, <code>equals()</code> and <code>hashCode()</code></h2>
+<p>In Java:</p>
+<ul>
+  <li><code>==</code> checks whether two object references point to the same object.</li>
+  <li><code>equals()</code> checks logical equality, based on its implementation.</li>
+  <li><code>hashCode()</code> returns an integer used by hash-based collections to organize objects.</li>
+</ul>
+<h3>Example 1: Overriding Both <code>equals()</code> and <code>hashCode()</code></h3>
+<pre><code>import java.util.Objects;
+
+class Employee {
+    int id;
+    String name;
+
+    Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof Employee)) {
+            return false;
+        }
+
+        Employee other = (Employee) obj;
+
+        return this.id == other.id
+                &amp;&amp; Objects.equals(this.name, other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e1 = new Employee(101, "Nikhil");
+        Employee e2 = new Employee(101, "Nikhil");
+
+        System.out.println(e1 == e2);
+        System.out.println(e1.equals(e2));
+        System.out.println(e1.hashCode() == e2.hashCode());
+    }
+}</code></pre>
+<h3>Output</h3>
+<div class="output"><pre><code>false
+true
+true</code></pre></div>
+<h3>Explanation</h3>
+<ul>
+  <li><code>e1 == e2</code> is <code>false</code> because these are two different objects.</li>
+  <li><code>e1.equals(e2)</code> is <code>true</code> because their IDs and names match.</li>
+  <li>Their hash codes are equal because the fields used by <code>hashCode()</code> match.</li>
+</ul>
+</section>
+
+<section id="both-methods">
+<h2>2. What Happens If We Remove <code>name</code> from Both Methods?</h2>
+<p>Suppose <code>equals()</code> and <code>hashCode()</code> consider only <code>id</code>.</p>
+<pre><code>@Override
+public boolean equals(Object obj) {
+    if (this == obj) {
+        return true;
+    }
+
+    if (!(obj instanceof Employee)) {
+        return false;
+    }
+
+    Employee other = (Employee) obj;
+    return this.id == other.id;
+}
+
+@Override
+public int hashCode() {
+    return Integer.hashCode(id);
+}</code></pre>
+<p>For these objects:</p>
+<pre><code>Employee e1 = new Employee(101, "Nikhil");
+Employee e2 = new Employee(101, "Rahul");
+
+System.out.println(e1.equals(e2)); // true</code></pre>
+<p><strong>Why?</strong> Because the equality rule now considers only the ID. The names are ignored.</p>
+<p class="note"><strong>Important:</strong> The fields used by <code>equals()</code> determine logical equality. You should implement <code>hashCode()</code> consistently with that equality rule.</p>
+</section>
+
+<section id="collision">
+<h2>3. What If We Remove <code>name</code> Only from <code>hashCode()</code>?</h2>
+<p>Suppose <code>equals()</code> checks both <code>id</code> and <code>name</code>, but <code>hashCode()</code> checks only <code>id</code>.</p>
+<pre><code>@Override
+public boolean equals(Object obj) {
+    if (this == obj) {
+        return true;
+    }
+
+    if (!(obj instanceof Employee)) {
+        return false;
+    }
+
+    Employee other = (Employee) obj;
+
+    return this.id == other.id
+            &amp;&amp; Objects.equals(this.name, other.name);
+}
+
+@Override
+public int hashCode() {
+    return Integer.hashCode(id);
+}</code></pre>
+<p>For these objects:</p>
+<pre><code>Employee e1 = new Employee(101, "Nikhil");
+Employee e2 = new Employee(101, "Rahul");
+
+System.out.println(e1.equals(e2));
+System.out.println(e1.hashCode() == e2.hashCode());</code></pre>
+<h3>Output</h3>
+<div class="output"><pre><code>false
+true</code></pre></div>
+<p>This implementation is valid. Unequal objects are allowed to have the same hash code. This is called a <strong>hash collision</strong>.</p>
+<h3>The required contract</h3>
+<ul>
+  <li>If <code>equals()</code> returns <code>true</code>, the hash codes must be equal.</li>
+  <li>If hash codes are equal, <code>equals()</code> does not have to return <code>true</code>.</li>
+</ul>
+</section>
+
+<section id="missing-hashcode">
+<h2>4. What Happens If We Override <code>equals()</code> but Not <code>hashCode()</code>?</h2>
+<p>Consider the following example:</p>
+<pre><code>import java.util.HashSet;
+
+class Employee {
+    int id;
+
+    Employee(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof Employee)) {
+            return false;
+        }
+
+        Employee other = (Employee) obj;
+        return this.id == other.id;
+    }
+
+    // hashCode() is not overridden
+}
+
+public class Main {
+    public static void main(String[] args) {
+        HashSet&lt;Employee&gt; employees = new HashSet&lt;&gt;();
+
+        employees.add(new Employee(101));
+        employees.add(new Employee(101));
+
+        System.out.println(employees.size());
+    }
+}</code></pre>
+<h3>Typical output</h3>
+<div class="output"><pre><code>2</code></pre></div>
+<h3>Why?</h3>
+<ul>
+  <li>Both employees have the same ID.</li>
+  <li>The overridden <code>equals()</code> method considers them equal.</li>
+  <li>However, the inherited <code>Object.hashCode()</code> usually returns different hash codes for these distinct objects.</li>
+  <li>The <code>HashSet</code> uses the hash code to determine where to look for existing elements. If the hash codes differ, it generally does not compare these objects using <code>equals()</code>.</li>
+  <li>Both objects can therefore be retained.</li>
+</ul>
+<p class="note">Strictly speaking, different objects are not guaranteed to have different default hash codes. Thus, <code>2</code> is the expected result, not an absolute guarantee.</p>
+<p><strong>Lesson:</strong> When you override <code>equals()</code>, you should also override <code>hashCode()</code>.</p>
+</section>
+
+<section id="correct">
+<h2>5. Correctly Overriding Both Methods for <code>HashSet</code></h2>
+<p>Here is a corrected implementation:</p>
+<pre><code>import java.util.HashSet;
+
+class Employee {
+    int id;
+
+    Employee(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof Employee)) {
+            return false;
+        }
+
+        Employee other = (Employee) obj;
+        return this.id == other.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        HashSet&lt;Employee&gt; employees = new HashSet&lt;&gt;();
+
+        Employee emp1 = new Employee(101);
+        Employee emp2 = new Employee(101);
+
+        System.out.println(emp1.hashCode());
+        System.out.println(emp2.hashCode());
+
+        employees.add(emp1);
+        employees.add(emp2);
+
+        System.out.println(employees.size());
+
+        HashSet&lt;String&gt; set = new HashSet&lt;&gt;();
+        set.add("Nik");
+        set.add("Nik");
+
+        System.out.println(set.size());
+    }
+}</code></pre>
+<h3>Output</h3>
+<div class="output"><pre><code>101
+101
+1
+1</code></pre></div>
+<h3>Explanation</h3>
+<ul>
+  <li>Both employees have hash code <code>101</code>.</li>
+  <li>The <code>HashSet</code> finds the existing employee in the relevant bucket.</li>
+  <li>It calls <code>equals()</code> to compare the two employees.</li>
+  <li>Since their IDs match, <code>equals()</code> returns <code>true</code>.</li>
+  <li>The second employee is treated as a duplicate and is not added.</li>
+  <li>The two <code>"Nik"</code> strings are also treated as duplicates because <code>String</code> already implements <code>equals()</code> and <code>hashCode()</code> appropriately.</li>
+</ul>
+</section>
+
+<section id="employee1">
+<h2>6. Why Did Your Earlier <code>Employee1</code> Example Still Print 2?</h2>
+<p>Your original code contained this mistake:</p>
+<pre><code>if (!(obj instanceof Employee)) {
+    return false;
+}
+
+Employee other = (Employee) obj;</code></pre>
+<p>But your actual class was named <code>Employee1</code>.</p>
+<p>The correct implementation is:</p>
+<pre><code>@Override
+public boolean equals(Object obj) {
+    if (this == obj) {
+        return true;
+    }
+
+    if (!(obj instanceof Employee1)) {
+        return false;
+    }
+
+    Employee1 other = (Employee1) obj;
+    return this.id == other.id;
+}</code></pre>
+<p>When the class check uses <code>Employee</code> instead of <code>Employee1</code>, the comparison returns <code>false</code> for the <code>Employee1</code> objects. Even though their hash codes match, <code>equals()</code> does not identify them as equal.</p>
+<p>With the corrected class check and <code>hashCode()</code>, the set size becomes <code>1</code>.</p>
+</section>
+
+<section id="internal">
+<h2>7. How Does <code>HashSet</code> Work Internally?</h2>
+<p>Conceptually, adding an object follows these steps:</p>
+<ol>
+  <li><strong>Calculate the hash code.</strong> Java uses the hash code to determine the relevant hash bucket.</li>
+  <li><strong>Look for possible duplicates.</strong> The set examines objects in the relevant bucket.</li>
+  <li><strong>Compare objects.</strong> If a possible match is found, equality checks determine whether it is a duplicate.</li>
+  <li><strong>Decide whether to add.</strong> If an equal element already exists, the new element is not added. Otherwise, it can be stored.</li>
+</ol>
+<p>Hash collisions can occur, so having the same hash code does not automatically mean two objects are equal.</p>
+</section>
+
+<section id="table">
+<h2>8. Interview Reference Table</h2>
+<table>
+<thead><tr><th><code>hashCode()</code></th><th><code>equals()</code></th><th>Expected behavior</th></tr></thead>
+<tbody>
+<tr><td>Same</td><td><code>true</code></td><td>Duplicate; only one is retained</td></tr>
+<tr><td>Same</td><td><code>false</code></td><td>Both can be retained</td></tr>
+<tr><td>Different</td><td>Not equal under the hash contract</td><td>Both can be retained</td></tr>
+<tr><td>Different</td><td><code>true</code></td><td>Contract violation</td></tr>
+</tbody>
+</table>
+<p>The last row is invalid for a correctly implemented class: equal objects must have equal hash codes.</p>
+</section>
+
+<section id="rules">
+<h2>9. Final Interview Rules to Remember</h2>
+<ul>
+  <li><code>==</code> compares object references, not logical equality.</li>
+  <li><code>equals()</code> defines logical equality according to the class implementation.</li>
+  <li><code>hashCode()</code> helps hash-based collections organize objects efficiently.</li>
+  <li><code>HashSet</code> relies on both hash codes and equality checks.</li>
+  <li>Equal objects must have equal hash codes.</li>
+  <li>Equal hash codes do not guarantee that objects are equal.</li>
+  <li>If you override <code>equals()</code>, override <code>hashCode()</code> consistently.</li>
+  <li>Use the correct class in <code>instanceof</code> checks and casts.</li>
+  <li>Avoid changing fields used by <code>equals()</code> and <code>hashCode()</code> while an object is stored in a <code>HashSet</code>; doing so can make it difficult to find or remove that object.</li>
+</ul>
+<p class="note"><strong>Golden rule:</strong> <code>hashCode()</code> helps locate where to check; <code>equals()</code> determines whether an existing object is logically equal to the new one.</p>
+</section>
+</main>
+</div>
+<footer>Java Technical Lead Interview Notes</footer>
+</body>
+</html>

@@ -16,7 +16,7 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q3" class="completed"><span class="number">3.</span>What are primitive and reference types? How are they stored and used?</a>
 <a href="#q4" class="completed"><span class="number">4.</span>Is Java pass-by-value or pass-by-reference? Demonstrate with an object.</a>
 <a href="#q5" class="completed"><span class="number">5.</span>What is the difference between `==` and `equals()`?</a>
-<a href="#q6"><span class="number">6.</span>Explain `static`, `final`, `finally` and `finalize()`.</a>
+<a href="#q6" class="completed"><span class="number">6.</span>Explain `static`, `final`, `finally` and `finalize()`.</a>
 <a href="#q7"><span class="number">7.</span>What are constructors, constructor overloading and constructor chaining?</a>
 <a href="#q8"><span class="number">8.</span>Explain `this` and `super`.</a>
 <a href="#q9"><span class="number">9.</span>Can static, private, final or overloaded methods be overridden? Explain each case.</a>
@@ -1385,7 +1385,517 @@ pre {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint"><h3>Answer</h3>
+
+<p>
+    These four terms look similar, but they have different purposes in Java.
+</p>
+
+<ul>
+    <li><strong>static:</strong> Belongs to the class rather than to each individual object.</li>
+    <li><strong>final:</strong> Restricts reassignment, overriding or inheritance, depending on where it is used.</li>
+    <li><strong>finally:</strong> A block generally used to execute cleanup code after a try-catch.</li>
+    <li><strong>finalize():</strong> An old method associated with garbage collection. It is deprecated for removal and should not be used in modern Java.</li>
+</ul>
+
+<h3>1. static Keyword</h3>
+
+<p>
+    A static variable belongs to the class, so all objects share the same variable.
+    A static method can be called using the class name without creating an object.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>class Employee {
+    int id;
+    static String company = "ABC";
+
+    Employee(int id) {
+        this.id = id;
+    }
+
+    static void showCompany() {
+        System.out.println(company);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e1 = new Employee(101);
+        Employee e2 = new Employee(102);
+
+        System.out.println(e1.company);
+        System.out.println(e2.company);
+
+        Employee.showCompany();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>ABC
+ABC
+ABC</code></pre>
+
+<h4>Explanation</h4>
+
+<pre>
+Employee class
+    |
+    +-- static company = "ABC"
+              |
+        +-----+-----+
+        |           |
+       e1          e2
+    id = 101    id = 102
+</pre>
+
+<p>
+    Both employees share the same <code>company</code> variable.
+    Their instance variables, such as <code>id</code>, belong to their
+    individual objects.
+</p>
+
+<p><strong>Remember:</strong> Use <code>Employee.showCompany()</code> to call a static method directly.</p>
+
+<h3>2. final Keyword</h3>
+
+<p>
+    The <code>final</code> keyword restricts changes. Its exact meaning depends
+    on whether it is applied to a variable, method or class.
+</p>
+
+<h4>A. final Variable</h4>
+
+<pre><code>public class Main {
+    public static void main(String[] args) {
+        final int MAX = 100;
+
+        System.out.println(MAX);
+
+        // MAX = 200; // Compilation error
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>100</code></pre>
+
+<p>Once a final variable has been assigned, it cannot be reassigned.</p>
+
+<h4>B. final Method</h4>
+
+<pre><code>class Parent {
+    final void display() {
+        System.out.println("Parent method");
+    }
+}
+
+class Child extends Parent {
+    // Cannot override display()
+}</code></pre>
+
+<p>A final method cannot be overridden by a subclass.</p>
+
+<h4>C. final Class</h4>
+
+<pre><code>final class Vehicle {
+}
+
+// Compilation error:
+// class Car extends Vehicle { }</code></pre>
+
+<p>A final class cannot be extended. For example, Java's <code>String</code> class is final.</p>
+
+<h4>Important: final with an Object Reference</h4>
+
+<pre><code>final StringBuilder sb = new StringBuilder("Java");
+
+sb.append(" Developer"); // Allowed
+
+// sb = new StringBuilder("Python"); // Compilation error</code></pre>
+
+<p>
+    The reference <code>sb</code> cannot point to a different object, but the
+    existing StringBuilder object can still be modified.
+</p>
+
+<h3>3. finally Block</h3>
+
+<p>
+    The <code>finally</code> block is used for cleanup code that should generally
+    run whether an exception occurs or not.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>public class Main {
+    public static void main(String[] args) {
+        try {
+            int result = 10 / 0;
+            System.out.println(result);
+        } catch (ArithmeticException e) {
+            System.out.println("Exception handled");
+        } finally {
+            System.out.println("Finally block executed");
+        }
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Exception handled
+Finally block executed</code></pre>
+
+<h4>Explanation</h4>
+
+<pre>
+try block
+    |
+    v
+Exception occurs
+    |
+    v
+catch block handles exception
+    |
+    v
+finally block executes
+</pre>
+
+<p>
+    The finally block is commonly used for cleanup. For files, database
+    connections and similar resources, try-with-resources is usually preferred
+    when the resource implements <code>AutoCloseable</code>.
+</p>
+
+<h3>try-with-resources in Java</h3>
+
+<p>
+    <strong>Introduced:</strong> Java 7 (2011).
+</p>
+
+<p>
+    <strong>Purpose:</strong> Automatically closes resources after the try block finishes,
+    even if an exception occurs.
+</p>
+
+<p>
+    <strong>Requirement:</strong> The resource must implement
+    <code>AutoCloseable</code> (or <code>Closeable</code>).
+	<b><u>Remember: try-with-resources is the feature; BufferedReader is the resource.You're right. Try-with-resources is a Java language feature, not an interface or a class. You cannot check whether try itself implements AutoCloseable.
+
+You can verify that the resource declared inside try ( ... ) implements AutoCloseable:</u></b>
+</p>
+
+<h4>Example: Reading a File</h4>
+
+<pre><code>import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Main {
+    public static void main(String[] args) {
+        try (BufferedReader reader =
+                 new BufferedReader(new FileReader("data.txt"))) {
+
+            System.out.println(reader.readLine());
+
+        } catch (IOException e) {
+            System.out.println("File error");
+        }
+    }
+}</code></pre>
+
+<h4>How It Works</h4>
+
+<ul>
+    <li>Declare the resource inside <code>try ( ... )</code>.</li>
+    <li>Java automatically calls <code>close()</code> when the try block exits.</li>
+    <li>Works when the block completes normally or an exception occurs, subject to normal JVM execution.</li>
+    <li>The <code>catch</code> block handles the exception.</li>
+</ul>
+
+<h4>Why Use It Instead of finally?</h4>
+
+<p>
+    <code>finally</code>: You generally write code to close the resource yourself.
+</p>
+
+<p>
+    <code>try-with-resources</code>: Java closes the resource automatically.
+</p>
+
+<h4>Interview Points</h4>
+
+<ul>
+    <li>Introduced in Java 7.</li>
+    <li>Uses the <code>AutoCloseable</code> interface.</li>
+    <li>Reduces cleanup code and the risk of forgetting to close resources.</li>
+    <li>Commonly used with files, streams and JDBC resources.</li>
+</ul>
+
+<div class="tip">
+    <strong>Remember:</strong> Java 7 introduced try-with-resources to simplify
+    automatic resource management.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style>
+
+
+<p>
+    <strong>Note:</strong> A finally block is not absolutely guaranteed to execute
+    in every situation, such as when the JVM terminates abruptly.
+</p>
+
+<h4>Does try-with-resources work if the JVM terminates abruptly?</h4>
+
+<p>
+    <strong>Answer:</strong> No, automatic resource closing is not guaranteed
+    if the JVM terminates abruptly.
+</p>
+
+<ul>
+    <li><strong>Normal execution:</strong> The resource is automatically closed.</li>
+    <li><strong>Exception occurs:</strong> Java closes the resource before propagating the exception or entering the catch block.</li>
+    <li><strong>JVM terminates abruptly:</strong> The resource might not be closed because Java may not get a chance to execute the cleanup.</li>
+</ul>
+
+<h4>Example</h4>
+
+<pre><code>try (BufferedReader reader =
+         new BufferedReader(new FileReader("data.txt"))) {
+
+    System.out.println(reader.readLine());
+
+    System.exit(0); // Abruptly terminates the JVM
+
+} catch (IOException e) {
+    System.out.println("Error occurred");
+}</code></pre>
+
+<h4>What Happens?</h4>
+
+<p>
+    <code>System.exit(0)</code> initiates JVM termination. The try-with-resources
+    cleanup is not guaranteed to run, so you must not rely on it to close the reader
+    in this situation.
+</p>
+
+<h4>Interview Recall</h4>
+
+<p>
+    <strong>try-with-resources guarantees automatic closing when execution
+    leaves the try block normally or through an exception, but not when the
+    JVM terminates abruptly.</strong>
+</p>
+
+<h3>4. finalize() Method</h3>
+
+<p>
+    <code>finalize()</code> was an old method that the garbage collector could
+    invoke before reclaiming an object. Its execution time was not guaranteed,
+    so it was unreliable for cleanup.
+</p>
+
+<h4>Example (for understanding only)</h4>
+
+<pre><code>class Demo {
+    @Override
+    protected void finalize() throws Throwable {
+        System.out.println("Finalize called");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Demo d = new Demo();
+        d = null;
+
+        System.gc();
+
+        System.out.println("End of main");
+    }
+}</code></pre>
+
+<h4>Possible Output</h4>
+
+<pre><code>End of main</code></pre>
+
+<p>
+    The message from <code>finalize()</code> may appear, or it may never appear.
+    Calling <code>System.gc()</code> only requests garbage collection; it does
+    not guarantee that garbage collection or finalization will happen.
+</p>
+
+<p>
+    <strong>Important:</strong> Finalization is deprecated for removal in modern
+    Java. Do not use <code>finalize()</code> for resource cleanup. Prefer
+    try-with-resources or explicit cleanup methods.
+</p>
+
+
+<h3>What is the Modern Alternative to finalize()?</h3>
+
+<p>
+    <code>finalize()</code> is deprecated for removal. Modern Java provides
+    safer approaches for resource cleanup.
+</p>
+
+<h4>1. AutoCloseable + try-with-resources</h4>
+
+<p>
+    <strong>Use for:</strong> Files, streams, database connections and other
+    resources that must be closed.
+</p>
+
+<pre><code>import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Main {
+    public static void main(String[] args) {
+        try (BufferedReader reader =
+                 new BufferedReader(new FileReader("data.txt"))) {
+
+            System.out.println(reader.readLine());
+
+        } catch (IOException e) {
+            System.out.println("File error");
+        }
+    }
+}</code></pre>
+
+<p>
+    Java automatically calls <code>close()</code> when the try block exits
+    normally or through an exception.
+</p>
+
+<h4>2. Cleaner</h4>
+
+<p>
+    <strong>Use for:</strong> Special cases where an object needs a fallback
+    cleanup action if it becomes unreachable. It is not a replacement for
+    reliably closing resources.
+</p>
+
+<pre><code>import java.lang.ref.Cleaner;
+
+class Demo {
+    private static final Cleaner cleaner = Cleaner.create();
+
+    private static class Cleanup implements Runnable {
+        @Override
+        public void run() {
+            System.out.println("Cleanup action executed");
+        }
+    }
+
+    public static void main(String[] args) {
+        Demo demo = new Demo();
+        Cleaner.Cleanable cleanable =
+                cleaner.register(demo, new Cleanup());
+
+        cleanable.clean(); // Explicitly runs cleanup
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Cleanup action executed</code></pre>
+
+<p>
+    <code>Cleaner</code> can perform cleanup when explicitly requested or
+    eventually when the registered object becomes phantom reachable. Automatic
+    cleanup timing is not guaranteed.
+</p>
+
+<h4>Interview Recall</h4>
+
+<ul>
+    <li><strong>AutoCloseable + try-with-resources:</strong> Preferred for reliably closing resources.</li>
+    <li><strong>Cleaner:</strong> Fallback cleanup for special cases; timing is not guaranteed.</li>
+    <li><strong>finalize():</strong> Deprecated for removal; do not use it for cleanup.</li>
+</ul>
+
+<div class="tip">
+    <strong>Remember:</strong> Close resources explicitly with
+    <code>try-with-resources</code>. Do not depend on garbage collection to
+    release important resources.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style>
+
+
+<h3>5. Difference Between static, final, finally and finalize()</h3>
+
+<ul>
+    <li><strong>static:</strong> Class-level member shared by objects.</li>
+    <li><strong>final:</strong> Restricts reassignment, method overriding or class inheritance.</li>
+    <li><strong>finally:</strong> Cleanup block associated with try-catch.</li>
+    <li><strong>finalize():</strong> Deprecated legacy method associated with garbage collection.</li>
+</ul>
+
+<h3>Interview Recall</h3>
+
+<pre>
+static     -> Belongs to the class
+final      -> Cannot be reassigned / overridden / extended,
+              depending on usage
+finally    -> Cleanup block after try-catch
+finalize() -> Legacy GC-related method; avoid using it
+</pre>
+
+<div class="tip">
+    <strong>Interview tip:</strong> If asked about resource cleanup, explain that
+    <code>finally</code> is useful for cleanup logic, while try-with-resources is
+    generally preferred for closing files, streams and database resources.
+    Never rely on <code>finalize()</code>.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style></p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
