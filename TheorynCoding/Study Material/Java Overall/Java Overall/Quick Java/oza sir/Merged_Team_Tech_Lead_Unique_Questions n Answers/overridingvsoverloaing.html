@@ -1,0 +1,230 @@
+
+<h3>Examples of Key Differences</h3>
+
+<h4>1. Overloading — Same Name, Different Parameters</h4>
+
+<pre><code>class Calculator {
+    int add(int a, int b) {
+        return a + b;
+    }
+
+    int add(int a, int b, int c) {
+        return a + b + c;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Calculator c = new Calculator();
+
+        System.out.println(c.add(10, 20));
+        System.out.println(c.add(10, 20, 30));
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>30
+60</code></pre>
+
+<p><strong>Explanation:</strong> Both methods have the same name but different parameter lists.</p>
+
+<hr>
+
+<h4>2. Overriding — Same Signature, Different Implementation</h4>
+
+<pre><code>class Animal {
+    void sound() {
+        System.out.println("Animal makes a sound");
+    }
+}
+
+class Dog extends Animal {
+    @Override
+    void sound() {
+        System.out.println("Dog barks");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Animal a = new Dog();
+        a.sound();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Dog barks</code></pre>
+
+<p><strong>Explanation:</strong> Dog overrides the inherited method. The actual object type determines which implementation runs.</p>
+
+<hr>
+
+<h4>3. Relationship — Overloading vs Overriding</h4>
+
+<p><strong>Overloading can occur in the same class:</strong></p>
+
+<pre><code>class Printer {
+    void print(String text) {
+        System.out.println(text);
+    }
+
+    void print(int number) {
+        System.out.println(number);
+    }
+}</code></pre>
+
+<p><strong>Overriding requires inheritance:</strong></p>
+
+<pre><code>class Parent {
+    void show() {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() {
+        System.out.println("Child");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong> Overloading uses different parameter lists. Overriding replaces an inherited instance method's implementation.</p>
+
+<hr>
+
+<h4>4. Polymorphism — Compile-Time vs Runtime</h4>
+
+<p><strong>Compile-time polymorphism (Overloading):</strong></p>
+
+<pre><code>class Calculator {
+    int add(int a, int b) {
+        return a + b;
+    }
+
+    double add(double a, double b) {
+        return a + b;
+    }
+}
+
+// Calculator c = new Calculator();
+// System.out.println(c.add(2, 3));       // 5
+// System.out.println(c.add(2.5, 3.5));   // 6.0</code></pre>
+
+<p>The compiler selects the method based on the arguments.</p>
+
+<p><strong>Runtime polymorphism (Overriding):</strong></p>
+
+<pre><code>class Animal {
+    void sound() {
+        System.out.println("Animal sound");
+    }
+}
+
+class Dog extends Animal {
+    @Override
+    void sound() {
+        System.out.println("Bark");
+    }
+}
+
+// Animal a = new Dog();
+// a.sound();  // Bark</code></pre>
+
+<p>The overridden implementation is selected at runtime based on the actual object.</p>
+
+<hr>
+
+<h4>5. Return Type — Cannot Overload by Return Type Alone</h4>
+
+<p><strong>Invalid overloading:</strong></p>
+
+<pre><code>class Example {
+    int getValue() {
+        return 10;
+    }
+
+    // Compilation error:
+    // Return type alone cannot distinguish methods.
+    // double getValue() {
+    //     return 10.5;
+    // }
+}</code></pre>
+
+<p><strong>Valid overriding with a covariant return type:</strong></p>
+
+<pre><code>class Animal {
+}
+
+class Dog extends Animal {
+}
+
+class Parent {
+    Animal getAnimal() {
+        return new Animal();
+    }
+}
+
+class Child extends Parent {
+    @Override
+    Dog getAnimal() {
+        return new Dog();
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong> The overriding method returns Dog, a subtype of Animal. This is allowed by Java's covariant return type rule.</p>
+
+<hr>
+
+<h4>6. Static Methods — Overloading vs Hiding</h4>
+
+<p><strong>Static methods can be overloaded:</strong></p>
+
+<pre><code>class Utility {
+    static void display(int n) {
+        System.out.println(n);
+    }
+
+    static void display(String text) {
+        System.out.println(text);
+    }
+}
+
+// Utility.display(10);       // 10
+// Utility.display("Hello");  // Hello</code></pre>
+
+<p><strong>Static methods are hidden, not overridden:</strong></p>
+
+<pre><code>class Parent {
+    static void show() {
+        System.out.println("Parent static method");
+    }
+}
+
+class Child extends Parent {
+    static void show() {
+        System.out.println("Child static method");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.show();
+
+        Child c = new Child();
+        c.show();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Parent static method
+Child static method</code></pre>
+
+<p><strong>Explanation:</strong> Static method calls are resolved using the reference's declared type, not the actual object's type.</p>
+
+<div class="tip">
+    <strong>Interview shortcut:</strong><br>
+    Overloading = Same name, different parameters.<br>
+    Overriding = Inherited instance method, new implementation.<br>
+    Static methods = Hidden, not overridden.
+</div>

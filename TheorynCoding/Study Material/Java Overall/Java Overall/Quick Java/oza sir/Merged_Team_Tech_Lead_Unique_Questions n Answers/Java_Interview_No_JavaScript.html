@@ -17,14 +17,14 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q4" class="completed"><span class="number">4.</span>Is Java pass-by-value or pass-by-reference? Demonstrate with an object.</a>
 <a href="#q5" class="completed"><span class="number">5.</span>What is the difference between `==` and `equals()`?</a>
 <a href="#q6" class="completed"><span class="number">6.</span>Explain `static`, `final`, `finally` and `finalize()`.</a>
-<a href="#q7"><span class="number">7.</span>What are constructors, constructor overloading and constructor chaining?</a>
-<a href="#q8"><span class="number">8.</span>Explain `this` and `super`.</a>
-<a href="#q9"><span class="number">9.</span>Can static, private, final or overloaded methods be overridden? Explain each case.</a>
-<a href="#q10"><span class="number">10.</span>What is the difference between method overloading and method overriding?</a>
-<a href="#q11"><span class="number">11.</span>Explain encapsulation, inheritance, polymorphism and abstraction with examples.</a>
-<a href="#q12"><span class="number">12.</span>What is the difference between an interface and an abstract class?</a>
-<a href="#q13"><span class="number">13.</span>Why does Java not support multiple inheritance through classes?</a>
-<a href="#q14"><span class="number">14.</span>What is runtime polymorphism? What happens with `Parent p = new Child()`?</a>
+<a href="#q7" class="completed"><span class="number">7.</span>What are constructors, constructor overloading and constructor chaining?</a>
+<a href="#q8" class="completed"><span class="number">8.</span>Explain `this` and `super`.</a>
+<a href="#q9" class="completed"><span class="number">9.</span>Can static, private, final or overloaded methods be overridden? Explain each case.</a>
+<a href="#q10" class="completed"><span class="number">10.</span>What is the difference between method overloading and method overriding?</a>
+<a href="#q11" class="completed"><span class="number">11.</span>Explain encapsulation, inheritance, polymorphism and abstraction with examples.</a>
+<a href="#q12" class="completed"><span class="number">12.</span>What is the difference between an interface and an abstract class?</a>
+<a href="#q13" class="completed"><span class="number">13.</span>Why does Java not support multiple inheritance through classes?</a>
+<a href="#q14" class="completed"><span class="number">14.</span>What is runtime polymorphism? What happens with `Parent p = new Child()`?</a>
 <a href="#q15"><span class="number">15.</span>What is the difference between upcasting and downcasting?</a>
 <a href="#q16"><span class="number">16.</span>What is the difference between composition and inheritance?</a>
 <a href="#q17"><span class="number">17.</span>What are access modifiers and their visibility rules?</a>
@@ -1904,7 +1904,254 @@ pre {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint"><h3>1. What Is a Constructor?</h3>
+
+<p>
+    A constructor is a special class member used to initialize an object.
+    It has the same name as the class and has no return type, not even void.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>class Employee {
+    int id;
+    String name;
+
+    Employee() {
+        id = 101;
+        name = "Nikhil";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e = new Employee();
+
+        System.out.println(e.id);
+        System.out.println(e.name);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>101
+Nikhil</code></pre>
+
+<h4>Key Points</h4>
+
+<ul>
+    <li>A constructor has the same name as its class.</li>
+    <li>It has no return type.</li>
+    <li>It runs when an object is created using <code>new</code>.</li>
+    <li>If no constructor is declared, Java provides a default constructor.</li>
+    <li>If you declare any constructor, Java does not automatically provide the default constructor.</li>
+</ul>
+
+<h3>2. What Is Constructor Overloading?</h3>
+
+<p>
+    Constructor overloading means defining multiple constructors in the same
+    class with different parameter lists.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>class Employee {
+    int id;
+    String name;
+
+    Employee() {
+        id = 0;
+        name = "Unknown";
+    }
+
+    Employee(int id) {
+        this.id = id;
+        name = "Unknown";
+    }
+
+    Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e1 = new Employee();
+        Employee e2 = new Employee(101);
+        Employee e3 = new Employee(102, "Rahul");
+
+        System.out.println(e1.id + " " + e1.name);
+        System.out.println(e2.id + " " + e2.name);
+        System.out.println(e3.id + " " + e3.name);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>0 Unknown
+101 Unknown
+102 Rahul</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li><code>Employee()</code> takes no arguments.</li>
+    <li><code>Employee(int id)</code> takes one argument.</li>
+    <li><code>Employee(int id, String name)</code> takes two arguments.</li>
+</ul>
+
+<p>
+    Java selects the matching constructor based on the arguments supplied
+    when creating the object.
+</p>
+
+<h3>3. What Is Constructor Chaining?</h3>
+
+<p>
+    Constructor chaining means calling one constructor from another constructor
+    to reuse initialization code.
+</p>
+
+<p>There are two common forms:</p>
+
+<ul>
+    <li><code>this()</code> calls another constructor in the same class.</li>
+    <li><code>super()</code> calls a constructor in the parent class.</li>
+</ul>
+
+<h4>A. Constructor Chaining Using this()</h4>
+
+<pre><code>class Employee {
+    int id;
+    String name;
+
+    Employee() {
+        this(101, "Nikhil");
+        System.out.println("No-argument constructor");
+    }
+
+    Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+        System.out.println("Parameterized constructor");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e = new Employee();
+
+        System.out.println(e.id);
+        System.out.println(e.name);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Parameterized constructor
+No-argument constructor
+101
+Nikhil</code></pre>
+
+<h4>Execution Flow</h4>
+
+<pre>
+new Employee()
+      |
+      v
+Employee()
+      |
+      | this(101, "Nikhil")
+      v
+Employee(int, String)
+      |
+      v
+Initialize id and name
+      |
+      v
+Return to Employee()
+      |
+      v
+Execute remaining statements
+</pre>
+
+<p>
+    <strong>Important:</strong> A call to <code>this()</code> must be the first
+    statement in the constructor.
+</p>
+
+<h4>B. Constructor Chaining Using super()</h4>
+
+<pre><code>class Person {
+    Person(String name) {
+        System.out.println("Person: " + name);
+    }
+}
+
+class Employee extends Person {
+    Employee() {
+        super("Nikhil");
+        System.out.println("Employee constructor");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        new Employee();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Person: Nikhil
+Employee constructor</code></pre>
+
+<p>
+    <code>super("Nikhil")</code> calls the parent class constructor before
+    the remaining statements in the child constructor.
+</p>
+
+<p>
+    <strong>Important:</strong> If a constructor does not explicitly call
+    <code>this()</code> or <code>super()</code>, Java inserts a no-argument
+    <code>super()</code> call when applicable. If the parent has no accessible
+    no-argument constructor, you must explicitly call an appropriate parent
+    constructor.
+</p>
+
+<h3>4. Difference at a Glance</h3>
+
+<ul>
+    <li><strong>Constructor:</strong> Initializes a newly created object.</li>
+    <li><strong>Constructor overloading:</strong> Multiple constructors with different parameter lists.</li>
+    <li><strong>Constructor chaining:</strong> One constructor calls another using <code>this()</code> or <code>super()</code>.</li>
+</ul>
+
+<div class="tip">
+    <strong>Interview recall:</strong><br>
+    Constructor = Initialize an object.<br>
+    Overloading = Different constructor parameter lists.<br>
+    <code>this()</code> = Call a constructor in the same class.<br>
+    <code>super()</code> = Call a parent class constructor.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style></p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -1913,7 +2160,167 @@ pre {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint"><h3>1. What Is this?</h3>
+
+<p>
+    <code>this</code> refers to the current object. It is commonly used to
+    distinguish instance variables from local variables or constructor parameters.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>class Employee {
+    int id;
+    String name;
+
+    Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    void display() {
+        System.out.println(this.id);
+        System.out.println(this.name);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e = new Employee(101, "Nikhil");
+        e.display();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>101
+Nikhil</code></pre>
+
+<h4>Explanation</h4>
+
+<pre>
+this.id = id;
+
+this.id  -> Instance variable
+id       -> Constructor parameter
+</pre>
+
+<p><strong>Other use:</strong> <code>this()</code> calls another constructor in the same class and must be the first statement in that constructor.</p>
+
+<h3>2. What Is super?</h3>
+
+<p>
+    <code>super</code> refers to the parent-class part of the current object.
+    It is used to access accessible parent-class members or call a parent constructor.
+</p>
+
+<h4>Example: Accessing a Parent Variable and Method</h4>
+
+<pre><code>class Person {
+    String name = "Parent";
+
+    void display() {
+        System.out.println("Person display");
+    }
+}
+
+class Employee extends Person {
+    String name = "Child";
+
+    void show() {
+        System.out.println(super.name);
+        System.out.println(this.name);
+
+        super.display();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e = new Employee();
+        e.show();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Parent
+Child
+Person display</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li><code>super.name</code> accesses the parent class's <code>name</code> field.</li>
+    <li><code>this.name</code> accesses the current object's <code>name</code> field declared in the child class.</li>
+    <li><code>super.display()</code> calls the parent class implementation of the method.</li>
+</ul>
+
+<h3>3. Using super() to Call a Parent Constructor</h3>
+
+<pre><code>class Person {
+    Person(String name) {
+        System.out.println("Person: " + name);
+    }
+}
+
+class Employee extends Person {
+    Employee() {
+        super("Nikhil");
+        System.out.println("Employee constructor");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        new Employee();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Person: Nikhil
+Employee constructor</code></pre>
+
+<p>
+    <code>super("Nikhil")</code> calls the parent constructor before the
+    remaining statements in the child constructor. An explicit constructor
+    invocation must be the first statement in a constructor in Java 21 and earlier.
+</p>
+
+<h3>4. Difference Between this and super</h3>
+
+<ul>
+    <li><strong>this:</strong> Refers to the current object.</li>
+    <li><strong>super:</strong> Accesses the parent-class implementation or members.</li>
+    <li><strong>this():</strong> Calls another constructor in the same class.</li>
+    <li><strong>super():</strong> Calls a parent-class constructor.</li>
+    <li>Both <code>this()</code> and <code>super()</code> cannot be used together as separate constructor-invocation statements in Java 21 and earlier.</li>
+</ul>
+
+<div class="tip">
+    <strong>Interview recall:</strong><br>
+    <code>this</code> = Current object.<br>
+    <code>super</code> = Parent-class access.<br>
+    <code>this()</code> = Same-class constructor.<br>
+    <code>super()</code> = Parent-class constructor.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style></p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -1922,7 +2329,176 @@ pre {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint"><h3>1. Can static methods be overridden?</h3>
+
+<p><strong>No.</strong> Static methods are hidden, not overridden, because they belong to the class rather than being dispatched based on the object's runtime type.</p>
+
+<pre><code>class Parent {
+    static void display() {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    static void display() {
+        System.out.println("Child");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+        obj.display();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Parent</code></pre>
+
+<p><strong>Why?</strong> The method call is resolved using the reference type, <code>Parent</code>, not the actual object type.</p>
+
+<h3>2. Can private methods be overridden?</h3>
+
+<p><strong>No.</strong> Private methods are not accessible to subclasses, so they cannot be overridden. A subclass can declare a separate method with the same signature.</p>
+
+<pre><code>class Parent {
+    private void display() {
+        System.out.println("Parent");
+    }
+
+    void callDisplay() {
+        display();
+    }
+}
+
+class Child extends Parent {
+    void display() {
+        System.out.println("Child");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Child obj = new Child();
+        obj.callDisplay();
+        obj.display();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Parent
+Child</code></pre>
+
+<p><strong>Why?</strong> The parent's private method is separate from the child's method. The parent method calls its own private method.</p>
+
+<h3>3. Can final methods be overridden?</h3>
+
+<p><strong>No.</strong> A final method cannot be overridden by a subclass.</p>
+
+<pre><code>class Parent {
+    final void display() {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    // Compilation error if display() is declared here
+    // with the same signature.
+}</code></pre>
+
+<p><strong>Why?</strong> The <code>final</code> keyword prevents subclasses from changing that method implementation.</p>
+
+<h3>4. Can overloaded methods be overridden?</h3>
+
+<p><strong>Yes, with an important distinction.</strong> Overloading means methods have the same name but different parameter lists. A subclass can override an inherited method and also overload it with a different parameter list.</p>
+
+<pre><code>class Parent {
+    void display(int x) {
+        System.out.println("Parent: " + x);
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void display(int x) {
+        System.out.println("Child: " + x);
+    }
+
+    void display(String text) {
+        System.out.println("Child: " + text);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+        obj.display(10);
+        // obj.display("Java"); // Compilation error
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Child: 10</code></pre>
+
+<p><strong>Why?</strong> The <code>display(int)</code> method overrides the parent method. The <code>display(String)</code> method overloads the name in the child class, but it is not available through a <code>Parent</code> reference.</p>
+
+<h3>Interview Summary</h3>
+
+<ul>
+    <li><strong>static:</strong> Cannot be overridden; can be hidden.</li>
+    <li><strong>private:</strong> Cannot be overridden because it is not inherited as an accessible method.</li>
+    <li><strong>final:</strong> Cannot be overridden.</li>
+    <li><strong>Overloaded:</strong> Overloading and overriding are different concepts. A method can be overloaded in a subclass while another method is overridden.</li>
+</ul>
+<div>
+    <h3>Why Compilation Error Occurs</h3>
+
+    <p>
+        <code>Parent obj = new Child();</code>
+    </p>
+
+    <p>
+        <code>obj.display(10);</code> works because
+        <code>display(int)</code> exists in <code>Parent</code>.
+        <b>Since <code>display(int)</code> exists in Parent, the compiler accepts the call.
+        At runtime, Java uses method overriding and dynamic method dispatch to execute the Child implementation.</b>
+    </p>
+
+    <p>
+        <code>obj.display("Java");</code> causes a compilation error
+        because <code>display(String)</code> is declared only in
+        <code>Child</code>, not in <code>Parent</code>.
+        The compiler checks method availability using the reference type
+        <code>Parent</code>.
+    </p>
+
+    <h4>Key Point</h4>
+    <ul>
+        <li>Overloading is resolved at compile time.</li>
+        <li>Overriding is resolved at runtime.</li>
+        <li>The reference type determines which methods can be called.</li>
+    </ul>
+</div>
+
+<div class="tip">
+    <strong>Remember:</strong> Static = hiding; private = not inherited as an accessible method; final = cannot override; overloaded = different parameters.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style></p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -1931,7 +2507,397 @@ pre {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint"><h3>1. Method Overloading</h3>
+
+<p>
+    Method overloading means defining multiple methods with the same name
+    but different parameter lists in the same class.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>class Calculator {
+    int add(int a, int b) {
+        return a + b;
+    }
+
+    int add(int a, int b, int c) {
+        return a + b + c;
+    }
+
+    double add(double a, double b) {
+        return a + b;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Calculator c = new Calculator();
+
+        System.out.println(c.add(10, 20));
+        System.out.println(c.add(10, 20, 30));
+        System.out.println(c.add(2.5, 3.5));
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>30
+60
+6.0</code></pre>
+
+<p><strong>Remember:</strong> The method name is the same, but the parameters differ in number or type.</p>
+
+<h3>2. Method Overriding</h3>
+
+<p>
+    Method overriding occurs when a subclass provides its own implementation
+    of an inherited instance method with a compatible signature.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>class Parent {
+    void display() {
+        System.out.println("Parent method");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void display() {
+        System.out.println("Child method");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+        obj.display();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Child method</code></pre>
+
+<p>
+    <strong>Remember:</strong> The child class changes the implementation
+    of the inherited method. The method that runs is selected according
+    to the actual object's type at runtime.
+</p>
+
+<h3>3. Key Differences</h3>
+
+<ul>
+    <li><strong>Overloading:</strong> Same method name, different parameter lists.</li>
+    <li><strong>Overriding:</strong> Same method signature, new implementation in a subclass.</li>
+    <li><strong>Relationship:</strong> Overloading can happen in the same class; overriding requires inheritance.</li>
+    <li><strong>Polymorphism:</strong> Overloading is compile-time polymorphism; overriding provides runtime polymorphism.</li>
+    <li><strong>Return type:</strong> Overloading cannot be achieved by changing only the return type. Overriding must have the same or a compatible covariant return type.</li>
+    <li><strong>Static methods:</strong> Can be overloaded, but are hidden rather than overridden.</li>
+</ul>
+
+
+
+<h3>Interview Recall</h3>
+
+<div class="tip">
+    <strong>Overloading:</strong> Same name, different parameters.<br>
+    <strong>Overriding:</strong> Same inherited method, different implementation.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style></p>
+<h2>15. Method Overloading vs Overriding: Tricky Interview Questions</h2>
+
+<h3>1. Overloading: If methods accept int and long, which method is called?</h3>
+
+<pre><code>class Calculator {
+    void show(int n) {
+        System.out.println("int method");
+    }
+
+    void show(long n) {
+        System.out.println("long method");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Calculator c = new Calculator();
+
+        c.show(10);
+        c.show(10L);
+        c.show((short) 5);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>int method
+long method
+int method</code></pre>
+
+<h4>Why?</h4>
+
+<ul>
+    <li><code>show(10)</code>: The literal <code>10</code> is an int, so the exact match is selected.</li>
+    <li><code>show(10L)</code>: The <code>L</code> makes the literal a long, so the long method is selected.</li>
+    <li><code>show((short) 5)</code>: A short can widen to int or long. Java chooses int because it is the more specific applicable primitive widening conversion here.</li>
+</ul>
+
+<p><strong>Interview rule:</strong> Java prefers an exact match before considering widening conversions such as int to long.</p>
+
+<h3>2. Overloading: What if only the long method exists?</h3>
+
+<pre><code>class Calculator {
+    void show(long n) {
+        System.out.println("long method");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Calculator c = new Calculator();
+        c.show(10);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>long method</code></pre>
+
+<p>An int can be widened to long automatically, so the call is valid even though there is no int overload.</p>
+
+<h3>3. Overloading: Can we overload by changing only the return type?</h3>
+
+<pre><code>class Calculator {
+    int calculate(int n) {
+        return n;
+    }
+
+    // Compilation error:
+    // double calculate(int n) {
+    //     return n * 1.5;
+    // }
+}</code></pre>
+
+<p><strong>Answer: No.</strong> The parameter lists are identical. Changing only the return type does not create an overload.</p>
+
+<p>However, changing the parameter type does create an overload:</p>
+
+<pre><code>class Calculator {
+    int calculate(int n) {
+        return n;
+    }
+
+    double calculate(long n) {
+        return n * 1.5;
+    }
+}</code></pre>
+
+<p><strong>Remember:</strong> Overloading requires a different parameter list, not just a different return type.</p>
+
+<h3>4. Overriding: Which method runs when the parent reference points to a child object?</h3>
+
+<pre><code>class Parent {
+    void show() {
+        System.out.println("Parent method");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() {
+        System.out.println("Child method");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+        obj.show();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Child method</code></pre>
+
+<h4>Why?</h4>
+
+<pre>
+Parent obj = new Child();
+       |
+       v
+Reference type: Parent
+Actual object:  Child
+       |
+       v
+show() is overridden
+       |
+       v
+Child method runs
+</pre>
+
+<p>For an overridden instance method, Java uses the actual object's class to select the implementation at runtime.</p>
+
+<h3>5. Tricky: Parent and Child both have int and long methods</h3>
+
+<pre><code>class Parent {
+    void show(int n) {
+        System.out.println("Parent int");
+    }
+
+    void show(long n) {
+        System.out.println("Parent long");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show(int n) {
+        System.out.println("Child int");
+    }
+
+    @Override
+    void show(long n) {
+        System.out.println("Child long");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+
+        obj.show(10);
+        obj.show(10L);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Child int
+Child long</code></pre>
+
+<h4>Why?</h4>
+
+<ul>
+    <li><code>obj.show(10)</code>: Java selects the int signature at compile time, then calls the Child implementation at runtime.</li>
+    <li><code>obj.show(10L)</code>: Java selects the long signature at compile time, then calls the Child implementation at runtime.</li>
+</ul>
+
+<p><strong>Key point:</strong> The int and long methods are separate overloads. Each signature can be overridden independently.</p>
+
+<h3>6. Tricky: What if the Child changes int to long?</h3>
+
+<pre><code>class Parent {
+    void show(int n) {
+        System.out.println("Parent int");
+    }
+}
+
+class Child extends Parent {
+    void show(long n) {
+        System.out.println("Child long");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+        obj.show(10);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Parent int</code></pre>
+
+<h4>Why?</h4>
+
+<p>The child's <code>show(long)</code> does not override the parent's <code>show(int)</code>. It overloads the method name with a different parameter list.</p>
+
+<p>Because the reference type is Parent, overload resolution selects <code>show(int)</code>. The Child class has not overridden that signature, so the Parent implementation runs.</p>
+
+<h3>7. Overriding: Can we change only the return type?</h3>
+
+<pre><code>class Parent {
+    int getValue() {
+        return 10;
+    }
+}
+
+class Child extends Parent {
+    // Compilation error:
+    // double getValue() {
+    //     return 20.5;
+    // }
+}</code></pre>
+
+<p><strong>Answer: No, not to an incompatible return type.</strong> An overriding method must have the same return type or a permitted covariant return type for reference types.</p>
+
+<p>Example of a valid covariant return type:</p>
+
+<pre><code>class Animal { }
+
+class Dog extends Animal { }
+
+class Parent {
+    Animal getAnimal() {
+        return new Animal();
+    }
+}
+
+class Child extends Parent {
+    @Override
+    Dog getAnimal() {
+        return new Dog();
+    }
+}</code></pre>
+
+<p>This is valid because <code>Dog</code> is a subtype of <code>Animal</code>.</p>
+
+<h3>8. Quick Interview Rules</h3>
+
+<ul>
+    <li><strong>Same name, different parameters:</strong> Overloading.</li>
+    <li><strong>Same signature in a subclass:</strong> Overriding, provided the method is eligible to be overridden.</li>
+    <li><strong>int and long overloads:</strong> An int argument selects int when that overload is applicable; otherwise, it may widen to long.</li>
+    <li><strong>Parent reference + Child object:</strong> An overridden instance method executes the Child implementation.</li>
+    <li><strong>Change only return type:</strong> Not valid for overloading; overriding requires the same or a compatible covariant return type.</li>
+    <li><strong>Change parameter type in Child:</strong> Creates a separate overload, not an override of the original signature.</li>
+</ul>
+
+<div class="tip">
+    <strong>Best interview answer:</strong><br>
+    Overloading is resolved at compile time based on the argument types and available method signatures. Overriding is resolved at runtime based on the actual object's class, after the method signature has been selected.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -1940,7 +2906,232 @@ pre {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint"><h3>1. Encapsulation</h3>
+
+<p>
+    <strong>Definition:</strong> Encapsulation means keeping data and the methods
+    that operate on that data together in a class, while controlling access to the data.
+</p>
+
+<p><strong>Real-world example:</strong> A bank account protects its balance. You cannot directly change the balance; you use methods such as deposit() and withdraw().</p>
+
+<h4>Java Example</h4>
+
+<pre><code>class BankAccount {
+    private double balance;
+
+    public void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+        }
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        BankAccount account = new BankAccount();
+
+        account.deposit(5000);
+
+        System.out.println(account.getBalance());
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>5000.0</code></pre>
+
+<h4>Explanation</h4>
+<ul>
+    <li><code>private balance</code> cannot be accessed directly from outside the class.</li>
+    <li><code>deposit()</code> controls how the balance is updated.</li>
+    <li><code>getBalance()</code> provides controlled access to the balance.</li>
+</ul>
+
+<p><strong>Remember:</strong> Encapsulation = Protect data and control access.</p>
+
+<h3>2. Inheritance</h3>
+
+<p>
+    <strong>Definition:</strong> Inheritance allows a child class to acquire
+    accessible fields and methods from a parent class.
+</p>
+
+<p><strong>Real-world example:</strong> A car is a type of vehicle. It can use common vehicle behavior and also have its own features.</p>
+
+<h4>Java Example</h4>
+
+<pre><code>class Vehicle {
+    void start() {
+        System.out.println("Vehicle starts");
+    }
+}
+
+class Car extends Vehicle {
+    void drive() {
+        System.out.println("Car is driving");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Car car = new Car();
+
+        car.start();
+        car.drive();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Vehicle starts
+Car is driving</code></pre>
+
+<h4>Explanation</h4>
+<ul>
+    <li><code>Vehicle</code> is the parent class.</li>
+    <li><code>Car</code> is the child class.</li>
+    <li><code>extends</code> establishes inheritance.</li>
+    <li><code>Car</code> can use the inherited <code>start()</code> method and its own <code>drive()</code> method.</li>
+</ul>
+
+<p><strong>Remember:</strong> Inheritance = Reuse and extend existing class behavior.</p>
+
+<h3>3. Polymorphism</h3>
+
+<p>
+    <strong>Definition:</strong> Polymorphism means "one name, many forms."
+    The same method call can produce different behavior depending on the object.
+</p>
+
+<p><strong>Real-world example:</strong> The command "make sound" produces different sounds for a dog and a cat.</p>
+
+<h4>Java Example: Runtime Polymorphism</h4>
+
+<pre><code>class Animal {
+    void makeSound() {
+        System.out.println("Animal makes a sound");
+    }
+}
+
+class Dog extends Animal {
+    @Override
+    void makeSound() {
+        System.out.println("Dog barks");
+    }
+}
+
+class Cat extends Animal {
+    @Override
+    void makeSound() {
+        System.out.println("Cat meows");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Animal a;
+
+        a = new Dog();
+        a.makeSound();
+
+        a = new Cat();
+        a.makeSound();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Dog barks
+Cat meows</code></pre>
+
+<h4>Explanation</h4>
+<ul>
+    <li><code>Animal a</code> is a parent-class reference.</li>
+    <li>It can refer to a <code>Dog</code> object or a <code>Cat</code> object.</li>
+    <li>The overridden <code>makeSound()</code> implementation is selected according to the actual object's class at runtime.</li>
+</ul>
+
+<p><strong>Remember:</strong> Runtime polymorphism = Method overriding.</p>
+
+<p><strong>Also remember:</strong> Method overloading is compile-time polymorphism; Java selects the applicable overloaded method at compile time.</p>
+
+<h3>4. Abstraction</h3>
+
+<p>
+    <strong>Definition:</strong> Abstraction means exposing essential operations
+    while hiding the implementation details.
+</p>
+
+<p><strong>Real-world example:</strong> You drive a car using the steering wheel and pedals without needing to understand every internal engine operation.</p>
+
+<h4>Java Example: Abstract Class</h4>
+
+<pre><code>abstract class Payment {
+    abstract void pay(double amount);
+}
+
+class UpiPayment extends Payment {
+    @Override
+    void pay(double amount) {
+        System.out.println("Paid " + amount + " using UPI");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Payment payment = new UpiPayment();
+
+        payment.pay(1000);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Paid 1000.0 using UPI</code></pre>
+
+<h4>Explanation</h4>
+<ul>
+    <li><code>abstract class Payment</code> defines the general payment concept.</li>
+    <li><code>pay()</code> declares what a payment implementation must do, without specifying how.</li>
+    <li><code>UpiPayment</code> provides the actual implementation.</li>
+    <li>The caller uses the <code>Payment</code> abstraction without needing to know its internal implementation.</li>
+</ul>
+
+<p><strong>Remember:</strong> Abstraction = Show what an object can do; hide how it does it.</p>
+
+<h3>5. Difference Between the Four OOP Principles</h3>
+
+<ul>
+    <li><strong>Encapsulation:</strong> Protect data and control access.</li>
+    <li><strong>Inheritance:</strong> Reuse and extend parent-class behavior.</li>
+    <li><strong>Polymorphism:</strong> The same method call can behave differently for different objects.</li>
+    <li><strong>Abstraction:</strong> Expose essential behavior and hide implementation details.</li>
+</ul>
+
+<div class="tip">
+    <strong>Interview recall:</strong><br>
+    Encapsulation = Data protection.<br>
+    Inheritance = Code reuse.<br>
+    Polymorphism = Many forms.<br>
+    Abstraction = Hide implementation details.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style></p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -1949,7 +3140,1653 @@ pre {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>17. What is the difference between an interface and an abstract class?</h2>
+
+<h3>1. Basic Difference</h3>
+
+<p>
+    <strong>Interface:</strong> Defines a contract that implementing classes agree to follow.
+</p>
+
+<p>
+    <strong>Abstract class:</strong> A class that provides common data and methods to its child classes and can also define methods they must implement.
+</p>
+
+<h3>2. Interface Example</h3>
+
+<pre><code>interface Payment {
+    void pay(double amount);
+}
+
+class UpiPayment implements Payment {
+    @Override
+    public void pay(double amount) {
+        System.out.println("Paid using UPI: " + amount);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Payment payment = new UpiPayment();
+        payment.pay(1000);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Paid using UPI: 1000.0</code></pre>
+
+<p>
+    <strong>Explanation:</strong> Payment defines what a payment implementation
+    must do. UpiPayment decides how to perform the payment.
+</p>
+
+<h3>3. Abstract Class Example</h3>
+
+<pre><code>abstract class Employee {
+    String name;
+
+    Employee(String name) {
+        this.name = name;
+    }
+
+    void login() {
+        System.out.println(name + " logged in");
+    }
+
+    abstract double calculateSalary();
+}
+
+class PermanentEmployee extends Employee {
+    PermanentEmployee(String name) {
+        super(name);
+    }
+
+    @Override
+    double calculateSalary() {
+        return 50000;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e = new PermanentEmployee("Nikhil");
+
+        e.login();
+        System.out.println(e.calculateSalary());
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Nikhil logged in
+50000.0</code></pre>
+
+<p>
+    <strong>Explanation:</strong> The abstract class stores employee data,
+    provides common login behavior and requires subclasses to implement salary calculation.
+</p>
+
+<h3>4. Key Differences</h3>
+
+<ul>
+    <li><strong>Declaration:</strong> Interface uses <code>interface</code>; abstract class uses <code>abstract class</code>.</li>
+    <li><strong>Inheritance:</strong> A class can extend only one class, but implement multiple interfaces.</li>
+    <li><strong>Variables:</strong> Interface fields are implicitly <code>public static final</code> constants. Abstract classes can have instance and static variables.</li>
+    <li><strong>Constructors:</strong> Interfaces cannot have constructors; abstract classes can.</li>
+    <li><strong>Methods:</strong> Interfaces can have abstract, default, static and private methods. Abstract classes can have abstract and concrete methods with different access levels.</li>
+    <li><strong>Object creation:</strong> Neither an interface nor an abstract class can be instantiated directly.</li>
+    <li><strong>State:</strong> Abstract classes can store per-object state; interfaces cannot declare instance fields.</li>
+</ul>
+
+<h3>Examples of Key Differences</h3>
+
+<h4>1. Declaration — interface vs abstract class</h4>
+
+<pre><code>// Interface
+interface Animal {
+    void sound();
+}
+
+// Abstract class
+abstract class Vehicle {
+    abstract void start();
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>interface</code> declares an interface.</li>
+    <li><code>abstract class</code> declares an abstract class.</li>
+    <li>Both can declare methods that implementing or child classes must implement.</li>
+</ul>
+
+<hr>
+
+<h4>2. Inheritance — Multiple Interfaces vs One Class</h4>
+
+<pre><code>interface Camera {
+    void takePhoto();
+}
+
+interface Phone {
+    void makeCall();
+}
+
+// A class can implement multiple interfaces
+class SmartPhone implements Camera, Phone {
+    public void takePhoto() {
+        System.out.println("Taking photo");
+    }
+
+    public void makeCall() {
+        System.out.println("Making call");
+    }
+}
+
+abstract class Device {
+    void powerOn() {
+        System.out.println("Device powered on");
+    }
+}
+
+// A class can extend only one class
+class Laptop extends Device {
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>SmartPhone</code> implements both <code>Camera</code> and <code>Phone</code>.</li>
+    <li><code>Laptop</code> extends one class, <code>Device</code>.</li>
+    <li>Java does not allow a class to extend two classes directly.</li>
+</ul>
+
+<hr>
+
+<h4>3. Variables — Constants vs Instance Variables</h4>
+
+<pre><code>interface Animal {
+    int LEGS = 4; // implicitly public static final
+}
+
+abstract class Employee {
+    String name;          // Instance variable
+    static int count = 0; // Static variable
+
+    Employee(String name) {
+        this.name = name;
+        count++;
+    }
+}
+
+class Developer extends Employee {
+    Developer(String name) {
+        super(name);
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>Animal.LEGS</code> is implicitly <code>public static final</code>; it is a constant and cannot be reassigned.</li>
+    <li><code>name</code> belongs to each employee object, so different objects can have different names.</li>
+    <li><code>count</code> is shared across all instances of <code>Employee</code> and its subclasses.</li>
+</ul>
+
+<pre><code>Developer d1 = new Developer("Amit");
+Developer d2 = new Developer("Neha");
+
+System.out.println(d1.name);
+System.out.println(d2.name);
+System.out.println(Employee.count);
+System.out.println(Animal.LEGS);</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Amit
+Neha
+2
+4</code></pre>
+
+<hr>
+
+<h4>4. Constructors — Abstract Class Has Constructors</h4>
+
+<pre><code>interface Animal {
+    // Animal() {} // Compilation error: interfaces have no constructors
+}
+
+abstract class Vehicle {
+    Vehicle() {
+        System.out.println("Vehicle constructor");
+    }
+}
+
+class Car extends Vehicle {
+    Car() {
+        System.out.println("Car constructor");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Car car = new Car();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Vehicle constructor
+Car constructor</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>An interface cannot have a constructor.</li>
+    <li>An abstract class can have a constructor to initialize inherited state.</li>
+    <li>The abstract class constructor runs when a concrete subclass object is created.</li>
+</ul>
+
+<hr>
+
+<h4>6. Variables and Access Modifiers — Interface vs Abstract Class</h4>
+
+<h5>A. Variables in an Interface</h5>
+
+<pre><code>interface Animal {
+    int LEGS = 4;
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>Interface variables are implicitly <code>public static final</code>.</li>
+    <li><code>public</code> means accessible from anywhere.</li>
+    <li><code>static</code> means the variable belongs to the interface, not an object.</li>
+    <li><code>final</code> means its value cannot be reassigned.</li>
+    <li>You cannot declare ordinary instance variables in an interface.</li>
+</ul>
+
+<p>These declarations are equivalent:</p>
+
+<pre><code>interface Animal {
+    int LEGS = 4;
+
+    // Equivalent to:
+    // public static final int LEGS = 4;
+}</code></pre>
+
+<p><strong>Can we use private, protected or non-static variables in an interface?</strong></p>
+
+<pre><code>interface Animal {
+    // Invalid declarations:
+    // private int age = 5;
+    // protected int age = 5;
+    // static int age;       // Must be initialized
+    // int age;              // Must be initialized
+}</code></pre>
+
+<p><strong>Rule:</strong> Interface fields must be initialized and are always <code>public static final</code>, regardless of whether you write those modifiers explicitly.</p>
+
+<hr>
+
+<h5>B. Variables in an Abstract Class</h5>
+
+<pre><code>abstract class Animal {
+    public String name;
+    protected int age;
+    int legs;                  // Package-private
+    private String species;
+
+    static int count = 0;
+    final String category = "Animal";
+
+    Animal(String name, int age, int legs, String species) {
+        this.name = name;
+        this.age = age;
+        this.legs = legs;
+        this.species = species;
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>public name</code>: Accessible from any class, subject to normal Java access rules.</li>
+    <li><code>protected age</code>: Accessible within the same package and through inheritance under Java's protected-access rules.</li>
+    <li><code>legs</code>: Package-private because no access modifier is specified; accessible within the same package.</li>
+    <li><code>private species</code>: Accessible only inside the declaring class.</li>
+    <li><code>static count</code>: Shared across instances of the class.</li>
+    <li><code>final category</code>: Cannot be reassigned after initialization.</li>
+</ul>
+
+<p><strong>Rule:</strong> Abstract classes can have instance variables, static variables, constants, and all four access levels: <code>public</code>, <code>protected</code>, package-private, and <code>private</code>.</p>
+
+<hr>
+
+<h5>C. Instance Variables — What Are They?</h5>
+
+<pre><code>abstract class Animal {
+    String name; // Instance variable
+
+    Animal(String name) {
+        this.name = name;
+    }
+}
+
+class Dog extends Animal {
+    Dog(String name) {
+        super(name);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Dog d1 = new Dog("Tommy");
+        Dog d2 = new Dog("Bruno");
+
+        System.out.println(d1.name);
+        System.out.println(d2.name);
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+
+<pre><code>Tommy
+Bruno</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>name</code> is an instance variable because each object has its own copy.</li>
+    <li><code>d1.name</code> stores <code>Tommy</code>.</li>
+    <li><code>d2.name</code> stores <code>Bruno</code>.</li>
+    <li>An interface cannot declare this kind of per-object field.</li>
+</ul>
+
+<hr>
+
+<h5>D. Quick Comparison — Variables and Access Modifiers</h5>
+
+<table>
+    <thead>
+        <tr>
+            <th>Feature</th>
+            <th>Interface</th>
+            <th>Abstract Class</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Instance variables</td>
+            <td>Not allowed</td>
+            <td>Allowed</td>
+        </tr>
+        <tr>
+            <td>Static variables</td>
+            <td>Allowed; must be initialized and are public static final</td>
+            <td>Allowed</td>
+        </tr>
+        <tr>
+            <td>Constants</td>
+            <td>All fields are constants</td>
+            <td>Allowed using final</td>
+        </tr>
+        <tr>
+            <td>public fields</td>
+            <td>Allowed; implicitly public static final</td>
+            <td>Allowed</td>
+        </tr>
+        <tr>
+            <td>protected fields</td>
+            <td>Not allowed</td>
+            <td>Allowed</td>
+        </tr>
+        <tr>
+            <td>private fields</td>
+            <td>Not allowed</td>
+            <td>Allowed</td>
+        </tr>
+        <tr>
+            <td>Package-private fields</td>
+            <td>Not allowed</td>
+            <td>Allowed</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="tip">
+    <strong>Interview shortcut:</strong><br>
+    Interface = Constants only; no instance state.<br>
+    Abstract class = Can store object-specific data and shared class data.<br>
+    Abstract class variables can use all four access levels.
+</div>
+
+<h4>6. Object Creation — Neither Can Be Instantiated Directly</h4>
+
+<pre><code>interface Animal {
+    void sound();
+}
+
+abstract class Vehicle {
+    abstract void start();
+}
+
+// Invalid:
+// Animal a = new Animal();
+// Vehicle v = new Vehicle();
+
+class Dog implements Animal {
+    public void sound() {
+        System.out.println("Dog barks");
+    }
+}
+
+class Car extends Vehicle {
+    void start() {
+        System.out.println("Car starts");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Animal a = new Dog();
+        Vehicle v = new Car();
+
+        a.sound();
+        v.start();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Dog barks
+Car starts</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>You cannot create an object directly from an interface or an abstract class.</li>
+    <li>You can use an interface or abstract class as a reference type for a concrete object.</li>
+</ul>
+
+<hr>
+
+<h4>7. State — Per-Object Data vs Interface Constants</h4>
+
+<pre><code>interface Animal {
+    int LEGS = 4;
+}
+
+abstract class Person {
+    String name;
+
+    Person(String name) {
+        this.name = name;
+    }
+}
+
+class Student extends Person {
+    Student(String name) {
+        super(name);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Student s1 = new Student("Rahul");
+        Student s2 = new Student("Priya");
+
+        System.out.println(s1.name);
+        System.out.println(s2.name);
+        System.out.println(Animal.LEGS);
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Rahul
+Priya
+4</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>s1.name</code> and <code>s2.name</code> store different values for different objects.</li>
+    <li><code>Animal.LEGS</code> is a shared constant, not per-object state.</li>
+    <li>An interface cannot declare ordinary instance fields, but it can define constants.</li>
+</ul>
+
+<div class="tip">
+    <strong>Interview Summary</strong><br>
+    Interface = Contract that classes agree to follow, with constants and supported method implementations.<br>
+    Abstract class = Common data and reusable behavior, plus methods that subclasses may be required to implement.
+</div>
+
+
+<h3>5. When and Why Should You Use an Interface?</h3>
+
+<p><strong>Use an interface when different classes need to follow the same contract, even if they are unrelated.</strong></p>
+
+<p>Example: UPI, Credit Card and Net Banking all support payment, but their implementations differ.</p>
+
+<pre><code>interface Payment {
+    void pay(double amount);
+}
+
+class UpiPayment implements Payment {
+    public void pay(double amount) {
+        System.out.println("UPI payment");
+    }
+}
+
+class CardPayment implements Payment {
+    public void pay(double amount) {
+        System.out.println("Card payment");
+    }
+}</code></pre>
+
+<p><strong>Why?</strong></p>
+
+<ul>
+    <li>Supports multiple interfaces on one class.</li>
+    <li>Reduces dependency on concrete implementations.</li>
+    <li>Makes implementations easier to replace and test.</li>
+    <li>Allows different classes to share a common type.</li>
+</ul>
+
+<h3>6. When and Why Should You Use an Abstract Class?</h3>
+
+<p><strong>Use an abstract class when closely related classes need shared data or common implementation.</strong></p>
+
+<p>Example: PermanentEmployee and ContractEmployee may share employee ID, name and login logic, but calculate salary differently.</p>
+
+<h4>Example: Abstract Class — Employee</h4>
+
+<pre><code>abstract class Employee {
+    int id;
+    String name;
+
+    Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    void login() {
+        System.out.println(name + " logged in");
+    }
+
+    abstract double calculateSalary();
+}
+
+class PermanentEmployee extends Employee {
+    double monthlySalary;
+
+    PermanentEmployee(int id, String name, double monthlySalary) {
+        super(id, name);
+        this.monthlySalary = monthlySalary;
+    }
+
+    @Override
+    double calculateSalary() {
+        return monthlySalary;
+    }
+}
+
+class ContractEmployee extends Employee {
+    double hourlyRate;
+    int hoursWorked;
+
+    ContractEmployee(int id, String name,
+                     double hourlyRate, int hoursWorked) {
+        super(id, name);
+        this.hourlyRate = hourlyRate;
+        this.hoursWorked = hoursWorked;
+    }
+
+    @Override
+    double calculateSalary() {
+        return hourlyRate * hoursWorked;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e1 =
+            new PermanentEmployee(101, "Rahul", 50000);
+
+        Employee e2 =
+            new ContractEmployee(102, "Priya", 500, 80);
+
+        e1.login();
+        System.out.println("Salary: " + e1.calculateSalary());
+
+        e2.login();
+        System.out.println("Salary: " + e2.calculateSalary());
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Rahul logged in
+Salary: 50000.0
+Priya logged in
+Salary: 40000.0</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li><strong>Common data:</strong> <code>id</code> and <code>name</code> are shared through inheritance.</li>
+    <li><strong>Common method:</strong> Both employee types reuse the <code>login()</code> method.</li>
+    <li><strong>Abstract method:</strong> Each concrete subclass implements <code>calculateSalary()</code> differently.</li>
+    <li><strong><code>super(id, name)</code>:</strong> Calls the parent constructor to initialize employee data.</li>
+    <li><strong>Polymorphism:</strong> The <code>Employee</code> reference can point to different employee objects, and Java calls the appropriate salary implementation.</li>
+</ul>
+
+**Remember:** An abstract class provides common data and reusable methods while requiring concrete subclasses to implement their own salary calculation.
+
+<p><strong>Why?</strong></p>
+
+<ul>
+    <li>Provides shared instance variables and state.</li>
+    <li>Supports constructors for common initialization.</li>
+    <li>Reduces duplicated code among related classes.</li>
+    <li>Allows common methods and mandatory subclass methods together.</li>
+</ul>
+
+<h3>7. Newer Interface Features in Java</h3>
+
+<p>Important interface features were introduced across different Java versions.</p>
+
+<ul>
+    <li><strong>Java 8 — Default methods:</strong> Methods with a body that implementing classes can inherit or override.</li>
+    <li><strong>Java 8 — Static methods:</strong> Utility methods called using the interface name.</li>
+    <li><strong>Java 9 — Private methods:</strong> Helper methods used inside the interface to share code between its methods.</li>
+    <li><strong>Java 9 — Private static methods:</strong> Static helper methods used internally by the interface.</li>
+    <li><strong>Java 17 — Sealed interfaces:</strong> Can restrict which classes or interfaces may directly implement or extend them.</li>
+</ul>
+
+<h4>Example: Default, Static and Private Methods</h4>
+
+<pre><code>interface Payment {
+    void pay(double amount);
+
+    default void receipt() {
+        printHeader();
+        System.out.println("Receipt generated");
+    }
+
+    static void info() {
+        System.out.println("Payment service");
+    }
+
+    private void printHeader() {
+        System.out.println("Payment receipt");
+    }
+}
+
+class UpiPayment implements Payment {
+    public void pay(double amount) {
+        System.out.println("Paid: " + amount);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        UpiPayment p = new UpiPayment();
+
+        p.pay(500);
+        p.receipt();
+        Payment.info();
+    }
+}</code></pre>
+
+
+<h4>Example: Abstract Class — Different Types of Methods</h4>
+
+<pre><code>abstract class Payment {
+    // Abstract method: subclass must implement it
+    abstract void pay(double amount);
+
+    // Concrete method: shared implementation
+    public void receipt() {
+        printHeader();
+        System.out.println("Receipt generated");
+    }
+
+    // Static method: belongs to the class
+    public static void info() {
+        System.out.println("Payment service");
+    }
+
+    // Private method: accessible only inside this class
+    private void printHeader() {
+        System.out.println("Payment receipt");
+    }
+
+    // Protected method: accessible to subclasses
+    protected void validateAmount(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException(
+                "Amount must be greater than zero"
+            );
+        }
+    }
+}
+
+class UpiPayment extends Payment {
+    @Override
+    public void pay(double amount) {
+        validateAmount(amount);
+        System.out.println("Paid using UPI: " + amount);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        UpiPayment p = new UpiPayment();
+
+        p.pay(500);
+        p.receipt();
+        Payment.info();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Paid using UPI: 500.0
+Payment receipt
+Receipt generated
+Payment service</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li><strong>Abstract method — <code>pay()</code>:</strong> Declares what the subclass must implement; it has no method body.</li>
+    <li><strong>Concrete method — <code>receipt()</code>:</strong> Provides common code that subclasses inherit and reuse.</li>
+    <li><strong>Static method — <code>info()</code>:</strong> Called using <code>Payment.info()</code>; it does not require an object.</li>
+    <li><strong>Private method — <code>printHeader()</code>:</strong> Used internally by <code>Payment</code>. The subclass cannot call it directly.</li>
+    <li><strong>Protected method — <code>validateAmount()</code>:</strong> Allows subclasses to reuse the validation logic.</li>
+</ul>
+
+<hr>
+
+<h4>Method Types: Interface vs Abstract Class</h4>
+
+<ul>
+    <li><strong>Abstract methods:</strong> Both can declare abstract methods.</li>
+    <li><strong>Concrete methods:</strong> An interface uses <code>default</code> methods for inherited instance behavior; an abstract class can use ordinary concrete methods.</li>
+    <li><strong>Static methods:</strong> Both support static methods, called using the declaring type.</li>
+    <li><strong>Private methods:</strong> Both support private methods for internal code reuse.</li>
+    <li><strong>Access modifiers:</strong> Abstract-class methods can use <code>public</code>, <code>protected</code>, package-private, or <code>private</code> access. Interface methods have more specific rules: abstract methods are implicitly public, while default and static methods are public unless private is explicitly used for a private method.</li>
+</ul>
+
+<div class="tip">
+    <strong>Remember:</strong><br>
+    Interface = Contract plus supported default and static behavior.<br>
+    Abstract class = Contract plus shared behavior, state, and flexible access control.
+</div>
+
+
+<h4>Output</h4>
+
+<pre><code>Paid: 500.0
+Payment receipt
+Receipt generated
+Payment service</code></pre>
+
+<p>
+    <strong>Note:</strong> The private method is only an internal helper.
+    Implementing classes cannot call it directly.
+</p>
+
+<h3>8. Newer Abstract Class and Class Features</h3>
+
+<p>
+    Abstract classes already support constructors, fields, abstract methods,
+    concrete methods and private helper methods. Modern Java also adds useful
+    features for class hierarchies.
+</p>
+
+<ul>
+    <li><strong>Java 9 — Private interface methods:</strong> These are an interface feature, not a new abstract-class feature.</li>
+    <li><strong>Java 16 — Records:</strong> A concise way to declare data-carrier classes. Records cannot extend an abstract class because they already extend <code>Record</code>.</li>
+    <li><strong>Java 17 — Sealed classes:</strong> Restrict which classes can extend an abstract class or another class.</li>
+</ul>
+
+<h4>Example: Sealed Abstract Class (Java 17+)</h4>
+
+<pre><code>abstract sealed class Employee
+        permits PermanentEmployee, ContractEmployee {
+    abstract double calculateSalary();
+}
+
+final class PermanentEmployee extends Employee {
+    @Override
+    double calculateSalary() {
+        return 50000;
+    }
+}
+
+final class ContractEmployee extends Employee {
+    @Override
+    double calculateSalary() {
+        return 30000;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee e = new PermanentEmployee();
+        System.out.println(e.calculateSalary());
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>50000.0</code></pre>
+
+<p>
+    <strong>Explanation:</strong> The sealed abstract class restricts its direct
+    subclasses to the classes listed in <code>permits</code>. Here, both permitted
+    subclasses are final, so they cannot be extended further.
+</p>
+
+<h3>9. Nested Interface</h3>
+
+<p>
+    A nested interface is an interface declared inside another class or interface.
+    It is useful when the contract belongs closely to the enclosing type.
+</p>
+
+<pre><code>class Computer {
+    interface USBDevice {
+        void connect();
+    }
+}
+
+class Mouse implements Computer.USBDevice {
+    public void connect() {
+        System.out.println("Mouse connected");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Computer.USBDevice device = new Mouse();
+        device.connect();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Mouse connected</code></pre>
+
+<p>
+    <strong>Remember:</strong> A member interface inside a class is implicitly
+    static. It is referenced using <code>Computer.USBDevice</code>, without
+    creating a Computer object.
+</p>
+
+<h3>10. Nested Abstract Class</h3>
+
+<p>
+    A nested abstract class is an abstract class declared inside another class.
+    It is useful for grouping a related base class inside its enclosing class.
+</p>
+
+<pre><code>class PaymentService {
+    abstract static class Payment {
+        abstract void pay();
+    }
+}
+
+class UpiPayment extends PaymentService.Payment {
+    @Override
+    void pay() {
+        System.out.println("Paid using UPI");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        PaymentService.Payment p = new UpiPayment();
+        p.pay();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Paid using UPI</code></pre>
+
+<p>
+    <strong>Explanation:</strong> The abstract class <code>Payment</code> is
+    nested inside <code>PaymentService</code>. It is declared static, so
+    <code>UpiPayment</code> can extend it without needing a PaymentService object.
+</p>
+
+<p>
+    <strong>Important:</strong> A nested abstract class can also be a non-static
+    inner class, but then creating and extending it involves the enclosing
+    instance. Use a static nested class when that outer instance is unnecessary.
+</p>
+<h3>11. Interface Extends Interface, Then a Class Implements It</h3>
+
+<p>
+    An interface can extend another interface using <code>extends</code>.
+    A class implements the child interface using <code>implements</code>
+    and must implement all inherited abstract methods.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>interface Animal {
+    void eat();
+}
+
+interface Dog extends Animal {
+    void bark();
+}
+
+class Labrador implements Dog {
+    @Override
+    public void eat() {
+        System.out.println("Dog eats");
+    }
+
+    @Override
+    public void bark() {
+        System.out.println("Dog barks");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Labrador dog = new Labrador();
+
+        dog.eat();
+        dog.bark();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Dog eats
+Dog barks</code></pre>
+
+<h4>Structure</h4>
+
+<pre>
+Interface Animal
+       |
+       | extends
+       v
+Interface Dog
+       |
+       | implements
+       v
+Class Labrador
+</pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li><code>Dog</code> inherits the <code>eat()</code> method declaration from <code>Animal</code>.</li>
+    <li><code>Dog</code> also declares the <code>bark()</code> method.</li>
+    <li><code>Labrador</code> implements <code>Dog</code>, so it must implement both methods.</li>
+</ul>
+
+<p><strong>Important:</strong> An interface can extend multiple interfaces.</p>
+
+<pre><code>interface Camera {
+    void takePhoto();
+}
+
+interface Phone {
+    void call();
+}
+
+interface SmartPhone extends Camera, Phone {
+}</code></pre>
+
+<p>A class implementing <code>SmartPhone</code> must implement both inherited methods.</p>
+
+<h3>12. Abstract Class Extends Abstract Class, Then a Concrete Class Extends It</h3>
+
+<p>
+    An abstract class can extend another abstract class using
+    <code>extends</code>. An abstract subclass can leave abstract methods
+    unimplemented. A concrete subclass must implement all remaining abstract methods.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>abstract class Animal {
+    abstract void eat();
+
+    void sleep() {
+        System.out.println("Animal sleeps");
+    }
+}
+
+abstract class Dog extends Animal {
+    abstract void bark();
+}
+
+class Labrador extends Dog {
+    @Override
+    void eat() {
+        System.out.println("Dog eats");
+    }
+
+    @Override
+    void bark() {
+        System.out.println("Dog barks");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Labrador dog = new Labrador();
+
+        dog.eat();
+        dog.sleep();
+        dog.bark();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Dog eats
+Animal sleeps
+Dog barks</code></pre>
+
+<h4>Structure</h4>
+
+<pre>
+Abstract class Animal
+       |
+       | extends
+       v
+Abstract class Dog
+       |
+       | extends
+       v
+Concrete class Labrador
+</pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li><code>Animal</code> declares the abstract method <code>eat()</code> and provides the concrete method <code>sleep()</code>.</li>
+    <li><code>Dog</code> extends <code>Animal</code> and declares another abstract method, <code>bark()</code>.</li>
+    <li><code>Labrador</code> implements both abstract methods and inherits <code>sleep()</code>.</li>
+</ul>
+
+<h3>13. Quick Rules: extends vs implements</h3>
+
+<ul>
+    <li><strong>Interface → Interface:</strong> Use <code>extends</code>.</li>
+    <li><strong>Class → Interface:</strong> Use <code>implements</code>.</li>
+    <li><strong>Abstract class → Abstract class:</strong> Use <code>extends</code>.</li>
+    <li><strong>Concrete class → Abstract class:</strong> Use <code>extends</code> and implement remaining abstract methods.</li>
+    <li><strong>Class → Class:</strong> A class can extend only one class.</li>
+    <li><strong>Class → Multiple interfaces:</strong> A class can implement multiple interfaces.</li>
+</ul>
+
+<div class="tip">
+    <strong>Interview recall:</strong><br>
+    Interface → Interface: <code>extends</code><br>
+    Interface → Class: <code>implements</code><br>
+    Abstract class → Abstract class: <code>extends</code><br>
+    Abstract class → Concrete class: <code>extends</code>, then implement remaining abstract methods.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style>
+
+<h1>Interface vs Abstract Class in Java</h1>
+
+<div class="section">
+    <h2>1. Interface — Defines a Contract</h2>
+
+    <p>
+        A <b>contract</b> means a rule that a class agrees to follow.
+        An interface defines what methods a class must provide.
+    </p>
+
+    <p>Example: Every animal must provide its own sound.</p>
+
+<pre><code>interface Animal {
+    void sound();
+}
+
+class Dog implements Animal {
+    public void sound() {
+        System.out.println("Dog barks");
+    }
+}
+
+class Cat implements Animal {
+    public void sound() {
+        System.out.println("Cat meows");
+    }
+}</code></pre>
+
+    <h3>Output</h3>
+    <div class="output">
+        Dog barks<br>
+        Cat meows
+    </div>
+
+    <h3>How does the contract work?</h3>
+    <ul>
+        <li><code>Animal</code> says that a <code>sound()</code> method must be provided.</li>
+        <li><code>Dog</code> provides the dog-specific sound.</li>
+        <li><code>Cat</code> provides the cat-specific sound.</li>
+        <li>If a concrete class fails to implement the required abstract method, Java reports a compilation error.</li>
+    </ul>
+
+    <div class="tip">
+        <b>Remember:</b> Interface = What must be done.
+    </div>
+</div>
+
+<div class="section">
+    <h2>2. Abstract Class — Shares Common Data and Methods</h2>
+
+    <p>
+        An abstract class provides common data and implemented methods
+        that child classes can reuse. It can also declare abstract methods
+        that child classes must implement.
+    </p>
+
+    <p>Example: All animals have a name and can eat.</p>
+
+<pre><code>abstract class Animal {
+    String name;
+
+    Animal(String name) {
+        this.name = name;
+    }
+
+    void eat() {
+        System.out.println(name + " is eating");
+    }
+
+    abstract void sound();
+}
+
+class Dog extends Animal {
+    Dog(String name) {
+        super(name);
+    }
+
+    void sound() {
+        System.out.println(name + " barks");
+    }
+}
+
+class Cat extends Animal {
+    Cat(String name) {
+        super(name);
+    }
+
+    void sound() {
+        System.out.println(name + " meows");
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        Dog dog = new Dog("Tommy");
+        Cat cat = new Cat("Kitty");
+
+        dog.eat();
+        dog.sound();
+
+        cat.eat();
+        cat.sound();
+    }
+}</code></pre>
+
+    <h3>Output</h3>
+    <div class="output">
+        Tommy is eating<br>
+        Tommy barks<br>
+        Kitty is eating<br>
+        Kitty meows
+    </div>
+
+    <h3>How does common sharing work?</h3>
+    <ul>
+        <li><code>Animal</code> provides the shared <code>name</code> field.</li>
+        <li><code>Animal</code> provides the shared <code>eat()</code> method.</li>
+        <li><code>Dog</code> and <code>Cat</code> reuse these without rewriting them.</li>
+        <li>Each child class implements its own <code>sound()</code> method.</li>
+    </ul>
+
+    <div class="tip">
+        <b>Remember:</b> Abstract class = What is common + what child classes must implement.
+    </div>
+</div>
+
+<div class="section">
+    <h2>3. Visual Difference</h2>
+
+    <h3>Interface: Contract</h3>
+<pre><code>          Animal (interface)
+          sound() must be provided
+                 |
+          -----------------
+          |               |
+        Dog               Cat
+      implements        implements
+       sound()           sound()</code></pre>
+
+    <h3>Abstract Class: Common Sharing</h3>
+<pre><code>          Animal (abstract class)
+          -----------------------
+          name (common data)
+          eat() (common method)
+          sound() (must be implemented)
+                 |
+          -----------------
+          |               |
+        Dog               Cat
+       reuses            reuses
+       name, eat()       name, eat()
+       defines sound()   defines sound()</code></pre>
+</div>
+
+<div class="section">
+    <h2>4. Can an Interface Also Share Methods?</h2>
+
+    <p>Yes. Modern Java interfaces can contain <code>default</code> and <code>static</code> methods, as well as constants.</p>
+
+<pre><code>interface Animal {
+    void sound();
+
+    default void sleep() {
+        System.out.println("Animal is sleeping");
+    }
+}</code></pre>
+
+    <p>
+        A class implementing this interface gets the default
+        <code>sleep()</code> behavior unless it overrides it.
+        However, interfaces do not provide ordinary per-object instance
+        fields or constructors like abstract classes do.
+    </p>
+</div>
+
+<div class="section">
+    <h2>5. Interview Summary</h2>
+
+    <ul>
+        <li><b>Interface:</b> Defines a contract — what a class must do.</li>
+        <li><b>Abstract class:</b> Shares common state and behavior, and can define methods subclasses must implement.</li>
+        <li><b>Interface:</b> A class can implement multiple interfaces.</li>
+        <li><b>Abstract class:</b> A class can extend only one class.</li>
+    </ul>
+
+    <p class="tip">
+        <b>Easy way to remember:</b><br>
+        Interface = Rules to follow.<br>
+        Abstract class = Common code to reuse.
+    </p>
+</div>
+
+
+<h4>Difference Between Default Method and Concrete Method</h4>
+
+<h5>1. What is a Concrete Method?</h5>
+
+<p>
+    A concrete method is a method that has actual code to perform a task.
+</p>
+
+<pre><code>abstract class Animal {
+    void eat() {
+        System.out.println("Eating");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>eat()</code> has a method body containing actual code.</li>
+    <li>Therefore, <code>eat()</code> is a concrete method.</li>
+    <li>Even though <code>Animal</code> is an abstract class, its <code>eat()</code> method is concrete.</li>
+</ul>
+
+<hr>
+
+<h5>2. What is a Default Method?</h5>
+
+<p>
+    A default method is a method inside an interface that has actual code
+    and uses the <code>default</code> keyword.
+</p>
+
+<pre><code>interface Animal {
+    default void eat() {
+        System.out.println("Eating");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>eat()</code> has a method body containing actual code.</li>
+    <li>The <code>default</code> keyword allows the interface to provide a ready-made instance method.</li>
+    <li>An implementing class can use this method without writing it again.</li>
+</ul>
+
+<hr>
+
+<h5>3. Compare Both Methods</h5>
+
+<pre><code>// Concrete method in a class
+void eat() {
+    System.out.println("Eating");
+}
+
+// Default method in an interface
+default void eat() {
+    System.out.println("Eating");
+}</code></pre>
+
+<p>
+    Both methods contain actual code and can provide reusable behavior.
+    The difference is where they are declared and how they are defined.
+</p>
+
+<ul>
+    <li><strong>Concrete:</strong> Describes a method that has an implementation.</li>
+    <li><strong>Default:</strong> Names a specific type of implemented instance method in an interface.</li>
+</ul>
+
+<div class="tip">
+    <strong>Remember:</strong> A default method also has an implementation.
+    It is called a default method because it is declared in an interface
+    using the <code>default</code> keyword.
+</div>
+
+
+<h3>Understanding Concrete, Default, Instance and Other Methods</h3>
+
+Concrete: Describes a method that has an implementation.
+Default: Names a specific type of implemented instance method in an interface.
+
+<h4>1. Concrete: What does the method have?</h4>
+
+<p>
+    A concrete method is a method that has an implementation.
+    Implementation means the actual code that performs a task.
+</p>
+
+<pre><code>void eat() {
+    System.out.println("Eating");
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>The method has a body containing actual code.</li>
+    <li>Java knows what to do when <code>eat()</code> is called.</li>
+    <li>Therefore, <code>eat()</code> is a concrete method.</li>
+</ul>
+
+<p>Compare it with an abstract method:</p>
+
+<pre><code>abstract void eat();</code></pre>
+
+<p>
+    This declares the method but does not provide its implementation.
+    A concrete subclass must implement it unless that subclass is also abstract.
+</p>
+
+<hr>
+
+<h4>2. Default: A specific type of method in an interface</h4>
+
+<pre><code>interface Animal {
+    default void eat() {
+        System.out.println("Eating");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>The method has actual code.</li>
+    <li>It is declared inside an interface using the <code>default</code> keyword.</li>
+    <li>An implementing class can use this method without writing it again.</li>
+</ul>
+
+<pre><code>class Dog implements Animal {
+}
+
+Dog d = new Dog();
+d.eat();</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Eating</code></pre>
+
+<p>
+    <strong>Remember:</strong> <u>Concrete describes a method with an implementation.
+    Default identifies an implemented instance method declared in an interface
+    using the <code>default</code> keyword.</u>
+</p>
+
+<hr>
+
+<h4>3. What is an Instance Method?</h4>
+
+<p>
+    An instance method is a method that belongs to an object.
+    You normally call it using an object reference.
+</p>
+
+<pre><code>class Animal {
+    void eat() {
+        System.out.println("Eating");
+    }
+}
+
+Animal a = new Animal();
+a.eat();</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Eating</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>eat()</code> is an instance method because it is called using the object <code>a</code>.</li>
+    <li>Instance methods can access instance variables and other accessible instance methods.</li>
+    <li>Instance methods can be concrete or abstract. A default interface method is also an instance method.</li>
+</ul>
+
+<hr>
+
+<h4>4. What is a Static Method?</h4>
+
+<p>
+    A static method belongs to the class or interface itself, rather than to an individual object.
+</p>
+
+<pre><code>class Animal {
+    static void info() {
+        System.out.println("Animals are living beings");
+    }
+}
+
+Animal.info();</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Animals are living beings</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>The <code>static</code> keyword declares a static method.</li>
+    <li>You can call it using the class name without creating an object.</li>
+    <li>A static method cannot directly access instance variables because those belong to individual objects.</li>
+</ul>
+
+<hr>
+
+<h4>5. What is an Abstract Method?</h4>
+
+<p>
+    An abstract method declares what a method must do, but does not provide its implementation.
+</p>
+
+<pre><code>abstract class Animal {
+    abstract void sound();
+}
+
+class Dog extends Animal {
+    @Override
+    void sound() {
+        System.out.println("Dog barks");
+    }
+}</code></pre>
+
+<p><strong>Output when called:</strong></p>
+<pre><code>Dog barks</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>abstract void sound();</code> has no method body.</li>
+    <li><code>Dog</code> provides the implementation.</li>
+    <li>A concrete subclass must implement inherited abstract methods unless they have already been implemented.</li>
+</ul>
+
+<hr>
+
+<h4>6. What Does the Default Keyword Mean?</h4>
+
+<p>
+    In this context, <code>default</code> is used to provide an instance method implementation in an interface.
+</p>
+
+<pre><code>interface Animal {
+    default void sleep() {
+        System.out.println("Animal is sleeping");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>default</code> is not the same as <code>static</code>.</li>
+    <li>A default method can be inherited and overridden by an implementing class.</li>
+    <li>A static interface method is called using the interface name and is not inherited as an instance method.</li>
+</ul>
+
+<pre><code>interface Animal {
+    default void eat() {
+        System.out.println("Eating");
+    }
+
+    static void info() {
+        System.out.println("Animal information");
+    }
+}
+
+class Dog implements Animal {
+}
+
+Dog d = new Dog();
+d.eat();        // Instance method
+Animal.info();  // Static method</code></pre>
+
+<hr>
+
+<h4>7. Quick Comparison</h4>
+
+<table>
+    <thead>
+        <tr>
+            <th>Term</th>
+            <th>Simple meaning</th>
+            <th>Where used</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Concrete method</td>
+            <td>Method with an implementation</td>
+            <td>Classes and other supported declarations</td>
+        </tr>
+        <tr>
+            <td>Default method</td>
+            <td>Implemented instance method declared with <code>default</code></td>
+            <td>Interface</td>
+        </tr>
+        <tr>
+            <td>Instance method</td>
+            <td>Method associated with an object</td>
+            <td>Classes; interface instance methods include default methods</td>
+        </tr>
+        <tr>
+            <td>Static method</td>
+            <td>Method associated with a class or interface</td>
+            <td>Class or interface</td>
+        </tr>
+        <tr>
+            <td>Abstract method</td>
+            <td>Method declared without an implementation</td>
+            <td>Abstract class or interface</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="tip">
+    <strong>Easy memory trick:</strong><br>
+    Concrete = Has actual code.<br>
+    Default = Interface method with a ready-made implementation.<br>
+    Instance = Associated with an object.<br>
+    Static = Associated with the class or interface.<br>
+    Abstract = Declared without method implementation.
+</div>
+
+
+
+<h3>11. Quick Interview Decision</h3>
+
+<ul>
+    <li><strong>Choose interface:</strong> When you need a contract, multiple capabilities, or loose coupling.</li>
+    <li><strong>Choose abstract class:</strong> When related classes need shared state, constructors and common implementation.</li>
+    <li><strong>Choose both:</strong> When you need a reusable base implementation and a separate contract. An abstract class can implement an interface.</li>
+    <li><strong>Nested interface:</strong> Use when a contract is closely related to its enclosing type.</li>
+    <li><strong>Nested abstract class:</strong> Use when a reusable base class belongs conceptually inside another type.</li>
+</ul>
+
+<div class="tip">
+    <strong>Interview recall:</strong><br>
+    Interface = Contract and multiple capabilities.<br>
+    Abstract class = Shared state and common behavior.<br>
+    Default method = Interface method with a body (Java 8).<br>
+    Private interface method = Internal helper (Java 9).<br>
+    Sealed type = Restricts permitted subclasses or implementors (Java 17).<br>
+    Nested type = Declared inside another type.
+</div>
+
+<style>
+pre {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+.tip {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eaf4ff;
+    border-left: 4px solid #2878c8;
+}
+</style>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -1958,7 +4795,440 @@ pre {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint"><h4>1. What Is Multiple Inheritance?</h4>
+
+<p>
+    Multiple inheritance means a child class inherits from more than one parent class.
+</p>
+
+<pre><code>// Java does not allow this
+
+class A {
+    void show() {
+        System.out.println("A");
+    }
+}
+
+class B {
+    void show() {
+        System.out.println("B");
+    }
+}
+
+// Compilation error: Java does not allow
+// a class to extend two classes directly.
+// class C extends A, B { }</code></pre>
+
+<hr>
+
+<h4>2. The Problem: Which Method Should Java Call?</h4>
+
+<p>Imagine a language that allows this inheritance structure:</p>
+
+<pre><code>        A       B
+         \     /
+          \   /
+            C</code></pre>
+
+<p>
+    Both parent classes have a method named <code>show()</code>.
+    If class C inherits both methods, which implementation should it use?
+</p>
+
+<ul>
+    <li>Should it call A's <code>show()</code>?</li>
+    <li>Should it call B's <code>show()</code>?</li>
+</ul>
+
+<p>
+    This creates ambiguity if the language does not define a clear rule
+    for choosing between the inherited implementations.
+</p>
+
+<hr>
+
+<h4>3. The Diamond Problem</h4>
+
+<pre><code>        A
+       / \
+      B   C
+       \ /
+        D</code></pre>
+
+<p>
+    Suppose A defines a method called <code>show()</code>.
+    Classes B and C inherit A and provide different implementations
+    of <code>show()</code>. If D inherits from both B and C,
+    it may be unclear which implementation D should use.
+</p>
+
+<p>
+    This is called the <strong>Diamond Problem</strong>, because the
+    inheritance structure resembles a diamond.
+</p>
+
+<hr>
+
+<h4>4. How Does Java Allow Similar Flexibility?</h4>
+
+<p>
+    Java allows a class to extend one class and implement multiple interfaces.
+</p>
+
+<pre><code>interface Camera {
+    void takePhoto();
+}
+
+interface Phone {
+    void makeCall();
+}
+
+class SmartPhone implements Camera, Phone {
+
+    public void takePhoto() {
+        System.out.println("Taking photo");
+    }
+
+    public void makeCall() {
+        System.out.println("Making call");
+    }
+}</code></pre>
+
+<p><strong>Output when both methods are called:</strong></p>
+
+<pre><code>Taking photo
+Making call</code></pre>
+
+<p>
+    This allows a class to follow multiple interface contracts without
+    inheriting implementation from multiple classes.
+</p>
+
+<div class="tip">
+    <strong>Interview answer:</strong>
+    Java does not support multiple inheritance through classes to avoid
+    ambiguity and complexity when inheriting state and method implementations
+    from multiple parent classes. Instead, Java allows a class to implement
+    multiple interfaces.
+</div></p>
+
+
+<h3>How Is the Diamond Problem Resolved in Java?</h3>
+
+<h4>1. Diamond Structure</h4>
+
+<pre><code>        A
+       / \
+      B   C
+       \ /
+        D</code></pre>
+
+<ul>
+    <li><code>A</code> is the parent.</li>
+    <li><code>B</code> and <code>C</code> inherit from <code>A</code>.</li>
+    <li><code>D</code> inherits from both <code>B</code> and <code>C</code>.</li>
+</ul>
+
+<p>
+    If B and C provide different implementations of the same method,
+    D could face a conflict over which implementation to use.
+</p>
+
+<hr>
+
+<h4>2. Complete Java Example Using Interfaces</h4>
+
+<pre><code>interface B {
+    default void show() {
+        System.out.println("B's show()");
+    }
+}
+
+interface C {
+    default void show() {
+        System.out.println("C's show()");
+    }
+}
+
+class D implements B, C {
+
+    // Resolve the conflict by overriding show()
+    @Override
+    public void show() {
+        System.out.println("D resolves the conflict");
+
+        B.super.show();
+        C.super.show();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        D obj = new D();
+        obj.show();
+    }
+}</code></pre>
+
+<h4>3. Output</h4>
+
+<pre><code>D resolves the conflict
+B's show()
+C's show()</code></pre>
+
+<hr>
+
+<h4>4. How Is the Conflict Resolved?</h4>
+
+<p><strong>Step 1:</strong> Interface B provides its own <code>show()</code> implementation.</p>
+
+<pre><code>default void show() {
+    System.out.println("B's show()");
+}</code></pre>
+
+<p><strong>Step 2:</strong> Interface C also provides its own <code>show()</code> implementation.</p>
+
+<pre><code>default void show() {
+    System.out.println("C's show()");
+}</code></pre>
+
+<p><strong>Step 3:</strong> Class D implements both interfaces. Java requires D to resolve the conflicting default methods.</p>
+
+<pre><code>@Override
+public void show() {
+    System.out.println("D resolves the conflict");
+}</code></pre>
+
+<p><strong>Step 4:</strong> D can explicitly call either or both interface implementations.</p>
+
+<pre><code>B.super.show(); // Calls B's implementation
+C.super.show(); // Calls C's implementation</code></pre>
+
+<p>
+    D could instead provide completely new behavior without calling either
+    interface method.
+</p>
+
+<hr>
+
+<h4>5. Simple Real-Life Explanation</h4>
+
+<p>
+    Imagine two managers give you different instructions for the same task.
+    You ask your team leader to decide what to do.
+</p>
+
+<ul>
+    <li>Manager B says: "Print B."</li>
+    <li>Manager C says: "Print C."</li>
+    <li>Class D decides how to handle both instructions by overriding <code>show()</code>.</li>
+</ul>
+
+<div class="tip">
+    <strong>Interview answer:</strong>
+    Java allows a class to implement multiple interfaces. If two interfaces
+    provide conflicting default methods, the implementing class must
+    override the method to resolve the conflict. This avoids ambiguity
+    because Java does not arbitrarily choose one implementation.
+</div>
+
+
+<h3>Diamond Problem: User, ICICI Bank and UCO Bank</h3>
+
+<h4>1. Multiple Inheritance Through Classes — Not Allowed</h4>
+
+<p>Suppose both banks provide their own implementation of <code>showBalance()</code>.</p>
+
+<pre><code>class ICICIBank {
+    void showBalance() {
+        System.out.println("ICICI Bank balance");
+    }
+}
+
+class UCOBank {
+    void showBalance() {
+        System.out.println("UCO Bank balance");
+    }
+}
+
+// Invalid Java:
+// class User extends ICICIBank, UCOBank { }</code></pre>
+
+<p><strong>Why is this a problem?</strong></p>
+
+<pre><code> ICICIBank          UCOBank
+      \              /
+       \            /
+             User</code></pre>
+
+<p>If Java allowed this:</p>
+
+<pre><code>User u = new User();
+u.showBalance();</code></pre>
+
+<p>Which method should run?</p>
+<ul>
+    <li>ICICI Bank's <code>showBalance()</code>?</li>
+    <li>UCO Bank's <code>showBalance()</code>?</li>
+</ul>
+
+<p>Java avoids this ambiguity by not allowing a class to extend two classes.</p>
+
+<hr>
+
+<h4>2. Interfaces Without Default Methods</h4>
+
+<p>Here, each bank interface defines a contract, and the User class provides the implementation.</p>
+
+<pre><code>interface ICICIBank {
+    void showICICIBalance();
+}
+
+interface UCOBank {
+    void showUCOBalance();
+}
+
+class User implements ICICIBank, UCOBank {
+
+    public void showICICIBalance() {
+        System.out.println("ICICI balance: 5000");
+    }
+
+    public void showUCOBalance() {
+        System.out.println("UCO balance: 3000");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        User u = new User();
+
+        u.showICICIBalance();
+        u.showUCOBalance();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>User checks bank balance</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>Both interfaces declare <code>showBalance()</code>.</li>
+    <li>Neither interface provides an implementation.</li>
+    <li>The <code>User</code> class provides one implementation that satisfies both interfaces.</li>
+    <li>There is no ambiguity about which implementation to call.</li>
+</ul>
+
+<hr>
+
+<h4>3. Interfaces With Default Methods</h4>
+
+<p>Now both bank interfaces provide their own implementation of <code>showBalance()</code>.</p>
+
+<pre><code>interface ICICIBank {
+    default void showBalance() {
+        System.out.println("Showing ICICI Bank balance");
+    }
+}
+
+interface UCOBank {
+    default void showBalance() {
+        System.out.println("Showing UCO Bank balance");
+    }
+}
+
+class User implements ICICIBank, UCOBank {
+
+    @Override
+    public void showBalance() {
+        System.out.println("User chooses which bank to check");
+
+        ICICIBank.super.showBalance();
+        UCOBank.super.showBalance();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        User u = new User();
+        u.showBalance();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>User chooses which bank to check
+Showing ICICI Bank balance
+Showing UCO Bank balance</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>ICICI Bank provides its own <code>showBalance()</code> implementation.</li>
+    <li>UCO Bank also provides its own <code>showBalance()</code> implementation.</li>
+    <li>Java requires <code>User</code> to override the conflicting method.</li>
+    <li><code>ICICIBank.super.showBalance()</code> explicitly calls ICICI's implementation.</li>
+    <li><code>UCOBank.super.showBalance()</code> explicitly calls UCO's implementation.</li>
+</ul>
+
+<hr>
+
+<h4>4. Practical Example: Different Methods, No Conflict</h4>
+
+<p>In a real scenario, a user might check the balance at ICICI and withdraw money from UCO. If the methods have different names, both default methods can be inherited without conflict.</p>
+
+<pre><code>interface ICICIBank {
+    default void checkICICIBalance() {
+        System.out.println("Checking ICICI Bank balance");
+    }
+}
+
+interface UCOBank {
+    default void withdrawFromUCO() {
+        System.out.println("Withdrawing from UCO Bank");
+    }
+}
+
+class User implements ICICIBank, UCOBank {
+}
+
+public class Main {
+    public static void main(String[] args) {
+        User u = new User();
+
+        u.checkICICIBalance();
+        u.withdrawFromUCO();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+<pre><code>Checking ICICI Bank balance
+Withdrawing from UCO Bank</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>User</code> implements both bank interfaces.</li>
+    <li>Each interface has a different method name.</li>
+    <li>The User class inherits both implementations without overriding them.</li>
+</ul>
+
+<hr>
+
+<h4>5. Final Summary</h4>
+
+<ul>
+    <li><strong>Two classes:</strong> Java does not allow <code>User</code> to extend both bank classes.</li>
+    <li><strong>Two interfaces without default methods:</strong> <code>User</code> provides one implementation of the shared method.</li>
+    <li><strong>Two interfaces with conflicting default methods:</strong> <code>User</code> must override the method and resolve the conflict.</li>
+    <li><strong>Two interfaces with different method names:</strong> <code>User</code> can inherit both default methods directly.</li>
+</ul>
+
+<div class="tip">
+    <strong>Interview answer:</strong>
+    Java prevents multiple inheritance through classes to avoid ambiguity
+    when multiple parent classes provide competing implementations.
+    It allows multiple interfaces, requiring the implementing class to
+    resolve conflicts between matching default methods.
+</div>
+
+
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -1967,7 +5237,217 @@ pre {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>Runtime Polymorphism: Parent p = new Child()</h3>
+
+<h4>1. What Is Runtime Polymorphism?</h4>
+
+<p>
+    Runtime polymorphism means Java decides at runtime which overridden
+    instance method to execute based on the actual object.
+</p>
+
+<h4>Example 1: Parent Method Is Overridden by Child</h4>
+
+<pre><code>class Parent {
+    void show() {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() {
+        System.out.println("Child");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.show();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+
+<pre><code>Child</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>Parent p</code> means the reference type is Parent.</li>
+    <li><code>new Child()</code> creates a Child object.</li>
+    <li>Java executes Child's <code>show()</code> because Child overrides it.</li>
+</ul>
+
+<hr>
+
+<h4>2. What If the Child Does Not Override the Parent Method?</h4>
+
+<pre><code>class Parent {
+    void show() {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    // show() is not overridden
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.show();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+
+<pre><code>Parent</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>Child inherits <code>show()</code> from Parent.</li>
+    <li>Because Child does not override it, Parent's implementation executes.</li>
+    <li>This is valid Java code.</li>
+</ul>
+
+<hr>
+
+<h4>3. What If the Method Is Missing in the Parent?</h4>
+
+<p>
+    Suppose Child defines <code>show()</code>, but Parent does not.
+    Consider this example:
+</p>
+
+<pre><code>class Parent {
+    // No show() method
+}
+
+class Child extends Parent {
+    void show() {
+        System.out.println("Child");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.show(); // Compilation error
+    }
+}</code></pre>
+
+<p><strong>Result:</strong> Compilation error.</p>
+
+<p><strong>Why?</strong></p>
+<ul>
+    <li>The reference variable <code>p</code> has type Parent.</li>
+    <li>Parent does not declare or inherit a <code>show()</code> method.</li>
+    <li>The compiler checks whether <code>show()</code> is accessible through the reference type.</li>
+    <li>Even though the actual object is Child, the call <code>p.show()</code> is not allowed.</li>
+</ul>
+
+<p><strong>How can we call it?</strong></p>
+
+<pre><code>Child p = new Child();
+p.show();</code></pre>
+
+<p><strong>Output:</strong></p>
+
+<pre><code>Child</code></pre>
+
+<p>
+    Alternatively, add a <code>show()</code> method to Parent and override
+    it in Child.
+</p>
+
+<hr>
+
+<h4>4. What If the Parent Method Is Private?</h4>
+
+<pre><code>class Parent {
+    private void show() {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    void show() {
+        System.out.println("Child");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.show(); // Compilation error
+    }
+}</code></pre>
+
+<p><strong>Why?</strong></p>
+<ul>
+    <li>A private method is accessible only within its declaring class.</li>
+    <li>Child does not inherit Parent's private <code>show()</code> method as an overridable method.</li>
+    <li>Child's <code>show()</code> is a separate method, not an override of Parent's private method.</li>
+    <li>Calling <code>p.show()</code> fails because the method is not accessible through Parent.</li>
+</ul>
+
+<hr>
+
+<h4>5. What If the Parent Method Is Static?</h4>
+
+<pre><code>class Parent {
+    static void show() {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    static void show() {
+        System.out.println("Child");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.show();
+    }
+}</code></pre>
+
+<p><strong>Output:</strong></p>
+
+<pre><code>Parent</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>Static methods are hidden, not overridden.</li>
+    <li>The method call is resolved using the reference type, Parent.</li>
+    <li>Therefore, Parent's static method is called.</li>
+    <li>Prefer calling static methods using the class name, such as <code>Parent.show()</code>.</li>
+</ul>
+
+<hr>
+
+<h4>6. Quick Interview Summary</h4>
+
+<ul>
+    <li><strong>Parent method overridden:</strong> Child's implementation runs at runtime.</li>
+    <li><strong>Child does not override:</strong> Parent's inherited implementation runs.</li>
+    <li><strong>Method missing in Parent:</strong> Calling it through a Parent reference causes a compilation error.</li>
+    <li><strong>Parent method is private:</strong> It is not overridden; it is inaccessible through a Parent reference.</li>
+    <li><strong>Parent method is static:</strong> Method hiding applies; the reference type determines the call in this example.</li>
+</ul>
+
+<div class="tip">
+    <strong>Remember these two rules:</strong><br>
+    Compile time: The reference type determines which methods you are allowed to call.<br>
+    Runtime: The actual object determines which overridden instance method executes.
+	
+	This is called runtime polymorphism, also known as dynamic method dispatch. It applies to overridden instance methods, not static methods or fields.
+</div>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
