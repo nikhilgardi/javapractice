@@ -25,15 +25,15 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q12" class="completed"><span class="number">12.</span>What is the difference between an interface and an abstract class?</a>
 <a href="#q13" class="completed"><span class="number">13.</span>Why does Java not support multiple inheritance through classes?</a>
 <a href="#q14" class="completed"><span class="number">14.</span>What is runtime polymorphism? What happens with `Parent p = new Child()`?</a>
-<a href="#q15"><span class="number">15.</span>What is the difference between upcasting and downcasting?</a>
-<a href="#q16"><span class="number">16.</span>What is the difference between composition and inheritance?</a>
-<a href="#q17"><span class="number">17.</span>What are access modifiers and their visibility rules?</a>
-<a href="#q18"><span class="number">18.</span>What are covariant return types?</a>
-<a href="#q19"><span class="number">19.</span>What are default and static methods in interfaces? How are conflicting default methods resolved?</a>
-<a href="#q20"><span class="number">20.</span>What are enums, varargs, wrapper classes, autoboxing and unboxing?</a>
+<a href="#q15" class="completed"><span class="number">15.</span>What is the difference between upcasting and downcasting?</a>
+<a href="#q16" class="completed"><span class="number">16.</span>What is the difference between composition and inheritance?</a>
+<a href="#q17" class="completed"><span class="number">17.</span>What are access modifiers and their visibility rules?</a>
+<a href="#q18" class="completed"><span class="number">18.</span>What are covariant return types?</a>
+<a href="#q19" class="completed"><span class="number">19.</span>What are default and static methods in interfaces? How are conflicting default methods resolved?</a>
+<a href="#q20" class="completed"><span class="number">20.</span>What are enums, varargs, wrapper classes, autoboxing and unboxing?</a>
 <div class="topic">Strings, immutability and object contracts — 10 questions</div>
-<a href="#q21"><span class="number">21.</span>Why is `String` immutable? What is the String Constant Pool?</a>
-<a href="#q22"><span class="number">22.</span>Compare `String`, `StringBuilder` and `StringBuffer`.</a>
+<a href="#q21" class="completed"><span class="number">21.</span>Why is `String` immutable? What is the String Constant Pool?</a>
+<a href="#q22" class="completed"><span class="number">22.</span>Compare `String`, `StringBuilder` and `StringBuffer`.</a>
 <a href="#q23"><span class="number">23.</span>What is the difference between a string literal and `new String(&quot;Java&quot;)`?</a>
 <a href="#q24"><span class="number">24.</span>What does `intern()` do?</a>
 <a href="#q25"><span class="number">25.</span>How do you design a truly immutable class?</a>
@@ -5456,7 +5456,142 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>What is the difference between Upcasting and Downcasting?</h3>
+
+<p>
+    <strong>Upcasting</strong> means assigning a Child object to a Parent reference.
+    <strong>Downcasting</strong> means converting a Parent reference back to a Child reference.
+</p>
+
+<hr>
+
+<h4>1. Difference between Upcasting and Downcasting</h4>
+
+<table>
+    <tr>
+        <th>Upcasting</th>
+        <th>Downcasting</th>
+    </tr>
+    <tr>
+        <td>Child object to Parent reference</td>
+        <td>Parent reference to Child reference</td>
+    </tr>
+    <tr>
+        <td>Automatic casting</td>
+        <td>Explicit casting required</td>
+    </tr>
+    <tr>
+        <td>Generally safe</td>
+        <td>Can cause ClassCastException</td>
+    </tr>
+    <tr>
+        <td>Child-specific methods cannot be called through the Parent reference.</td>
+        <td>Child-specific methods can be called through the Child reference.</td>
+    </tr>
+</table>
+
+<hr>
+
+<h4>2. Java Example</h4>
+
+<pre><code>class Parent {
+    void show() {
+        System.out.println("Parent method");
+    }
+}
+
+class Child extends Parent {
+    void display() {
+        System.out.println("Child method");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        // Upcasting
+        Parent p = new Child();
+        p.show();
+
+        // Downcasting
+        Child c = (Child) p;
+        c.show();
+        c.display();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Parent method
+Parent method
+Child method</code></pre>
+
+<hr>
+
+<h4>3. Understanding Upcasting</h4>
+
+<pre><code>Parent p = new Child();</code></pre>
+
+<ul>
+    <li>The actual object is Child.</li>
+    <li>The reference type is Parent.</li>
+    <li>No explicit cast is required.</li>
+    <li>You can call methods available through the Parent reference.</li>
+</ul>
+
+<pre><code>p.display(); // Compile-time error</code></pre>
+
+<p>
+    <strong>Why?</strong> The Parent class does not declare the <code>display()</code>
+    method, so the compiler does not allow this call through a Parent reference.
+</p>
+
+<hr>
+
+<h4>4. Understanding Downcasting</h4>
+
+<pre><code>Parent p = new Child();
+Child c = (Child) p;
+
+c.display(); // Works</code></pre>
+
+<ul>
+    <li>We explicitly cast the Parent reference to Child.</li>
+    <li>The actual object is already a Child object.</li>
+    <li>Therefore, we can call the Child-specific <code>display()</code> method.</li>
+</ul>
+
+<hr>
+
+<h4>5. Can Downcasting Fail?</h4>
+
+<pre><code>Parent p = new Parent();
+Child c = (Child) p; // ClassCastException</code></pre>
+
+<p>
+    <strong>Reason:</strong> The actual object is Parent, not Child.
+    Therefore, it cannot be safely cast to Child.
+</p>
+
+<h4>Safer Approach Using instanceof</h4>
+
+<pre><code>Parent p = new Child();
+
+if (p instanceof Child) {
+    Child c = (Child) p;
+    c.display();
+}</code></pre>
+
+<hr>
+
+<div class="tip">
+    <strong>Interview Tip:</strong>
+    Upcasting converts a Child reference assignment to a Parent reference.
+    Downcasting converts a Parent reference to a Child reference.
+    Downcasting is valid only when the actual object is compatible with the target type.
+</div>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -5465,7 +5600,267 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>Inheritance, Aggregation and Composition in Java</h3>
+
+<h4>1. Overview</h4>
+
+<table>
+    <tr>
+        <th>Concept</th>
+        <th>Relationship</th>
+        <th>Meaning</th>
+    </tr>
+    <tr>
+        <td>Inheritance</td>
+        <td>IS-A</td>
+        <td>One class inherits from another class.</td>
+    </tr>
+    <tr>
+        <td>Aggregation</td>
+        <td>HAS-A (Weak)</td>
+        <td>An object uses another object, which can exist independently.</td>
+    </tr>
+    <tr>
+        <td>Composition</td>
+        <td>HAS-A (Strong)</td>
+        <td>An object owns another object as part of its structure.</td>
+    </tr>
+</table>
+
+<hr>
+
+<h3>2. Inheritance</h3>
+
+<p>
+    Inheritance allows one class to acquire accessible fields and methods
+    from another class. It represents an <strong>IS-A</strong> relationship.
+</p>
+
+<h4>Types of Inheritance</h4>
+
+<ul>
+    <li><strong>Single:</strong> One child extends one parent.</li>
+    <li><strong>Multilevel:</strong> A class extends a class that already extends another class.</li>
+    <li><strong>Hierarchical:</strong> Multiple child classes extend the same parent.</li>
+    <li><strong>Multiple:</strong> One class inherits from multiple parents. Java does not support this through classes, but a class can implement multiple interfaces.</li>
+    <li><strong>Hybrid:</strong> A combination of inheritance types. Java can achieve certain hybrid structures using interfaces.</li>
+</ul>
+
+<h4>Example: Single Inheritance</h4>
+
+<pre><code>class Animal {
+    void eat() {
+        System.out.println("Animal eats");
+    }
+}
+
+class Dog extends Animal {
+    void bark() {
+        System.out.println("Dog barks");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Dog dog = new Dog();
+        dog.eat();
+        dog.bark();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Animal eats
+Dog barks</code></pre>
+
+<p><strong>Explanation:</strong> Dog IS-A Animal, so Dog inherits the accessible eat() method.</p>
+
+<hr>
+
+<h3>3. Aggregation — Weak HAS-A Relationship</h3>
+
+<p>
+    Aggregation means one object refers to another object, but the referenced
+    object can exist independently of the first object.
+</p>
+
+<h4>Example: Department and Teacher</h4>
+
+<pre><code>class Teacher {
+    String name;
+
+    Teacher(String name) {
+        this.name = name;
+    }
+}
+
+class Department {
+    private Teacher teacher;
+
+    Department(Teacher teacher) {
+        this.teacher = teacher;
+    }
+
+    void showTeacher() {
+        System.out.println(teacher.name);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Teacher t = new Teacher("Ravi");
+
+        Department d = new Department(t);
+        d.showTeacher();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Ravi</code></pre>
+
+<p><strong>Explanation:</strong></p>
+
+<ul>
+    <li>Teacher is created separately from Department.</li>
+    <li>Department receives an existing Teacher object.</li>
+    <li>The Teacher can continue to exist even if the Department object is no longer used.</li>
+</ul>
+
+<p><strong>Remember:</strong> Aggregation represents a weak ownership relationship.</p>
+
+<hr>
+
+<h3>4. Composition — Strong HAS-A Relationship</h3>
+
+<p>
+    Composition means an object strongly owns another object as part of its
+    structure. The contained object's lifecycle is generally tied to the owner
+    in the intended design.
+</p>
+
+<h4>Example: House and Room</h4>
+
+<pre><code>class Room {
+    void show() {
+        System.out.println("Room exists");
+    }
+}
+
+class House {
+    private final Room room;
+
+    House() {
+        room = new Room();
+    }
+
+    void showHouse() {
+        room.show();
+        System.out.println("House exists");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        House house = new House();
+        house.showHouse();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Room exists
+House exists</code></pre>
+
+<p><strong>Explanation:</strong></p>
+
+<ul>
+    <li>House creates and owns its Room in this example.</li>
+    <li>The Room is managed as part of the House's structure.</li>
+    <li>This illustrates strong ownership, rather than passing an independently created Room into House.</li>
+</ul>
+
+<p><strong>Remember:</strong> Composition represents a strong ownership relationship. Java does not automatically destroy a contained object when its owner is destroyed; object reachability and garbage collection determine when memory can be reclaimed.</p>
+
+<hr>
+
+<h3>5. Weak Relationship vs Strong Relationship</h3>
+
+<table>
+    <tr>
+        <th>Aggregation (Weak)</th>
+        <th>Composition (Strong)</th>
+    </tr>
+    <tr>
+        <td>Referenced object can exist independently.</td>
+        <td>Contained object is treated as part of the owner's structure.</td>
+    </tr>
+    <tr>
+        <td>Object is often created outside and passed in.</td>
+        <td>Object is often created or exclusively managed by the owner.</td>
+    </tr>
+    <tr>
+        <td>Example: Department and Teacher.</td>
+        <td>Example: House and Room.</td>
+    </tr>
+    <tr>
+        <td>Ownership is weaker.</td>
+        <td>Ownership is stronger.</td>
+    </tr>
+</table>
+
+<hr>
+
+<h3>6. Quick Comparison</h3>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>Inheritance</th>
+        <th>Aggregation</th>
+        <th>Composition</th>
+    </tr>
+    <tr>
+        <td>Relationship</td>
+        <td>IS-A</td>
+        <td>HAS-A</td>
+        <td>HAS-A</td>
+    </tr>
+    <tr>
+        <td>Relationship strength</td>
+        <td>Class hierarchy</td>
+        <td>Weak ownership</td>
+        <td>Strong ownership</td>
+    </tr>
+    <tr>
+        <td>Java implementation</td>
+        <td>extends</td>
+        <td>Object reference</td>
+        <td>Object reference</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td>Dog extends Animal</td>
+        <td>Department has Teacher</td>
+        <td>House owns Room</td>
+    </tr>
+</table>
+
+<hr>
+
+<div class="tip">
+    <strong>Interview Memory Trick:</strong>
+    <ul>
+        <li>Inheritance = IS-A = Dog is an Animal.</li>
+        <li>Aggregation = Weak HAS-A = Department has a Teacher.</li>
+        <li>Composition = Strong HAS-A = House owns a Room.</li>
+    </ul>
+    <strong>Important:</strong> Aggregation and composition are design concepts,
+    not separate Java keywords. The distinction depends on ownership and lifecycle
+    intent, not just how the Java code is written.
+</div>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -5474,7 +5869,319 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>Access Modifiers — Visibility Rules</h3>
+
+<table>
+    <tr>
+        <th>Access Modifier</th>
+        <th>Same Class</th>
+        <th>Same Package</th>
+        <th>Subclass in Different Package</th>
+        <th>Non-Subclass in Different Package</th>
+    </tr>
+    <tr>
+        <td><code>public</code></td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td><code>protected</code></td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>✅*</td>
+        <td>❌</td>
+    </tr>
+    <tr>
+        <td><code>default</code></td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td>❌</td>
+    </tr>
+    <tr>
+        <td><code>private</code></td>
+        <td>✅</td>
+        <td>❌</td>
+        <td>❌</td>
+        <td>❌</td>
+    </tr>
+</table>
+
+<p>
+    <strong>✅</strong> = Accessible
+    &nbsp;&nbsp;
+    <strong>❌</strong> = Not accessible
+</p>
+
+<p>
+    <strong>*Protected:</strong> In a different package, a subclass can access
+    inherited protected members subject to Java's protected-access rules.
+    It cannot freely access them through an arbitrary Parent object.
+</p>
+
+<h4>Top-Level Class Visibility</h4>
+
+<table>
+    <tr>
+        <th>Modifier</th>
+        <th>Allowed?</th>
+    </tr>
+    <tr>
+        <td><code>public class Student</code></td>
+        <td>✅ Correct</td>
+    </tr>
+    <tr>
+        <td><code>class Student</code> (default access)</td>
+        <td>✅ Correct</td>
+    </tr>
+    <tr>
+        <td><code>private class Student</code></td>
+        <td>❌ Incorrect for a top-level class</td>
+    </tr>
+    <tr>
+        <td><code>protected class Student</code></td>
+        <td>❌ Incorrect for a top-level class</td>
+    </tr>
+</table>
+</p>
+
+<h3>Default Access Modifier in Java</h3>
+
+<h4>1. What Is the Default Access Modifier?</h4>
+
+<p>If we do not specify any access modifier, Java uses default access (package-private).</p>
+
+<table>
+    <tr>
+        <th>Element</th>
+        <th>Example</th>
+        <th>Default Access Modifier</th>
+    </tr>
+    <tr>
+        <td>Instance variable</td>
+        <td><code>int age;</code></td>
+        <td>Default (package-private)</td>
+    </tr>
+    <tr>
+        <td>Method</td>
+        <td><code>void display() {}</code></td>
+        <td>Default (package-private)</td>
+    </tr>
+    <tr>
+        <td>Class</td>
+        <td><code>class Student {}</code></td>
+        <td>Default (package-private)</td>
+    </tr>
+    <tr>
+        <td>Constructor</td>
+        <td><code>Student() {}</code></td>
+        <td>Default (package-private)</td>
+    </tr>
+</table>
+
+<hr>
+
+<h4>2. What Is Allowed and Not Allowed?</h4>
+
+<table>
+    <tr>
+        <th>Element</th>
+        <th>Declaration</th>
+        <th>Allowed?</th>
+    </tr>
+    <tr>
+        <td>Variable</td>
+        <td><code>int age;</code></td>
+        <td>✅ Allowed — default</td>
+    </tr>
+    <tr>
+        <td>Variable</td>
+        <td><code>public int age;</code></td>
+        <td>✅ Allowed</td>
+    </tr>
+    <tr>
+        <td>Variable</td>
+        <td><code>protected int age;</code></td>
+        <td>✅ Allowed</td>
+    </tr>
+    <tr>
+        <td>Variable</td>
+        <td><code>private int age;</code></td>
+        <td>✅ Allowed</td>
+    </tr>
+    <tr>
+        <td>Method</td>
+        <td><code>void display() {}</code></td>
+        <td>✅ Allowed — default</td>
+    </tr>
+    <tr>
+        <td>Method</td>
+        <td><code>public void display() {}</code></td>
+        <td>✅ Allowed</td>
+    </tr>
+    <tr>
+        <td>Method</td>
+        <td><code>protected void display() {}</code></td>
+        <td>✅ Allowed</td>
+    </tr>
+    <tr>
+        <td>Method</td>
+        <td><code>private void display() {}</code></td>
+        <td>✅ Allowed</td>
+    </tr>
+    <tr>
+        <td>Top-level class</td>
+        <td><code>class Student {}</code></td>
+        <td>✅ Allowed — default</td>
+    </tr>
+    <tr>
+        <td>Top-level class</td>
+        <td><code>public class Student {}</code></td>
+        <td>✅ Allowed</td>
+    </tr>
+    <tr>
+        <td>Top-level class</td>
+        <td><code>private class Student {}</code></td>
+        <td>❌ Not allowed</td>
+    </tr>
+    <tr>
+        <td>Top-level class</td>
+        <td><code>protected class Student {}</code></td>
+        <td>❌ Not allowed</td>
+    </tr>
+</table>
+
+<p><strong>Important:</strong> Variables and methods can use all four access levels. A top-level class can use only public or default access.</p>
+
+<hr>
+
+<h4>3. Complete Java Program</h4>
+
+<pre><code>class Student {
+
+    int age = 25; // Default access variable
+
+    void display() { // Default access method
+        System.out.println("Age: " + age);
+    }
+}
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Student s = new Student();
+
+        System.out.println(s.age);
+        s.display();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>25
+Age: 25</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li><code>class Student</code> — default access class.</li>
+    <li><code>int age</code> — default access variable.</li>
+    <li><code>void display()</code> — default access method.</li>
+    <li><code>public class Main</code> — public class.</li>
+    <li>The program works because Student and Main are in the same package.</li>
+</ul>
+
+<div class="tip">
+    <strong>Interview Tip:</strong> No modifier means default (package-private) access. For a top-level class, private and protected are not allowed. For variables and methods, all four access levels are allowed.
+</div>
+
+<h3>Default Access Modifier in Java</h3>
+
+<p>
+    <strong>Default (package-private):</strong> If we do not write any
+    access modifier, Java uses default access.
+</p>
+
+<h4>Examples</h4>
+
+<pre><code>int age = 25;          // Default variable
+
+void display() {       // Default method
+    System.out.println(age);
+}
+
+class Student {        // Default class
+}</code></pre>
+
+<h4>Where Can We Access It?</h4>
+
+<table>
+    <tr>
+        <th>Access Location</th>
+        <th>Allowed?</th>
+    </tr>
+    <tr>
+        <td>Same class</td>
+        <td>✅ Yes</td>
+    </tr>
+    <tr>
+        <td>Another class in the same package</td>
+        <td>✅ Yes</td>
+    </tr>
+    <tr>
+        <td>Class in a different package</td>
+        <td>❌ No</td>
+    </tr>
+</table>
+
+<h4>Allowed and Not Allowed</h4>
+
+<table>
+    <tr>
+        <th>Declaration</th>
+        <th>Allowed?</th>
+    </tr>
+    <tr>
+        <td><code>int age;</code></td>
+        <td>✅ Yes — default access</td>
+    </tr>
+    <tr>
+        <td><code>private int age;</code></td>
+        <td>✅ Yes — private access</td>
+    </tr>
+    <tr>
+        <td><code>public int age;</code></td>
+        <td>✅ Yes — public access</td>
+    </tr>
+    <tr>
+        <td><code>protected int age;</code></td>
+        <td>✅ Yes — protected access</td>
+    </tr>
+    <tr>
+        <td><code>private class Student {}</code> (top-level class)</td>
+        <td>❌ Not allowed</td>
+    </tr>
+    <tr>
+        <td><code>protected class Student {}</code> (top-level class)</td>
+        <td>❌ Not allowed</td>
+    </tr>
+</table>
+
+<div class="tip">
+    <strong>Remember:</strong>
+    <ul>
+        <li>No modifier written = default access.</li>
+        <li>Default access = same package only.</li>
+        <li>Variables and methods can use all four access levels.</li>
+        <li>Top-level classes can use only public or default access.</li>
+    </ul>
+</div>
+
+
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -5483,7 +6190,87 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint"><h3>What are Covariant Return Types in Java?</h3>
+
+<p>
+    A <strong>covariant return type</strong> means that when a child class
+    overrides a parent class method, it can return a more specific type
+    than the parent method.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>class Animal {
+}
+
+class Dog extends Animal {
+}
+
+class Parent {
+    Animal getAnimal() {
+        return new Animal();
+    }
+}
+
+class Child extends Parent {
+    @Override
+    Dog getAnimal() {
+        return new Dog();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Child c = new Child();
+
+        Dog d = c.getAnimal();
+        System.out.println(d.getClass().getSimpleName());
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Dog</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li>The parent method returns <code>Animal</code>.</li>
+    <li>The child overrides the method and returns <code>Dog</code>.</li>
+    <li><code>Dog</code> extends <code>Animal</code>, so this is allowed.</li>
+    <li>The child returns a more specific type.</li>
+</ul>
+
+<h4>Quick Comparison</h4>
+
+<table>
+    <tr>
+        <th>Parent Method</th>
+        <th>Child Override</th>
+        <th>Allowed?</th>
+    </tr>
+    <tr>
+        <td><code>Animal</code></td>
+        <td><code>Dog</code> (Dog extends Animal)</td>
+        <td>✅ Yes</td>
+    </tr>
+    <tr>
+        <td><code>Dog</code></td>
+        <td><code>Animal</code></td>
+        <td>❌ No</td>
+    </tr>
+    <tr>
+        <td><code>Animal</code></td>
+        <td><code>String</code></td>
+        <td>❌ No</td>
+    </tr>
+</table>
+
+<div class="tip">
+    <strong>Interview Tip:</strong> Covariant return types apply when overriding
+    methods. The child method can return a subtype of the parent method's
+    declared return type, but it cannot return a broader or unrelated type.
+</div></p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -5492,7 +6279,169 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>Default and Static Methods in Java Interfaces</h3>
+
+<h4>1. What Is a Default Method?</h4>
+
+<p>
+    A <strong>default method</strong> is a method inside an interface
+    that has a method body. It uses the <code>default</code> keyword.
+</p>
+
+<pre><code>interface Bank {
+    default void showBalance() {
+        System.out.println("Showing bank balance");
+    }
+}
+
+class User implements Bank {
+}
+
+public class Main {
+    public static void main(String[] args) {
+        User u = new User();
+        u.showBalance();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Showing bank balance</code></pre>
+
+<p>
+    <strong>Explanation:</strong> User does not override
+    <code>showBalance()</code>, so it inherits and uses the default
+    implementation from Bank.
+</p>
+
+<hr>
+
+<h4>2. What Is a Static Method in an Interface?</h4>
+
+<p>
+    A <strong>static method</strong> belongs to the interface itself.
+    Call it using the interface name, not an implementing class object.
+</p>
+
+<pre><code>interface Bank {
+    static void showMessage() {
+        System.out.println("Welcome to the bank");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Bank.showMessage();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Welcome to the bank</code></pre>
+
+<p>
+    <strong>Remember:</strong> Interface static methods are not inherited
+    by implementing classes as their own static methods.
+</p>
+
+<hr>
+
+<h4>3. Difference Between Default and Static Methods</h4>
+
+<table>
+    <tr>
+        <th>Default Method</th>
+        <th>Static Method</th>
+    </tr>
+    <tr>
+        <td>Uses the <code>default</code> keyword.</td>
+        <td>Uses the <code>static</code> keyword.</td>
+    </tr>
+    <tr>
+        <td>Called through an implementing class object.</td>
+        <td>Called using the interface name.</td>
+    </tr>
+    <tr>
+        <td>Can be overridden by the implementing class.</td>
+        <td>Cannot be overridden as an inherited interface static method.</td>
+    </tr>
+    <tr>
+        <td>Can access instance methods and fields through <code>this</code>.</td>
+        <td>Cannot use <code>this</code> because it has no instance context.</td>
+    </tr>
+</table>
+
+<hr>
+
+<h3>4. How Are Conflicting Default Methods Resolved?</h3>
+
+<p>
+    If a class implements two interfaces that provide default methods
+    with the same signature, the class must override that method to
+    resolve the conflict.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>interface ICICIBank {
+    default void showBalance() {
+        System.out.println("ICICI Bank balance");
+    }
+}
+
+interface UCOBank {
+    default void showBalance() {
+        System.out.println("UCO Bank balance");
+    }
+}
+
+class User implements ICICIBank, UCOBank {
+
+    @Override
+    public void showBalance() {
+        System.out.println("User chooses both banks");
+
+        ICICIBank.super.showBalance();
+        UCOBank.super.showBalance();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        User u = new User();
+        u.showBalance();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>User chooses both banks
+ICICI Bank balance
+UCO Bank balance</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li>Both interfaces provide a default implementation of <code>showBalance()</code>.</li>
+    <li>Java cannot automatically choose which implementation to use.</li>
+    <li>The User class overrides <code>showBalance()</code> to resolve the conflict.</li>
+    <li><code>ICICIBank.super.showBalance()</code> calls the ICICI default method.</li>
+    <li><code>UCOBank.super.showBalance()</code> calls the UCO default method.</li>
+</ul>
+
+<hr>
+
+<div class="tip">
+    <strong>Interview Tips:</strong>
+    <ul>
+        <li>Default method = interface method with a body, callable through an implementing object.</li>
+        <li>Static method = interface method called using the interface name.</li>
+        <li>Conflicting default methods = the implementing class must override the method.</li>
+        <li>Use <code>InterfaceName.super.methodName()</code> to call a specific interface's default implementation.</li>
+    </ul>
+</div>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -5501,7 +6450,209 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>1. What Are Enums in Java?</h3>
+
+<p>
+    An <strong>enum</strong> is a special type used to define a fixed set of constants.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>enum Day {
+    MONDAY, TUESDAY, WEDNESDAY
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Day today = Day.MONDAY;
+        System.out.println(today);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>MONDAY</code></pre>
+
+<p><strong>Remember:</strong> Enums are useful for fixed values such as days, directions, and order statuses.</p>
+
+<hr>
+
+<h3>2. What Are Varargs in Java?</h3>
+
+<p>
+    <strong>Varargs</strong> allows a method to accept zero or more arguments
+    of the same declared type using Varargs was introduced in Java 5 (JDK 1.5).<code>...</code>.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>public class Main {
+    static void add(int... numbers) {
+        int sum = 0;
+
+        for (int n : numbers) {
+            sum += n;
+        }
+
+        System.out.println(sum);
+    }
+
+    public static void main(String[] args) {
+        add(10, 20);
+        add(10, 20, 30);
+        add();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>30
+60
+0</code></pre>
+
+<p><strong>Remember:</strong> A varargs parameter is treated like an array inside the method. Only one varargs parameter is allowed, and it must be the last parameter.</p>
+
+<hr>
+
+<h3>3. What Are Wrapper Classes?</h3>
+
+<p>
+    <strong>Wrapper classes</strong> represent primitive values as objects.
+    Each primitive type has a corresponding wrapper class.
+</p>
+
+<table>
+    <tr>
+        <th>Primitive Type</th>
+        <th>Wrapper Class</th>
+    </tr>
+    <tr><td><code>byte</code></td><td><code>Byte</code></td></tr>
+    <tr><td><code>short</code></td><td><code>Short</code></td></tr>
+    <tr><td><code>int</code></td><td><code>Integer</code></td></tr>
+    <tr><td><code>long</code></td><td><code>Long</code></td></tr>
+    <tr><td><code>float</code></td><td><code>Float</code></td></tr>
+    <tr><td><code>double</code></td><td><code>Double</code></td></tr>
+    <tr><td><code>char</code></td><td><code>Character</code></td></tr>
+    <tr><td><code>boolean</code></td><td><code>Boolean</code></td></tr>
+</table>
+
+<h4>Example</h4>
+
+<pre><code>int age = 25;
+Integer number = 100;
+
+System.out.println(age);
+System.out.println(number);</code></pre>
+
+<h4>Output</h4>
+<pre><code>25
+100</code></pre>
+
+<p><strong>Remember:</strong> Collections such as <code>ArrayList</code> use wrapper types, for example <code>ArrayList&lt;Integer&gt;</code>, rather than primitive types like <code>int</code>.</p>
+
+<hr>
+
+<h3>4. What Is Autoboxing?</h3>
+
+<p>
+    <strong>Autoboxing</strong> is the automatic conversion of a primitive value
+    into its corresponding wrapper object.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>int a = 10;
+Integer b = a; // Autoboxing
+
+System.out.println(b);</code></pre>
+
+<h4>Output</h4>
+<pre><code>10</code></pre>
+
+<p><strong>Remember:</strong> Primitive to wrapper object = Autoboxing.</p>
+
+<hr>
+
+<h3>5. What Is Unboxing?</h3>
+
+<p>
+    <strong>Unboxing</strong> is the automatic conversion of a wrapper object
+    into its corresponding primitive value.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>Integer a = 20;
+int b = a; // Unboxing
+
+System.out.println(b);</code></pre>
+
+<h4>Output</h4>
+<pre><code>20</code></pre>
+
+<p><strong>Remember:</strong> Wrapper object to primitive = Unboxing.</p>
+
+<hr>
+
+<h3>6. Difference Between Autoboxing and Unboxing</h3>
+
+<table>
+    <tr>
+        <th>Autoboxing</th>
+        <th>Unboxing</th>
+    </tr>
+    <tr>
+        <td>Primitive to wrapper object</td>
+        <td>Wrapper object to primitive</td>
+    </tr>
+    <tr>
+        <td><code>int a = 10; Integer b = a;</code></td>
+        <td><code>Integer a = 10; int b = a;</code></td>
+    </tr>
+    <tr>
+        <td>Example: <code>int</code> to <code>Integer</code></td>
+        <td>Example: <code>Integer</code> to <code>int</code></td>
+    </tr>
+</table>
+
+<hr>
+
+<h3>Quick Interview Revision</h3>
+
+<table>
+    <tr>
+        <th>Concept</th>
+        <th>Simple Meaning</th>
+    </tr>
+    <tr>
+        <td>Enum</td>
+        <td>Fixed set of constants.</td>
+    </tr>
+    <tr>
+        <td>Varargs</td>
+        <td>Method accepts zero or more arguments.</td>
+    </tr>
+    <tr>
+        <td>Wrapper class</td>
+        <td>Represents a primitive value as an object.</td>
+    </tr>
+    <tr>
+        <td>Autoboxing</td>
+        <td>Primitive to wrapper object.</td>
+    </tr>
+    <tr>
+        <td>Unboxing</td>
+        <td>Wrapper object to primitive.</td>
+    </tr>
+</table>
+
+<div class="tip">
+    <strong>Interview Tip:</strong> Remember the direction:
+    <ul>
+        <li><code>int → Integer</code> = Autoboxing</li>
+        <li><code>Integer → int</code> = Unboxing</li>
+    </ul>
+</div>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -5511,7 +6662,882 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>1. Why Is String Immutable in Java?</h3>
+
+<p>
+    A <strong>String is immutable</strong> because once a String object is created,
+    its value cannot be changed.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>String s = "Java";
+s.concat(" Programming");
+
+System.out.println(s);</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Java</code></pre>
+
+<p>
+    <strong>Explanation:</strong> <code>concat()</code> creates a new String
+    instead of changing the original String. Since we did not store the result,
+    <code>s</code> still refers to <code>"Java"</code>.
+</p>
+
+<h1>Java String Immutability</h1>
+  <p>
+    Understand how <code>concat()</code> works, how references change,
+    and what happens to String objects that are no longer reachable.
+  </p>
+
+  <!-- CASE 1 -->
+  <section class="case">
+    <h2>Case 1: Calling concat() without storing the result</h2>
+
+    <pre><code>String s = "Java";
+s.concat(" Programming");
+System.out.println(s);</code></pre>
+
+    <div class="output">
+      <strong>Output:</strong>
+      <pre>Java</pre>
+    </div>
+
+    <h3>Step 1: String s = "Java";</h3>
+
+    <div class="memory">
+      <div class="object">
+        <strong>Variable: s</strong>
+        <div class="arrow">↓</div>
+        <strong>"Java"</strong>
+        <p>Original String object</p>
+        <span class="label green">Referenced</span>
+      </div>
+    </div>
+
+    <h3>Step 2: s.concat(" Programming");</h3>
+
+    <div class="memory">
+      <div class="object">
+        <strong>"Java"</strong>
+        <p>Original String object</p>
+        <span class="label green">Referenced by s</span>
+      </div>
+
+      <div class="object unreferenced">
+        <strong>"Java Programming"</strong>
+        <p>New String result</p>
+        <span class="label orange">Result discarded</span>
+      </div>
+    </div>
+
+    <p>
+      <code>concat()</code> returns a new String. Since the result is
+      neither assigned to a variable nor retained, it is no longer
+      reachable through that expression after the statement finishes.
+    </p>
+
+    <div class="note">
+      <strong>What happens to the new String?</strong>
+      If no other references to it exist, it is eligible for garbage
+      collection. Java does not guarantee immediate collection.
+      The original <code>"Java"</code> remains referenced by
+      <code>s</code>.
+    </div>
+  </section>
+
+  <!-- CASE 2 -->
+  <section class="case">
+    <h2>Case 2: Assigning the result back to s</h2>
+
+    <pre><code>String s = "Java";
+s = s.concat(" Programming");
+System.out.println(s);</code></pre>
+
+    <div class="output">
+      <strong>Output:</strong>
+      <pre>Java Programming</pre>
+    </div>
+
+    <h3>Step 1: String s = "Java";</h3>
+
+    <div class="memory">
+      <div class="object">
+        <strong>Variable: s</strong>
+        <div class="arrow">↓</div>
+        <strong>"Java"</strong>
+        <p>Original String object</p>
+      </div>
+    </div>
+
+    <h3>Step 2: s = s.concat(" Programming");</h3>
+
+    <div class="memory">
+      <div class="object unreferenced">
+        <strong>"Java"</strong>
+        <p>Original String object</p>
+        <span class="label orange">s no longer points here</span>
+      </div>
+
+      <div class="object new">
+        <strong>Variable: s</strong>
+        <div class="arrow">↓</div>
+        <strong>"Java Programming"</strong>
+        <p>New String object</p>
+        <span class="label green">Referenced by s</span>
+      </div>
+    </div>
+
+    <p>
+      The assignment changes the reference held by <code>s</code>.
+      It does not modify the original String object.
+    </p>
+
+    <div class="note">
+      <strong>What happens to "Java"?</strong>
+      If the original object has no other reachable references, it
+      becomes eligible for garbage collection. However, the literal
+      <code>"Java"</code> may be retained in the String pool, so do
+      not assume the object is necessarily eligible for collection.
+    </div>
+  </section>
+
+  <!-- CASE 3 -->
+  <section class="case">
+    <h2>Case 3: Printing the result directly</h2>
+
+    <pre><code>String s = "Java";
+System.out.println(s.concat(" Programming"));
+System.out.println(s);</code></pre>
+
+    <div class="output">
+      <strong>Output:</strong>
+      <pre>Java Programming
+Java</pre>
+    </div>
+
+    <h3>Step 1: String s = "Java";</h3>
+
+    <div class="memory">
+      <div class="object">
+        <strong>Variable: s</strong>
+        <div class="arrow">↓</div>
+        <strong>"Java"</strong>
+        <p>Original String object</p>
+        <span class="label green">Referenced</span>
+      </div>
+    </div>
+
+    <h3>Step 2: println(s.concat(" Programming"));</h3>
+
+    <div class="memory">
+      <div class="object">
+        <strong>"Java"</strong>
+        <p>Original String</p>
+        <span class="label green">Referenced by s</span>
+      </div>
+
+      <div class="object new">
+        <strong>"Java Programming"</strong>
+        <p>New String result</p>
+        <span class="label green">Passed to println()</span>
+      </div>
+    </div>
+
+    <p>
+      The new String is passed directly to <code>println()</code>.
+      It is printed but is not assigned to <code>s</code>.
+    </p>
+
+    <h3>Step 3: After println() finishes</h3>
+
+    <div class="memory">
+      <div class="object">
+        <strong>Variable: s</strong>
+        <div class="arrow">↓</div>
+        <strong>"Java"</strong>
+        <p>Original String object</p>
+        <span class="label green">Still referenced</span>
+      </div>
+
+      <div class="object unreferenced">
+        <strong>"Java Programming"</strong>
+        <p>Temporary result</p>
+        <span class="label orange">May be eligible for GC</span>
+      </div>
+    </div>
+
+    <p>
+      After the statement finishes, if no other references to the
+      returned String exist, it is eligible for garbage collection.
+      Meanwhile, <code>s</code> still refers to <code>"Java"</code>.
+    </p>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="case">
+    <h2>Final Comparison</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Case</th>
+          <th>Value printed</th>
+          <th>What happens to the new String?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1. Result discarded</td>
+          <td>Java</td>
+          <td>
+            Eligible for GC if no other references exist.
+          </td>
+        </tr>
+        <tr>
+          <td>2. Result assigned to s</td>
+          <td>Java Programming</td>
+          <td>
+            Referenced by s; the original may become unreachable.
+          </td>
+        </tr>
+        <tr>
+          <td>3. Result printed directly</td>
+          <td>
+            Java Programming<br>
+            Java
+          </td>
+          <td>
+            Eligible for GC after use if no other references exist.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <strong>Remember:</strong>
+      <ul>
+        <li>String objects are immutable.</li>
+        <li>Variables can be reassigned to reference different objects.</li>
+        <li><code>concat()</code> returns a String; it does not modify the original.</li>
+        <li><code>println()</code> prints a value; it does not reassign a variable.</li>
+        <li>An unreachable object is eligible for garbage collection, but collection is not immediate or guaranteed at a particular time.</li>
+      </ul>
+    </div>
+  </section>
+  
+  
+<h4>Why Is String Immutable?</h4>
+
+<ul>
+    <li><strong>Security:</strong> Strings are used for sensitive data such as file paths, usernames and URLs. Immutability prevents their values from being changed through the same object reference.</li>
+    <li><strong>String Constant Pool:</strong> Multiple references can safely share the same String object.</li>
+    <li><strong>Thread safety:</strong> Multiple threads can read the same String without worrying that its value will change.</li>
+    <li><strong>Hashing and caching:</strong> A String's hash code can be cached because its contents do not change.</li>
+</ul>
+
+<hr>
+
+<h3>2. What Is the String Constant Pool?</h3>
+
+<p>
+    The <strong>String Constant Pool (SCP)</strong> is a special area of JVM-managed
+    memory where String literals are interned so that identical strings can share
+    the same String object.
+</p>
+
+<h4>Example</h4>
+
+<pre><code>String s1 = "Java";
+String s2 = "Java";
+
+System.out.println(s1 == s2);
+System.out.println(s1.equals(s2));</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>true
+true</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li><code>s1</code> refers to the pooled String object containing <code>"Java"</code>.</li>
+    <li><code>s2</code> reuses the same pooled object.</li>
+    <li><code>==</code> checks whether both references point to the same object.</li>
+    <li><code>equals()</code> checks whether their String contents are equal.</li>
+</ul>
+
+<hr>
+
+<h3>3. String Pool vs. new String()</h3>
+
+<pre><code>String s1 = "Java";
+String s2 = "Java";
+String s3 = new String("Java");
+
+System.out.println(s1 == s2);
+System.out.println(s1 == s3);
+System.out.println(s1.equals(s3));</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>true
+false
+true</code></pre>
+
+<p><strong>Explanation:</strong></p>
+
+<ul>
+    <li><code>s1 == s2</code> is true because both reference the same pooled object.</li>
+    <li><code>s1 == s3</code> is false because <code>new String("Java")</code> creates a distinct String object.</li>
+    <li><code>s1.equals(s3)</code> is true because both objects contain the same text.</li>
+</ul>
+
+<hr>
+ <h1>Java String Pool and Memory References</h1>
+
+  <p>
+    Learn how String references work, why string literals can share
+    the same pooled object, and the difference between
+    <code>==</code> and <code>.equals()</code>.
+  </p>
+
+  <!-- EXAMPLE 1 -->
+  <section class="section">
+    <h2>Example 1: Two String literals</h2>
+
+    <pre><code>String s1 = "Java";
+String s2 = "Java";
+
+System.out.println(s1 == s2);
+System.out.println(s1.equals(s2));</code></pre>
+
+    <div class="output">
+      <strong>Output:</strong>
+      <pre>true
+true</pre>
+    </div>
+
+    <h3>Step 1: Create the first reference</h3>
+
+    <pre><code>String s1 = "Java";</code></pre>
+
+    <p>
+      Java looks for the literal "Java" in the String Pool.
+      If the literal is not already present, its pooled String
+      object is created.
+    </p>
+
+    <div class="diagram">
+      <div class="memory-label">STACK — LOCAL REFERENCE</div>
+
+      <div class="references">
+        <div class="ref">
+          <strong>s1</strong>
+          Reference variable
+          <div class="address">Illustrative ref: R1</div>
+        </div>
+      </div>
+
+      <div class="arrow-area">
+        <div class="arrow">
+          ↓
+          <small>Points to object</small>
+        </div>
+      </div>
+
+      <div class="memory-label">STRING POOL</div>
+
+      <div class="pool">
+        <strong>"Java"</strong>
+        String object
+        <div class="address">Illustrative address: 0xABC</div>
+      </div>
+    </div>
+
+    <h3>Step 2: Create the second reference</h3>
+
+    <pre><code>String s2 = "Java";</code></pre>
+
+    <p>
+      Java reuses the existing pooled object for the same
+      string literal. It does not need to create another pooled
+      object for this literal.
+    </p>
+
+    <div class="diagram">
+      <div class="memory-label">STACK — LOCAL REFERENCES</div>
+
+      <div class="references">
+        <div class="ref">
+          <strong>s1</strong>
+          Reference variable
+          <div class="address">Illustrative ref: R1</div>
+        </div>
+
+        <div class="ref">
+          <strong>s2</strong>
+          Reference variable
+          <div class="address">Illustrative ref: R2</div>
+        </div>
+      </div>
+
+      <div class="arrow-area">
+        <div class="arrow">
+          ↘
+          <small>Points to same object</small>
+        </div>
+
+        <div class="arrow">
+          ↙
+          <small>Points to same object</small>
+        </div>
+      </div>
+
+      <div class="memory-label">STRING POOL</div>
+
+      <div class="pool">
+        <strong>"Java"</strong>
+        One shared String object
+        <div class="address">Illustrative address: 0xABC</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Important:</strong> s1 and s2 are two different
+      reference variables, but both refer to the same String object.
+      The reference labels and addresses in this diagram are
+      illustrative, not actual JVM memory addresses.
+    </div>
+  </section>
+
+  <!-- EXAMPLE 2 -->
+  <section class="section">
+    <h2>Example 2: Understanding == and equals()</h2>
+
+    <div class="comparison">
+      <div>
+        <h3>==</h3>
+        <p>Compares object identity for reference variables.</p>
+        <pre><code>s1 == s2</code></pre>
+        <span class="result">true</span>
+        <p>Both refer to the same object.</p>
+      </div>
+
+      <div>
+        <h3>equals()</h3>
+        <p>Compares the contents of the Strings.</p>
+        <pre><code>s1.equals(s2)</code></pre>
+        <span class="result">true</span>
+        <p>Both contain the text "Java".</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Expression</th>
+          <th>What it checks</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>s1 == s2</code></td>
+          <td>Same object?</td>
+          <td>true</td>
+        </tr>
+        <tr>
+          <td><code>s1.equals(s2)</code></td>
+          <td>Same String content?</td>
+          <td>true</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- EXAMPLE 3 -->
+  <section class="section">
+    <h2>Example 3: Using new String("Java")</h2>
+
+    <pre><code>String s1 = "Java";
+String s2 = new String("Java");
+
+System.out.println(s1 == s2);
+System.out.println(s1.equals(s2));</code></pre>
+
+    <div class="output">
+      <strong>Output:</strong>
+      <pre>false
+true</pre>
+    </div>
+
+    <h3>How memory references work</h3>
+
+    <p>
+      The literal "Java" refers to the pooled object.
+      The expression <code>new String("Java")</code> explicitly
+      creates a separate String object with the same content.
+    </p>
+
+    <div class="diagram">
+      <div class="memory-label">STACK — LOCAL REFERENCES</div>
+
+      <div class="references">
+        <div class="ref">
+          <strong>s1</strong>
+          Reference variable
+          <div class="address">Illustrative ref: R1</div>
+        </div>
+
+        <div class="ref">
+          <strong>s2</strong>
+          Reference variable
+          <div class="address">Illustrative ref: R2</div>
+        </div>
+      </div>
+
+      <div class="arrow-area">
+        <div class="arrow">
+          ↓
+          <small>Refers to pooled object</small>
+        </div>
+
+        <div class="arrow">
+          ↓
+          <small>Refers to separate object</small>
+        </div>
+      </div>
+
+      <div class="memory-label">STRING POOL AND HEAP OBJECTS</div>
+
+      <div class="comparison">
+        <div class="pool">
+          <strong>"Java"</strong>
+          Pooled String object
+          <div class="address">Illustrative address: 0xABC</div>
+        </div>
+
+        <div class="heap-object">
+          <strong>"Java"</strong>
+          Separate String object
+          <div class="address">Illustrative address: 0xDEF</div>
+        </div>
+      </div>
+
+      <p class="small">
+        Both objects contain the same characters, but they are
+        distinct objects. The actual memory layout is JVM-dependent.
+      </p>
+    </div>
+
+    <h3>Why are the results different?</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Expression</th>
+          <th>Result</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>s1 == s2</code></td>
+          <td>false</td>
+          <td>They refer to different objects.</td>
+        </tr>
+        <tr>
+          <td><code>s1.equals(s2)</code></td>
+          <td>true</td>
+          <td>Both objects contain "Java".</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="section">
+    <h2>Final Summary</h2>
+
+    <ul>
+      <li>
+        <strong>String Pool:</strong> Java reuses pooled String
+        literals with the same content.
+      </li>
+      <li>
+        <strong>Reference variables:</strong> s1 and s2 hold
+        references to String objects.
+      </li>
+      <li>
+        <strong>==:</strong> Checks whether two references identify
+        the same object.
+      </li>
+      <li>
+        <strong>equals():</strong> For Strings, checks whether their
+        character sequences are equal.
+      </li>
+      <li>
+        <strong>new String("Java"):</strong> Creates a distinct
+        String object, even if the same literal exists in the pool.
+      </li>
+    </ul>
+
+    <div class="note">
+      <strong>Interview tip:</strong>
+      Two identical string literals usually share the pooled object.
+      A String created with <code>new String()</code> is a separate
+      object. Therefore, <code>==</code> and
+      <code>.equals()</code> can produce different results.
+    </div>
+  </section>
+  
+	<style>
+	
+/* Memory diagram container */
+.diagram {
+  border: 1px solid #d8e0eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  background: #fbfdff;
+}
+
+/* Stack and memory section labels */
+.memory-label {
+  text-align: center;
+  font-weight: bold;
+  color: #64748b;
+  font-size: 13px;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+
+/* Reference variables layout */
+.references {
+  display: flex;
+  justify-content: center;
+  gap: 35px;
+  flex-wrap: wrap;
+}
+
+/* Reference variable boxes: s1 and s2 */
+.ref {
+  background: #dbeafe;
+  border: 2px solid #60a5fa;
+  border-radius: 10px;
+  width: 180px;
+  padding: 14px;
+  text-align: center;
+}
+
+.ref strong {
+  display: block;
+  font-size: 23px;
+  color: #1d4ed8;
+}
+
+/* Illustrative memory/reference addresses */
+.address {
+  font-size: 12px;
+  color: #475569;
+  margin-top: 5px;
+}
+
+/* Arrow layout */
+.arrow-area {
+  display: flex;
+  justify-content: center;
+  gap: 70px;
+  min-height: 80px;
+  align-items: center;
+}
+
+.arrow {
+  text-align: center;
+  font-size: 34px;
+  color: #2563eb;
+  line-height: 1.1;
+}
+
+.arrow small {
+  display: block;
+  font-size: 11px;
+  color: #475569;
+  max-width: 125px;
+}
+
+/* String Pool object */
+.pool {
+  background: #d1fae5;
+  border: 2px solid #059669;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  max-width: 430px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.pool strong {
+  display: block;
+  font-size: 25px;
+  color: #065f46;
+}
+
+/* Separate String object created with new String() */
+.heap-object {
+  background: #fce7f3;
+  border: 2px solid #db2777;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  max-width: 300px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.heap-object strong {
+  display: block;
+  font-size: 24px;
+  color: #9d174d;
+}
+
+/* Two-object comparison layout */
+.comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.comparison > div {
+  border: 1px solid #d5dce5;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+/* Console output */
+.output {
+  background: #ecfdf5;
+  border-left: 5px solid #16a34a;
+  padding: 12px 16px;
+  margin: 16px 0;
+}
+
+.output pre {
+  margin-bottom: 0;
+}
+
+/* Result badges */
+.result {
+  display: inline-block;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: #bbf7d0;
+  color: #166534;
+}
+
+/* Explanatory notes */
+.note {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  padding: 14px;
+  border-radius: 7px;
+  margin-top: 18px;
+}
+
+/* Comparison table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+th,
+td {
+  border: 1px solid #d5dce5;
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background: #e8eef7;
+}
+
+/* Small explanatory text */
+.small {
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .references {
+    gap: 12px;
+  }
+
+  .ref {
+    width: 135px;
+  }
+
+  .arrow-area {
+    gap: 35px;
+  }
+
+  .diagram {
+    padding: 12px;
+  }
+}
+
+	</style>
+<hr>
+
+<h3>4. Quick Interview Revision</h3>
+
+<table>
+    <tr>
+        <th>Question</th>
+        <th>Simple Answer</th>
+    </tr>
+    <tr>
+        <td>Why is String immutable?</td>
+        <td>Its value cannot be changed after creation, which supports security, sharing and thread safety.</td>
+    </tr>
+    <tr>
+        <td>What is the String Constant Pool?</td>
+        <td>A JVM-managed area for reusing identical interned String objects.</td>
+    </tr>
+    <tr>
+        <td>What does <code>==</code> check?</td>
+        <td>Whether two references point to the same object.</td>
+    </tr>
+    <tr>
+        <td>What does <code>equals()</code> check?</td>
+        <td>Whether two Strings have the same content.</td>
+    </tr>
+    <tr>
+        <td>What does <code>new String("Java")</code> do?</td>
+        <td>Creates a distinct String object, even if the same text is pooled.</td>
+    </tr>
+</table>
+
+<div class="tip">
+    <strong>Interview Tip:</strong>
+    String immutability means the object's content cannot change.
+    The String Constant Pool saves memory by allowing identical interned
+    strings to share an object.
+</div>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -5520,7 +7546,368 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>String vs StringBuilder vs StringBuffer</h3>
+
+<h4>1. Difference Between String, StringBuilder and StringBuffer</h4>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>String</th>
+        <th>StringBuilder</th>
+        <th>StringBuffer</th>
+    </tr>
+    <tr>
+        <td>Mutability</td>
+        <td>Immutable</td>
+        <td>Mutable</td>
+        <td>Mutable</td>
+    </tr>
+    <tr>
+        <td>Can change existing content?</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Thread-safe?</td>
+        <td>Safe to share because it is immutable</td>
+        <td>No</td>
+        <td>Individual methods are synchronized</td>
+    </tr>
+    <tr>
+        <td>Performance for repeated modifications</td>
+        <td>Usually slower due to new String objects</td>
+        <td>Usually faster</td>
+        <td>Usually slower than StringBuilder</td>
+    </tr>
+    <tr>
+        <td>Introduced in</td>
+        <td>Java 1.0</td>
+        <td>Java 5</td>
+        <td>Java 1.0</td>
+    </tr>
+    <tr>
+        <td>Best use</td>
+        <td>Fixed text</td>
+        <td>Repeated modifications in single-threaded code</td>
+        <td>Mutable text shared across threads with synchronized operations</td>
+    </tr>
+</table>
+
+<hr>
+
+<h3>2. String Example</h3>
+
+<p>String is immutable. Every modification produces a new String value.</p>
+
+<pre><code>public class Main {
+    public static void main(String[] args) {
+        String s = "Java";
+        s.concat(" Programming");
+
+        System.out.println(s);
+
+        s = s.concat(" Programming");
+        System.out.println(s);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Java
+Java Programming</code></pre>
+
+<p><strong>Explanation:</strong> The first concat() result is not stored. The second result is assigned back to s.</p>
+
+<hr>
+
+<h3>3. StringBuilder Example</h3>
+
+<p>StringBuilder is mutable, so it modifies its existing character sequence.</p>
+
+<pre><code>public class Main {
+    public static void main(String[] args) {
+        StringBuilder sb = new StringBuilder("Java");
+
+        sb.append(" Programming");
+
+        System.out.println(sb);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Java Programming</code></pre>
+
+<p><strong>Explanation:</strong> append() modifies the StringBuilder object. It does not create a new StringBuilder for each append.</p>
+
+<hr>
+
+<h3>4. StringBuffer Example</h3>
+
+<p>StringBuffer is mutable, and its individual methods are synchronized.</p>
+
+<pre><code>public class Main {
+    public static void main(String[] args) {
+        StringBuffer sb = new StringBuffer("Java");
+
+        sb.append(" Programming");
+
+        System.out.println(sb);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Java Programming</code></pre>
+
+<hr>
+
+<h3>5. Thread Example: StringBuilder vs StringBuffer</h3>
+
+<p>
+    Multiple threads modifying the same mutable object can interfere with
+    each other. StringBuffer synchronizes individual methods; StringBuilder
+    does not.
+</p>
+
+<h4>Example Using StringBuilder (Not Thread-Safe)</h4>
+
+<pre><code>class BuilderTask extends Thread {
+    static StringBuilder sb = new StringBuilder();
+
+    public void run() {
+        for (int i = 0; i &lt; 1000; i++) {
+            sb.append("A");
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        BuilderTask t1 = new BuilderTask();
+        BuilderTask t2 = new BuilderTask();
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println(sb.length());
+    }
+}</code></pre>
+
+<h4>Expected Length</h4>
+
+<pre><code>2000</code></pre>
+
+<p>
+    <strong>Important:</strong> The result is not guaranteed to be 2000.
+    Because StringBuilder is not thread-safe, concurrent modifications can
+    cause lost updates or other unexpected behavior.
+</p>
+
+<h4>Example Using StringBuffer (Thread-Safe Methods)</h4>
+
+<pre><code>class BufferTask extends Thread {
+    static StringBuffer sb = new StringBuffer();
+
+    public void run() {
+        for (int i = 0; i &lt; 1000; i++) {
+            sb.append("A");
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        BufferTask t1 = new BufferTask();
+        BufferTask t2 = new BufferTask();
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println(sb.length());
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>2000</code></pre>
+
+<p>
+    <strong>Explanation:</strong> StringBuffer synchronizes append(), so both
+    threads can safely append to the same buffer. The final length is 2000.
+    The order of appended characters is not guaranteed when threads append
+    different values.
+</p>
+
+<hr>
+
+<h3>6. Important Thread-Safety Notes</h3>
+
+<ul>
+    <li><strong>String:</strong> Immutable, so its contents can safely be shared between threads. A variable referring to a String can still be reassigned.</li>
+    <li><strong>StringBuilder:</strong> Not synchronized. Avoid unsynchronized concurrent modification of the same instance.</li>
+    <li><strong>StringBuffer:</strong> Its individual methods are synchronized, but a sequence of multiple method calls is not automatically atomic.</li>
+</ul>
+
+<hr>
+
+<h3>7. Quick Interview Revision</h3>
+
+<table>
+    <tr>
+        <th>Question</th>
+        <th>Answer</th>
+    </tr>
+    <tr>
+        <td>Which is immutable?</td>
+        <td>String</td>
+    </tr>
+    <tr>
+        <td>Which is usually fastest for repeated modifications in single-threaded code?</td>
+        <td>StringBuilder</td>
+    </tr>
+    <tr>
+        <td>Which synchronizes individual methods?</td>
+        <td>StringBuffer</td>
+    </tr>
+    <tr>
+        <td>Is String thread-safe?</td>
+        <td>Its immutable contents are safe to share.</td>
+    </tr>
+    <tr>
+        <td>Is StringBuilder thread-safe?</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>Is StringBuffer thread-safe?</td>
+        <td>Individual methods are synchronized.</td>
+    </tr>
+</table>
+
+
+<h3>How Does StringBuffer Achieve Thread Safety?</h3>
+
+<p>
+    StringBuffer makes its individual methods synchronized. This means
+    only one thread at a time can execute a synchronized method on the
+    same StringBuffer instance.
+</p>
+
+<h4>1. Example of Synchronized Methods</h4>
+
+<pre><code>StringBuffer sb = new StringBuffer("Java");
+
+sb.append(" Programming");
+sb.insert(4, " Language");
+sb.delete(0, 4);
+sb.reverse();</code></pre>
+
+<p>
+    These operations are synchronized in StringBuffer's implementation.
+    For example, its append method is declared approximately as follows:
+</p>
+
+<pre><code>public synchronized StringBuffer append(String str) {
+    // Appends the string to this buffer
+    // Internal implementation omitted
+}</code></pre>
+
+<p>
+    <strong>Note:</strong> This is a simplified illustration of the method
+    signature, not the complete JDK source code.
+</p>
+
+<h4>2. How Does synchronized Work with Two Threads?</h4>
+
+<pre><code>StringBuffer sb = new StringBuffer();
+
+Thread t1 = new Thread(() -> {
+    sb.append("Hello");
+});
+
+Thread t2 = new Thread(() -> {
+    sb.append("World");
+});
+
+t1.start();
+t2.start();
+
+t1.join();
+t2.join();
+
+System.out.println(sb);</code></pre>
+
+<h4>Possible Output</h4>
+
+<pre><code>HelloWorld</code></pre>
+
+<p>Another possible output is:</p>
+
+<pre><code>WorldHello</code></pre>
+
+<p>
+    <strong>Explanation:</strong> Both threads call the synchronized
+    <code>append()</code> method on the same object. One thread executes
+    the method at a time. The order depends on thread scheduling.
+</p>
+
+<hr>
+
+<h4>3. Which StringBuffer Methods Are Synchronized?</h4>
+
+<table>
+    <tr>
+        <th>Method</th>
+        <th>Synchronized?</th>
+    </tr>
+    <tr>
+        <td><code>append()</code></td>
+        <td>✅ Yes</td>
+    </tr>
+    <tr>
+        <td><code>insert()</code></td>
+        <td>✅ Yes</td>
+    </tr>
+    <tr>
+        <td><code>delete()</code></td>
+        <td>✅ Yes</td>
+    </tr>
+    <tr>
+        <td><code>reverse()</code></td>
+        <td>✅ Yes</td>
+    </tr>
+    <tr>
+        <td><code>replace()</code></td>
+        <td>✅ Yes</td>
+    </tr>
+</table>
+
+<div class="tip">
+    <strong>Interview Tip:</strong> StringBuffer uses synchronized methods
+    to protect individual operations on the same instance. A sequence of
+    multiple method calls is not automatically atomic.
+</div>
+
+
+<div class="tip">
+    <strong>Interview Tip:</strong>
+    String = immutable; StringBuilder = mutable and not synchronized;
+    StringBuffer = mutable and synchronized at the method level.
+</div>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
