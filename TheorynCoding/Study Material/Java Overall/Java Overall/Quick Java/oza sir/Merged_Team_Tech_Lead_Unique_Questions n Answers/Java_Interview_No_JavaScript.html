@@ -34,14 +34,14 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <div class="topic">Strings, immutability and object contracts — 10 questions</div>
 <a href="#q21" class="completed"><span class="number">21.</span>Why is `String` immutable? What is the String Constant Pool?</a>
 <a href="#q22" class="completed"><span class="number">22.</span>Compare `String`, `StringBuilder` and `StringBuffer`.</a>
-<a href="#q23"><span class="number">23.</span>What is the difference between a string literal and `new String(&quot;Java&quot;)`?</a>
-<a href="#q24"><span class="number">24.</span>What does `intern()` do?</a>
-<a href="#q25"><span class="number">25.</span>How do you design a truly immutable class?</a>
-<a href="#q26"><span class="number">26.</span>What is defensive copying, and why is it needed?</a>
-<a href="#q27"><span class="number">27.</span>Explain the `equals()` and `hashCode()` contracts.</a>
-<a href="#q28"><span class="number">28.</span>Can two unequal objects have the same hash code? Can equal objects have different hash codes?</a>
-<a href="#q29"><span class="number">29.</span>What happens if a mutable object is used as a `HashMap` key and then modified?</a>
-<a href="#q30"><span class="number">30.</span>How do you compare objects for identity versus logical equality?</a>
+<a href="#q23" class="completed"><span class="number">23.</span>What is the difference between a string literal and `new String(&quot;Java&quot;)`?</a>
+<a href="#q24" class="completed"><span class="number">24.</span>What does `intern()` do?</a>
+<a href="#q25" class="completed"><span class="number">25.</span>How do you design a truly immutable class?</a>
+<a href="#q26" class="completed"><span class="number">26.</span>What is defensive copying, and why is it needed?</a>
+<a href="#q27" class="completed"><span class="number">27.</span>Explain the `equals()` and `hashCode()` contracts.</a>
+<a href="#q28" class="completed"><span class="number">28.</span>Can two unequal objects have the same hash code? Can equal objects have different hash codes?</a>
+<a href="#q29" class="completed"><span class="number">29.</span>What happens if a mutable object is used as a `HashMap` key and then modified?</a>
+<a href="#q30" class="completed"><span class="number">30.</span>How do you compare objects for identity versus logical equality?</a>
 <div class="topic">Collections and Generics — 20 questions</div>
 <a href="#q31"><span class="number">31.</span>Explain the Java Collections Framework hierarchy.</a>
 <a href="#q32"><span class="number">32.</span>What is the difference between `Collection` and `Collections`?</a>
@@ -7916,7 +7916,156 @@ System.out.println(sb);</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>What Is the Difference Between a String Literal and new String("Java")?</h3>
+
+<p>
+    Both create String objects, but they differ in how objects are created
+    and stored.
+</p>
+
+<h4>1. String Literal</h4>
+
+<pre><code>String s1 = "Java";
+String s2 = "Java";
+
+System.out.println(s1 == s2);</code></pre>
+
+<h4>Output</h4>
+<pre><code>true</code></pre>
+
+<p>
+    <strong>Explanation:</strong>
+</p>
+<ul>
+    <li>String literals are stored in the String Constant Pool.</li>
+    <li>When the same literal already exists in the pool, Java reuses that object.</li>
+    <li>Therefore, s1 and s2 refer to the same object.</li>
+</ul>
+
+<hr>
+
+<h4>2. Using new String("Java")</h4>
+
+<pre><code>String s1 = "Java";
+String s2 = new String("Java");
+
+System.out.println(s1 == s2);
+System.out.println(s1.equals(s2));</code></pre>
+
+<h4>Output</h4>
+<pre><code>false
+true</code></pre>
+
+<p>
+    <strong>Explanation:</strong>
+</p>
+<ul>
+    <li><code>"Java"</code> refers to the pooled String object.</li>
+    <li><code>new String("Java")</code> explicitly creates a separate String object on the heap.</li>
+    <li>Both objects contain the same text, but they are different objects.</li>
+</ul>
+
+<hr>
+
+<h4>3. Memory Representation</h4>
+
+<p><strong>String literal:</strong></p>
+
+<pre><code>String s1 = "Java";
+String s2 = "Java";</code></pre>
+
+<pre><code> String Constant Pool
+ +------------------+
+ |      "Java"      |
+ +------------------+
+       ↑      ↑
+      s1     s2</code></pre>
+
+<p><strong>Using new String():</strong></p>
+
+<pre><code>String s1 = "Java";
+String s2 = new String("Java");</code></pre>
+
+<pre><code> String Constant Pool       Heap
+ +------------------+      +------------------+
+ |      "Java"      |      |      "Java"      |
+ +------------------+      +------------------+
+       ↑                         ↑
+      s1                        s2</code></pre>
+
+<hr>
+
+<h4>4. Comparison Table</h4>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>String Literal</th>
+        <th>new String()</th>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td><code>"Java"</code></td>
+        <td><code>new String("Java")</code></td>
+    </tr>
+    <tr>
+        <td>Object reuse</td>
+        <td>Reuses pooled strings</td>
+        <td>Creates a new String object</td>
+    </tr>
+    <tr>
+        <td>String Pool</td>
+        <td>Uses the pool</td>
+        <td>Uses the literal in the pool if not already present, and creates a separate object</td>
+    </tr>
+    <tr>
+        <td>== comparison</td>
+        <td>Same pooled reference can return true</td>
+        <td>Different references return false in this example</td>
+    </tr>
+    <tr>
+        <td>equals() comparison</td>
+        <td>Compares content</td>
+        <td>Compares content</td>
+    </tr>
+</table>
+
+<hr>
+
+<h4>5. Important: What Does intern() Do?</h4>
+
+<pre><code>String s1 = "Java";
+String s2 = new String("Java");
+
+String s3 = s2.intern();
+
+System.out.println(s1 == s2);
+System.out.println(s1 == s3);</code></pre>
+
+<h4>Output</h4>
+<pre><code>false
+true</code></pre>
+
+<p>
+    <strong>Explanation:</strong> <code>intern()</code> returns the
+    corresponding pooled String reference. Since "Java" is already in
+    the pool, s3 refers to the same object as s1.
+</p>
+
+<hr>
+
+<div class="tip">
+    <strong>Interview Tip:</strong>
+    <ul>
+        <li>String literal = uses the String Constant Pool.</li>
+        <li>new String("Java") = creates a separate String object.</li>
+        <li>== checks object references.</li>
+        <li>equals() checks String content.</li>
+        <li>intern() returns the pooled String reference.</li>
+    </ul>
+</div>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -7925,7 +8074,156 @@ System.out.println(sb);</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>What Is the Difference Between a String Literal and new String("Java")?</h3>
+
+<p>
+    Both create String objects, but they differ in how objects are created
+    and stored.
+</p>
+
+<h4>1. String Literal</h4>
+
+<pre><code>String s1 = "Java";
+String s2 = "Java";
+
+System.out.println(s1 == s2);</code></pre>
+
+<h4>Output</h4>
+<pre><code>true</code></pre>
+
+<p>
+    <strong>Explanation:</strong>
+</p>
+<ul>
+    <li>String literals are stored in the String Constant Pool.</li>
+    <li>When the same literal already exists in the pool, Java reuses that object.</li>
+    <li>Therefore, s1 and s2 refer to the same object.</li>
+</ul>
+
+<hr>
+
+<h4>2. Using new String("Java")</h4>
+
+<pre><code>String s1 = "Java";
+String s2 = new String("Java");
+
+System.out.println(s1 == s2);
+System.out.println(s1.equals(s2));</code></pre>
+
+<h4>Output</h4>
+<pre><code>false
+true</code></pre>
+
+<p>
+    <strong>Explanation:</strong>
+</p>
+<ul>
+    <li><code>"Java"</code> refers to the pooled String object.</li>
+    <li><code>new String("Java")</code> explicitly creates a separate String object on the heap.</li>
+    <li>Both objects contain the same text, but they are different objects.</li>
+</ul>
+
+<hr>
+
+<h4>3. Memory Representation</h4>
+
+<p><strong>String literal:</strong></p>
+
+<pre><code>String s1 = "Java";
+String s2 = "Java";</code></pre>
+
+<pre><code> String Constant Pool
+ +------------------+
+ |      "Java"      |
+ +------------------+
+       ↑      ↑
+      s1     s2</code></pre>
+
+<p><strong>Using new String():</strong></p>
+
+<pre><code>String s1 = "Java";
+String s2 = new String("Java");</code></pre>
+
+<pre><code> String Constant Pool       Heap
+ +------------------+      +------------------+
+ |      "Java"      |      |      "Java"      |
+ +------------------+      +------------------+
+       ↑                         ↑
+      s1                        s2</code></pre>
+
+<hr>
+
+<h4>4. Comparison Table</h4>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>String Literal</th>
+        <th>new String()</th>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td><code>"Java"</code></td>
+        <td><code>new String("Java")</code></td>
+    </tr>
+    <tr>
+        <td>Object reuse</td>
+        <td>Reuses pooled strings</td>
+        <td>Creates a new String object</td>
+    </tr>
+    <tr>
+        <td>String Pool</td>
+        <td>Uses the pool</td>
+        <td>Uses the literal in the pool if not already present, and creates a separate object</td>
+    </tr>
+    <tr>
+        <td>== comparison</td>
+        <td>Same pooled reference can return true</td>
+        <td>Different references return false in this example</td>
+    </tr>
+    <tr>
+        <td>equals() comparison</td>
+        <td>Compares content</td>
+        <td>Compares content</td>
+    </tr>
+</table>
+
+<hr>
+
+<h4>5. Important: What Does intern() Do?</h4>
+
+<pre><code>String s1 = "Java";
+String s2 = new String("Java");
+
+String s3 = s2.intern();
+
+System.out.println(s1 == s2);
+System.out.println(s1 == s3);</code></pre>
+
+<h4>Output</h4>
+<pre><code>false
+true</code></pre>
+
+<p>
+    <strong>Explanation:</strong> <code>intern()</code> returns the
+    corresponding pooled String reference. Since "Java" is already in
+    the pool, s3 refers to the same object as s1.
+</p>
+
+<hr>
+
+<div class="tip">
+    <strong>Interview Tip:</strong>
+    <ul>
+        <li>String literal = uses the String Constant Pool.</li>
+        <li>new String("Java") = creates a separate String object.</li>
+        <li>== checks object references.</li>
+        <li>equals() checks String content.</li>
+        <li>intern() returns the pooled String reference.</li>
+    </ul>
+</div>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -7934,7 +8232,460 @@ System.out.println(sb);</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>How Do You Design a Truly Immutable Class in Java?</h3>
+
+<p>
+    An <strong>immutable class</strong> is a class whose object state (Object state = Current data stored inside an object.)cannot
+    be changed after the object is created.
+</p>
+
+<pre><code>Object state means the current values of an object's variables (fields).
+
+Example:
+class Student {
+    int age = 25;
+    String name = "Rahul";
+}
+
+
+Here, the object's state is:
+- age = 25
+- name = "Rahul"
+In simple words: Object state = Current data stored inside an object.<code></pre>
+
+<p>Once we create an object, its values cannot be modified.</p>
+
+<hr>
+
+<h4>1. Rules to Create an Immutable Class</h4>
+
+<ol>
+    <li>Declare the class as <code>final</code> so it cannot be extended.</li>
+    <li>Declare all instance variables as <code>private</code>.</li>
+    <li>Declare all instance variables as <code>final</code>.</li>
+    <li>Do not provide setter methods.</li>
+    <li>Initialize variables through the constructor.</li>
+    <li>If a variable refers to a mutable object, use defensive copying when receiving and returning it.</li>
+</ol>
+
+<hr>
+
+<h4>2. Simple Example of an Immutable Class</h4>
+
+<pre><code>final class Employee {
+
+    private final int id;
+    private final String name;
+
+    public Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        Employee emp = new Employee(101, "Rahul");
+
+        System.out.println(emp.getId());
+        System.out.println(emp.getName());
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>101
+Rahul</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li><code>final class Employee</code> – cannot be extended.</li>
+    <li><code>private final</code> variables – cannot be reassigned after initialization.</li>
+    <li>No setter methods – values cannot be changed through setters.</li>
+    <li>Constructor initializes the values.</li>
+</ul>
+
+<hr>
+
+<h4>3. Important: What If the Class Contains a Mutable Object?</h4>
+
+<p>
+    Consider the following example using the mutable <code>Date</code> class.
+</p>
+
+<pre><code>import java.util.Date;
+
+final class Employee {
+
+    private final String name;
+    private final Date joiningDate;
+
+    public Employee(String name, Date joiningDate) {
+        this.name = name;
+        this.joiningDate = joiningDate;
+    }
+
+    public Date getJoiningDate() {
+        return joiningDate;
+    }
+}</code></pre>
+
+<p><strong>Problem:</strong> This class is not truly immutable.</p>
+
+<ul>
+    <li>Date is a mutable object.</li>
+    <li>Someone can modify the original Date object passed to the constructor.<b>Constructor: date.setTime(0); — modifies the original Date object passed to the constructor.</b></li>
+    <li>Someone can also modify the Date object returned by the getter.Getter: <b>emp.getJoiningDate().setTime(0); — modifies the Date object returned by the getter.</b></li>
+    <li>Therefore, the internal joiningDate value can change.</li>
+</ul>
+
+<h4>Example of the Problem</h4>
+
+<pre><code>Date date = new Date();
+
+Employee emp = new Employee("Rahul", date);
+
+// Changes the Employee's internal date
+date.setTime(0);</code></pre>
+
+<hr>
+
+<h4>4. Correct Approach Using Defensive Copying</h4>
+
+<p>
+    <strong>Defensive copying</strong> means creating a separate copy of a
+    mutable object so external code cannot modify the original object's state.
+</p>
+
+<pre><code>import java.util.Date;
+
+final class Employee {
+
+    private final String name;
+    private final Date joiningDate;
+
+    public Employee(String name, Date joiningDate) {
+        this.name = name;
+        this.joiningDate = new Date(joiningDate.getTime());
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Date getJoiningDate() {
+        return new Date(joiningDate.getTime());
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        Date date = new Date();
+
+        Employee emp = new Employee("Rahul", date);
+
+        // Original Date changes
+        date.setTime(0);
+
+        // Returned Date changes
+        Date returnedDate = emp.getJoiningDate();
+        returnedDate.setTime(0);
+
+        System.out.println(emp.getName());
+        System.out.println(emp.getJoiningDate());
+    }
+}</code></pre>
+
+<h4>Explanation</h4>
+
+<ul>
+    <li>Constructor creates a copy of the incoming Date object.</li>
+    <li>Getter returns another copy of the Date object.</li>
+    <li>External code cannot modify the Employee's internal Date object.</li>
+</ul>
+
+<hr>
+
+<h4>5. Quick Interview Revision</h4>
+
+<table>
+    <tr>
+        <th>Rule</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td><code>final class</code></td>
+        <td>Prevents inheritance.</td>
+    </tr>
+    <tr>
+        <td><code>private</code> variables</td>
+        <td>Prevents direct external access.</td>
+    </tr>
+    <tr>
+        <td><code>final</code> variables</td>
+        <td>Prevents reassignment.</td>
+    </tr>
+    <tr>
+        <td>No setters</td>
+        <td>Prevents changing values through setter methods.</td>
+    </tr>
+    <tr>
+        <td>Constructor initialization</td>
+        <td>Sets values during object creation.</td>
+    </tr>
+    <tr>
+        <td>Defensive copying</td>
+        <td>Protects mutable objects from external modification.</td>
+    </tr>
+</table>
+
+<div class="tip">
+    <strong>Interview Tip:</strong>
+    Making variables <code>private final</code> is not sufficient for
+    true immutability if they reference mutable objects. Use defensive
+    copying for mutable fields.
+</div>
+
+
+<section>
+    <h2>Java Immutability with String and List</h2>
+
+    <h3>1. String – Immutable</h3>
+    <p>
+        String is immutable, meaning its existing content cannot be changed
+        after the object is created.
+    </p>
+
+    <pre><code>
+String name = "Rahul";
+
+name.concat(" Sharma");
+
+System.out.println(name); // Rahul
+    </code></pre>
+
+    <p>
+        <strong>Output:</strong> Rahul
+    </p>
+    <p>
+        <strong>Reason:</strong> concat() returns a new String object.
+        It does not modify the original String.
+    </p>
+
+    <h3>2. List – Mutable</h3>
+    <p>
+        List is mutable, meaning we can add, remove, or update elements
+        after creating the List.
+    </p>
+
+    <pre><code>
+List&lt;String&gt; names = new ArrayList&lt;&gt;();
+
+names.add("Rahul");
+names.add("Amit");
+
+System.out.println(names);
+// [Rahul, Amit]
+
+names.set(0, "Nikhil");
+
+System.out.println(names);
+// [Nikhil, Amit]
+
+names.add("Priya");
+
+System.out.println(names);
+// [Nikhil, Amit, Priya]
+    </code></pre>
+
+    <p>
+        <strong>Reason:</strong> add() and set() modify the existing List.
+        A new List is not created.
+    </p>
+
+    <h3>3. Mutable List Inside an Immutable Class</h3>
+
+    <p>
+        A List is mutable. Therefore, using a final List reference alone
+        does not make a class truly immutable.
+    </p>
+
+    <h4>3.1 Problem – Without Defensive Copying</h4>
+
+    <pre><code>
+class Employee {
+    private final String name;
+    private final List&lt;String&gt; skills;
+
+    public Employee(String name, List&lt;String&gt; skills) {
+        this.name = name;
+        this.skills = skills;
+    }
+
+    public List&lt;String&gt; getSkills() {
+        return skills;
+    }
+}
+    </code></pre>
+
+    <h4>Problem A: Modifying the Original List</h4>
+
+    <pre><code>
+List&lt;String&gt; skills = new ArrayList&lt;&gt;();
+skills.add("Java");
+
+Employee emp = new Employee("Rahul", skills);
+
+skills.add("Spring Boot");
+
+System.out.println(emp.getSkills());
+// [Java, Spring Boot]
+    </code></pre>
+
+    <p>
+        <strong>Reason:</strong> The constructor stores the same List reference.
+        Therefore, modifying the original List also modifies the List
+        accessible through Employee.
+    </p>
+
+    <h4>Problem B: Modifying the List Returned by the Getter</h4>
+
+    <pre><code>
+emp.getSkills().add("Angular");
+
+System.out.println(emp.getSkills());
+// [Java, Spring Boot, Angular]
+    </code></pre>
+
+    <p>
+        <strong>Reason:</strong> The getter returns the original internal List.
+        Anyone can modify it.
+    </p>
+
+    <h3>4. Solution – Defensive Copying</h3>
+
+    <p>
+        Defensive copying means creating a separate copy of a mutable object
+        so that external code cannot modify the object's internal data.
+    </p>
+
+    <pre><code>
+final class Employee {
+    private final String name;
+    private final List&lt;String&gt; skills;
+
+    public Employee(String name, List&lt;String&gt; skills) {
+        this.name = name;
+
+        // Defensive copy in constructor
+        this.skills = new ArrayList&lt;&gt;(skills);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List&lt;String&gt; getSkills() {
+
+        // Defensive copy in getter
+        return new ArrayList&lt;&gt;(skills);
+    }
+}
+    </code></pre>
+
+    <h3>5. Testing the Immutable Class</h3>
+
+    <pre><code>
+List&lt;String&gt; skills = new ArrayList&lt;&gt;();
+skills.add("Java");
+
+Employee emp = new Employee("Rahul", skills);
+
+// Modify original List
+skills.add("Spring Boot");
+
+System.out.println(emp.getSkills());
+// [Java]
+
+// Modify List returned by getter
+emp.getSkills().add("Angular");
+
+System.out.println(emp.getSkills());
+// [Java]
+    </code></pre>
+
+    <h3>6. Important Rules to Remember</h3>
+
+    <ol>
+        <li>
+            <strong>Constructor:</strong>
+            <code>new ArrayList&lt;&gt;(skills)</code> creates a separate
+            copy of the original List.
+        </li>
+        <li>
+            <strong>Getter:</strong>
+            <code>new ArrayList&lt;&gt;(skills)</code> returns a separate
+            copy instead of exposing the internal List.
+        </li>
+        <li>
+            <strong>final:</strong> Prevents reassignment of the List
+            reference, but does not prevent modification of its contents.
+        </li>
+        <li>
+            <strong>Defensive copying:</strong> Protects the internal state
+            of an immutable class.
+        </li>
+    </ol>
+
+    <h3>7. Interview Summary</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Concept</th>
+            <th>Meaning</th>
+        </tr>
+        <tr>
+            <td>String</td>
+            <td>Immutable – existing content cannot be changed.</td>
+        </tr>
+        <tr>
+            <td>List</td>
+            <td>Mutable – elements can be added, removed, or updated.</td>
+        </tr>
+        <tr>
+            <td>final List</td>
+            <td>Reference cannot be reassigned, but List contents can change.</td>
+        </tr>
+        <tr>
+            <td>Defensive Copying</td>
+            <td>Creates a separate copy to protect internal data.</td>
+        </tr>
+        <tr>
+            <td>Immutable Class</td>
+            <td>Existing object's state cannot be changed from outside.</td>
+        </tr>
+    </table>
+
+    <p>
+        <strong>Important Note:</strong> This example assumes the List contains
+        immutable elements such as String. If it contains mutable objects,
+        those elements also need defensive copying.
+    </p>
+</section>
+
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -7943,7 +8694,67 @@ System.out.println(sb);</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>What is Defensive Copying, and Why Is It Needed?</h2>
+
+    <h3>1. What is Defensive Copying?</h3>
+    <p>
+        Defensive copying means creating a separate copy of a mutable object
+        instead of sharing its original reference.
+    </p>
+
+    <h3>2. Why Is It Needed?</h3>
+    <p>
+        It protects the internal data of an immutable class from being
+        modified by external code.
+    </p>
+
+    <h3>3. Example Without Defensive Copying</h3>
+    <pre><code>
+List&lt;String&gt; skills = new ArrayList&lt;&gt;();
+skills.add("Java");
+
+Employee emp = new Employee("Rahul", skills);
+
+skills.add("Spring Boot");
+
+System.out.println(emp.getSkills());
+// [Java, Spring Boot]
+    </code></pre>
+
+    <p>
+        <strong>Problem:</strong> The original List is modified, so the
+        Employee object's internal data is also affected.
+    </p>
+
+    <h3>4. Example With Defensive Copying</h3>
+    <pre><code>
+public Employee(String name, List&lt;String&gt; skills) {
+    this.name = name;
+    this.skills = new ArrayList&lt;&gt;(skills);
+}
+
+public List&lt;String&gt; getSkills() {
+    return new ArrayList&lt;&gt;(skills);
+}
+    </code></pre>
+
+    <ul>
+        <li>Constructor creates a separate copy.</li>
+        <li>Getter returns a separate copy.</li>
+        <li>External modifications cannot affect the internal List.</li>
+    </ul>
+
+    <h3>5. Interview Answer</h3>
+    <p>
+        <strong>
+            Defensive copying protects an object's internal state by creating
+            copies of mutable objects when accepting or returning them.
+        </strong>
+    </p>
+</section>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -7952,7 +8763,125 @@ System.out.println(sb);</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>Explain the equals() and hashCode() Contracts</h2>
+
+    <h3>1. What is equals()?</h3>
+    <p>
+        The equals() method compares two objects based on their logical
+        content rather than their memory references.
+    </p>
+
+    <h3>2. What is hashCode()?</h3>
+    <p>
+        The hashCode() method returns an integer value for an object.
+        It is used by hash-based collections like HashMap and HashSet
+        to identify the bucket where an object should be stored.
+    </p>
+
+    <h3>3. What are the equals() and hashCode() Contracts?</h3>
+    <p>
+        Java defines rules that must be followed when overriding
+        equals() and hashCode().
+    </p>
+
+    <ol>
+        <li>
+            <strong>Equal objects must have the same hash code.</strong>
+            <p>
+                If two objects are equal according to equals(), their
+                hashCode() values must also be equal.
+            </p>
+        </li>
+        <li>
+            <strong>Same hash code does not mean objects are equal.</strong>
+            <p>
+                Two different objects can have the same hash code.
+                This is called a hash collision.
+            </p>
+        </li>
+        <li>
+            <strong>Override both methods together.</strong>
+            <p>
+                If you override equals(), you should also override
+                hashCode() to maintain the contract.
+            </p>
+        </li>
+    </ol>
+
+    <h3>4. Practical Example</h3>
+
+    <pre><code>
+import java.util.Objects;
+
+class Employee {
+    private int id;
+    private String name;
+
+    public Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+
+        if (!(obj instanceof Employee)) return false;
+
+        Employee other = (Employee) obj;
+
+        return id == other.id &&
+               Objects.equals(name, other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
+}
+    </code></pre>
+
+    <h3>5. Testing the Example</h3>
+
+    <pre><code>
+Employee e1 = new Employee(101, "Rahul");
+Employee e2 = new Employee(101, "Rahul");
+
+System.out.println(e1.equals(e2));
+// true
+
+System.out.println(e1.hashCode() == e2.hashCode());
+// true
+    </code></pre>
+
+    <p>
+        Both objects have the same id and name. Therefore, equals()
+        returns true and both objects have the same hash code.
+    </p>
+
+    <h3>6. What Happens If We Override Only equals()?</h3>
+
+    <p>
+        If we override equals() but do not override hashCode(),
+        two logically equal objects may have different hash codes.
+        HashSet or HashMap may then fail to identify them as equal keys.
+    </p>
+
+    <h3>7. Interview Answer</h3>
+
+    <p>
+        <strong>
+            The equals() and hashCode() contract states that if two objects
+            are equal according to equals(), they must have the same hash
+            code. However, two objects having the same hash code does not
+            necessarily mean they are equal. Therefore, whenever we override
+            equals(), we should also override hashCode().
+        </strong>
+    </p>
+</section>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -7961,7 +8890,68 @@ System.out.println(sb);</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>Can Two Unequal Objects Have the Same Hash Code? Can Equal Objects Have Different Hash Codes?</h2>
+
+    <h3>1. Can Two Unequal Objects Have the Same Hash Code?</h3>
+
+    <p><strong>Yes.</strong> Two unequal objects can have the same hash code. This is called a <strong>Hash Collision</strong>.</p>
+
+    <pre><code>
+Employee e1 = new Employee(101, "Rahul");
+Employee e2 = new Employee(102, "Amit");
+
+// Assume both objects produce hash code 100
+
+System.out.println(e1.equals(e2)); // false
+System.out.println(e1.hashCode() == e2.hashCode()); // true
+    </code></pre>
+
+    <p><strong>Reason:</strong> Different objects can produce the same hash code. Java allows this.</p>
+
+    <h3>2. Can Equal Objects Have Different Hash Codes?</h3>
+
+    <p><strong>No.</strong> If two objects are equal according to equals(), they must have the same hash code.</p>
+
+    <pre><code>
+Employee e1 = new Employee(101, "Rahul");
+Employee e2 = new Employee(101, "Rahul");
+
+System.out.println(e1.equals(e2)); // true
+System.out.println(e1.hashCode() == e2.hashCode()); // true
+    </code></pre>
+
+    <p><strong>Reason:</strong> This is a mandatory rule of the equals() and hashCode() contract.</p>
+
+    <h3>3. Summary</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Condition</th>
+            <th>Possible?</th>
+        </tr>
+        <tr>
+            <td>Unequal objects with the same hash code</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>Equal objects with different hash codes</td>
+            <td>No – contract violation</td>
+        </tr>
+    </table>
+
+    <h3>4. Interview Answer</h3>
+
+    <p>
+        <strong>
+            Yes, two unequal objects can have the same hash code, which is
+            called a hash collision. However, two equal objects must always
+            have the same hash code according to the Java contract.
+        </strong>
+    </p>
+</section>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -7970,7 +8960,440 @@ System.out.println(sb);</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>What Happens If a Mutable Object Is Used as a HashMap Key and Then Modified?</h2>
+
+    <h3>1. Explanation</h3>
+    <p>
+        If we use a mutable object as a HashMap key and then modify the fields
+        used in its equals() and hashCode() methods, the object's hash code
+        may change.
+    </p>
+    <p>
+        As a result, HashMap may not be able to find the key using get()
+        or remove(), even though the key is still present in the map.
+    </p>
+
+    <h3>2. Practical Example</h3>
+
+    <pre><code>
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+class Employee {
+    int id;
+    String name;
+
+    Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Employee)) return false;
+
+        Employee other = (Employee) obj;
+
+        return id == other.id &&
+               Objects.equals(name, other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        Map&lt;Employee, String&gt; map = new HashMap&lt;&gt;();
+
+        Employee emp = new Employee(101, "Rahul");
+
+        map.put(emp, "Developer");
+
+        System.out.println(map.get(emp));
+        // Developer
+
+        // Modify the key after insertion
+        emp.id = 102;
+
+        System.out.println(map.get(emp));
+        // May return null
+
+        System.out.println(map.containsKey(emp));
+        // May return false
+    }
+}
+    </code></pre>
+
+    <h3>3. Why Does This Happen?</h3>
+
+    <ol>
+        <li>Initially, Employee has ID 101 and name Rahul.</li>
+        <li>HashMap calculates the hash code and stores the entry in a bucket.</li>
+        <li>We modify the employee ID from 101 to 102.</li>
+        <li>The hash code may change because the ID is used in hashCode().</li>
+        <li>When we call get(), HashMap searches using the new hash code.</li>
+        <li>The entry may still be stored in the original bucket, so lookup fails.</li>
+    </ol>
+
+    <h3>4. Important Point</h3>
+
+    <p>
+        The entry is not necessarily deleted from HashMap. It may still exist,
+        but it can become difficult to retrieve using the modified key.
+    </p>
+
+    <h3>5. How to Avoid This Problem?</h3>
+
+    <ul>
+        <li>Prefer immutable objects as HashMap keys.</li>
+        <li>Do not modify fields used by equals() and hashCode() after inserting a key.</li>
+        <li>Use final fields where appropriate to prevent accidental modification.</li>
+    </ul>
+
+    <h3>6. Interview Answer</h3>
+
+    <p>
+        <strong>
+            If a mutable object is used as a HashMap key and its fields used
+            in equals() and hashCode() are modified after insertion, its hash
+            code may change. HashMap may then fail to locate the entry using
+            get() or remove(), because the entry remains stored in the bucket
+            determined by its original hash code.
+        </strong>
+    </p>
+</section>
+
+
+<section>
+    <h2><u>How Does HashMap Behave When a Mutable Key Is Modified?</u></h2>
+
+    <p>
+        The confusion is between <strong>where the object is stored</strong>
+        and <strong>where HashMap searches for the object</strong>.
+        These are two different things.
+    </p>
+
+    <h3>Step 1: Insertion</h3>
+
+    <pre><code>
+emp.id = 101;
+emp.name = "Rahul";
+
+map.put(emp, "Developer");
+    </code></pre>
+
+    <p>Suppose the hash calculation gives bucket 2.</p>
+
+    <pre><code>
+        emp (101, Rahul)
+               |
+               | hashCode() = H1
+               v
+           Bucket 2
+               |
+               v
+       (101, Rahul) -> Developer
+    </code></pre>
+
+    <p>
+        <strong>Explanation:</strong> HashMap calculates the hash code
+        and stores the entry in bucket 2.
+    </p>
+
+    <h3>Step 2: Modify the Same Object</h3>
+
+    <pre><code>
+emp.id = 102;
+    </code></pre>
+
+    <p>
+        Now something important happens. The object is still the same
+        object. Only its fields have changed.
+    </p>
+
+    <h4>Before Modification</h4>
+
+    <pre><code>
+Bucket 2
+   |
+   v
+[ emp object ] -> id = 101, name = Rahul
+    </code></pre>
+
+    <h4>After Modification</h4>
+
+    <pre><code>
+Bucket 2
+   |
+   v
+[ emp object ] -> id = 102, name = Rahul
+    </code></pre>
+
+    <p>
+        <strong>Important:</strong> HashMap does not automatically move
+        the entry from bucket 2 to another bucket when the object's
+        fields are modified.
+    </p>
+
+    <h3>Step 3: Call get(emp)</h3>
+
+    <pre><code>
+map.get(emp);
+    </code></pre>
+
+    <p>
+        Now HashMap calculates the hash code again using the modified key.
+    </p>
+
+    <pre><code>
+        emp (102, Rahul)
+               |
+               | hashCode() = H2
+               v
+           Bucket 5
+               |
+               v
+             null
+    </code></pre>
+
+    <p><strong>Why does it search bucket 5?</strong></p>
+
+    <p>
+        Because HashMap calculates the bucket index using the key's
+        current hash code during lookup. It does not automatically
+        relocate the existing entry when the key changes.
+    </p>
+
+    <h3>Step 4: The Complete Picture</h3>
+
+    <h4>Actual HashMap Storage</h4>
+
+    <pre><code>
+Bucket 2
+
+Entry exists
+    |
+    v
+emp -> (102, Rahul) -> Developer
+
+
+Bucket 5
+
+Empty
+    |
+    v
+null
+    </code></pre>
+
+    <h4>Lookup Operation</h4>
+
+    <pre><code>
+map.get(emp);
+
+        |
+        v
+
+    Bucket 5
+
+        |
+        v
+
+      Returns null
+    </code></pre>
+
+    <p>
+        The entry still exists in bucket 2, but lookup searches bucket 5.
+    </p>
+
+    <h3>Step 5: The Most Important Concept</h3>
+
+    <ol>
+        <li>
+            <strong>Insertion:</strong>
+            HashMap calculates the bucket and stores the entry there.
+        </li>
+        <li>
+            <strong>Modification:</strong>
+            The object changes, but its stored entry does not move.
+        </li>
+        <li>
+            <strong>Retrieval:</strong>
+            HashMap calculates the bucket again using the modified key.
+        </li>
+    </ol>
+
+    <h3>Step 6: Additional Technical Detail</h3>
+
+    <p>
+        Java HashMap stores the key's hash value inside its internal
+        entry when inserting it.
+    </p>
+
+    <p>
+        During lookup, HashMap calculates the hash again and compares
+        it with the stored hash. If the hashes do not match, the entry
+        will not be considered a match.
+    </p>
+
+    <h3>Interview Takeaway</h3>
+
+    <p>
+        <strong>
+            Changing a key's equals() or hashCode()-related fields after
+            insertion can make a HashMap entry practically inaccessible
+            through normal lookup operations such as get() and remove().
+        </strong>
+    </p>
+</section>
+
+
+<section>
+    <h2><u>How to Avoid Mutable HashMap Key Problems</u></h2>
+
+    <h3>1. Recommended Solution: Use an Immutable Class</h3>
+
+    <p>
+        The best way to avoid problems caused by modifying a HashMap key
+        is to use an immutable Java class as the key.
+    </p>
+
+    <h3>2. Create an Immutable Employee Class</h3>
+
+    <pre><code>
+import java.util.Objects;
+
+final class Employee {
+
+    private final int id;
+    private final String name;
+
+    public Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+
+        if (!(obj instanceof Employee)) return false;
+
+        Employee other = (Employee) obj;
+
+        return id == other.id &&
+               Objects.equals(name, other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
+}
+    </code></pre>
+
+    <h3>3. Use Employee as a HashMap Key</h3>
+
+    <pre><code>
+import java.util.HashMap;
+import java.util.Map;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Map&lt;Employee, String&gt; map = new HashMap&lt;&gt;();
+
+        Employee emp = new Employee(101, "Rahul");
+
+        map.put(emp, "Developer");
+
+        System.out.println(map.get(emp));
+        // Developer
+
+        // Cannot modify emp.id or emp.name
+        // emp.id = 102; // Compile-time error
+
+        System.out.println(map.get(emp));
+        // Developer
+    }
+}
+    </code></pre>
+
+    <h3>4. Why Is This Safe?</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Technique</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td>final class</td>
+            <td>Prevents inheritance.</td>
+        </tr>
+        <tr>
+            <td>private fields</td>
+            <td>Prevents direct external access.</td>
+        </tr>
+        <tr>
+            <td>final fields</td>
+            <td>Prevents reassignment after construction.</td>
+        </tr>
+        <tr>
+            <td>No setters</td>
+            <td>Prevents modification through setter methods.</td>
+        </tr>
+        <tr>
+            <td>equals()</td>
+            <td>Compares Employee objects logically.</td>
+        </tr>
+        <tr>
+            <td>hashCode()</td>
+            <td>Generates hash code using the same fields.</td>
+        </tr>
+    </table>
+
+    <h3>5. Important Note</h3>
+
+    <p>
+        This example is safe because int is a primitive type and String
+        is immutable.
+    </p>
+
+    <p>
+        If the class contains mutable fields such as Date or List,
+        use defensive copying to protect the internal data.
+    </p>
+
+    <h3>6. Interview Answer</h3>
+
+    <p>
+        <strong>
+            Use immutable objects as HashMap keys. Make the class final,
+            keep fields private and final, provide no setters, and implement
+            equals() and hashCode() consistently. This prevents the key's
+            equality-related state from changing after insertion.
+        </strong>
+    </p>
+</section>
+
+
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -7979,7 +9402,131 @@ System.out.println(sb);</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>How Do You Compare Objects for Identity Versus Logical Equality?</h2>
+
+    <h3>1. Object Identity (==)</h3>
+    <p>
+        The == operator checks whether two reference variables point to
+        the same object in memory.
+    </p>
+
+    <pre><code>
+String s1 = new String("Java");
+String s2 = new String("Java");
+
+System.out.println(s1 == s2); // false
+    </code></pre>
+
+    <p>
+        <strong>Reason:</strong> Both variables refer to two different
+        String objects, even though their contents are the same.
+    </p>
+
+    <h3>2. Logical Equality (equals())</h3>
+    <p>
+        The equals() method checks whether two objects have the same
+        logical content or values, provided the class implements
+        equals() accordingly.
+    </p>
+
+    <pre><code>
+String s1 = new String("Java");
+String s2 = new String("Java");
+
+System.out.println(s1.equals(s2)); // true
+    </code></pre>
+
+    <p>
+        <strong>Reason:</strong> Both String objects contain the same
+        text, "Java".
+    </p>
+
+    <h3>3. Practical Example Using a Custom Class</h3>
+
+    <pre><code>
+class Employee {
+    int id;
+    String name;
+
+    Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+
+        if (!(obj instanceof Employee)) return false;
+
+        Employee other = (Employee) obj;
+
+        return id == other.id;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        Employee e1 = new Employee(101, "Rahul");
+        Employee e2 = new Employee(101, "Rahul");
+
+        System.out.println(e1 == e2);
+        // false
+
+        System.out.println(e1.equals(e2));
+        // true
+    }
+}
+    </code></pre>
+
+    <p>
+        <strong>Explanation:</strong>
+    </p>
+    <ul>
+        <li><code>e1 == e2</code> returns false because they are two different objects.</li>
+        <li><code>e1.equals(e2)</code> returns true because both objects have the same ID.</li>
+    </ul>
+
+    <h3>4. Difference Between == and equals()</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>==</th>
+            <th>equals()</th>
+        </tr>
+        <tr>
+            <td>Checks object identity.</td>
+            <td>Checks logical equality when properly overridden.</td>
+        </tr>
+        <tr>
+            <td>Compares object references.</td>
+            <td>Compares object content or values, depending on implementation.</td>
+        </tr>
+        <tr>
+            <td>Operator in Java.</td>
+            <td>Method from the Object class.</td>
+        </tr>
+        <tr>
+            <td>Cannot be overridden.</td>
+            <td>Can be overridden.</td>
+        </tr>
+    </table>
+
+    <h3>5. Interview Answer</h3>
+
+    <p>
+        <strong>
+            The == operator compares object references to check whether
+            two variables point to the same object, whereas equals()
+            compares the logical content of objects when the method is
+            properly overridden.
+        </strong>
+    </p>
+</section>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
