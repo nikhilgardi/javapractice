@@ -64,13 +64,13 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q49"><span class="number">49.</span>Explain bounded type parameters, wildcards, `extends` and `super`.</a>
 <a href="#q50"><span class="number">50.</span>What are type erasure, raw types and heap pollution?</a>
 <div class="topic">Exceptions, JVM, memory and performance — 15 questions</div>
-<a href="#q51"><span class="number">51.</span>Explain checked and unchecked exceptions.</a>
-<a href="#q52"><span class="number">52.</span>Compare `throw` and `throws`.</a>
-<a href="#q53"><span class="number">53.</span>What is the exception hierarchy? What is the difference between `Exception` and `Error`?</a>
-<a href="#q54"><span class="number">54.</span>How does `try-catch-finally` work, including when a `return` is present?</a>
-<a href="#q55"><span class="number">55.</span>What is try-with-resources? What is a suppressed exception?</a>
-<a href="#q56"><span class="number">56.</span>Can you override a method and change its declared exceptions?</a>
-<a href="#q57"><span class="number">57.</span>How do you create a custom exception? When should it be checked or unchecked?</a>
+<a href="#q51" class="completed"><span class="number">51.</span>Explain checked and unchecked exceptions.</a>
+<a href="#q52" class="completed"><span class="number">52.</span>Compare `throw` and `throws`.</a>
+<a href="#q53" class="completed"><span class="number">53.</span>What is the exception hierarchy? What is the difference between `Exception` and `Error`?</a>
+<a href="#q54" class="completed"><span class="number">54.</span>How does `try-catch-finally` work, including when a `return` is present?</a>
+<a href="#q55" class="completed"><span class="number">55.</span>What is try-with-resources? What is a suppressed exception?</a>
+<a href="#q56" class="completed"><span class="number">56.</span>Can you override a method and change its declared exceptions?</a>
+<a href="#q57" class="completed"><span class="number">57.</span>How do you create a custom exception? When should it be checked or unchecked?</a>
 <a href="#q58"><span class="number">58.</span>Explain stack memory, heap memory, metaspace and native memory.</a>
 <a href="#q59"><span class="number">59.</span>What is the difference between a stack overflow and an out-of-memory error?</a>
 <a href="#q60"><span class="number">60.</span>Explain class loading, linking, initialization and class-loader delegation.</a>
@@ -9717,7 +9717,162 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>Explain Checked and Unchecked Exceptions in Java</h2>
+
+    <h3>1. What is an Exception?</h3>
+    <p>
+        An exception is an unwanted event that occurs during program execution
+        and interrupts the normal flow of the application.
+    </p>
+
+    <h3>2. Checked Exceptions</h3>
+    <p>
+        Checked exceptions are exceptions checked by the compiler at compile time.
+        The programmer must either handle them using try-catch or declare them
+        using the throws keyword.
+    </p>
+
+    <h4>Examples:</h4>
+    <ul>
+        <li>IOException</li>
+        <li>SQLException</li>
+        <li>FileNotFoundException</li>
+        <li>ClassNotFoundException</li>
+        <li>InterruptedException</li>
+    </ul>
+
+    <h4>Example:</h4>
+    <pre><code>
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Main {
+    public static void main(String[] args) {
+
+        try {
+            FileReader reader = new FileReader("test.txt");
+            reader.close();
+
+        } catch (IOException e) {
+            System.out.println("File error: " + e.getMessage());
+        }
+    }
+}
+    </code></pre>
+
+    <p>
+        <strong>Reason:</strong> FileReader may throw IOException.
+        The compiler requires us to handle or declare this exception.
+    </p>
+
+    <h3>3. Unchecked Exceptions</h3>
+    <p>
+        Unchecked exceptions are exceptions that are not checked by the compiler
+        at compile time. Handling or declaring them is not mandatory.
+        They generally occur because of programming mistakes.
+    </p>
+
+    <h4>Examples:</h4>
+    <ul>
+        <li>NullPointerException</li>
+        <li>ArithmeticException</li>
+        <li>ArrayIndexOutOfBoundsException</li>
+        <li>NumberFormatException</li>
+        <li>ClassCastException</li>
+    </ul>
+
+    <h4>Example:</h4>
+    <pre><code>
+public class Main {
+    public static void main(String[] args) {
+
+        int a = 10;
+        int b = 0;
+
+        int result = a / b;
+
+        System.out.println(result);
+    }
+}
+    </code></pre>
+
+    <p>
+        <strong>Output:</strong> ArithmeticException at runtime.
+    </p>
+
+    <p>
+        <strong>Reason:</strong> Java allows this code to compile because
+        ArithmeticException is unchecked. The exception occurs when the
+        division is executed.
+    </p>
+
+    <h3>4. Difference Between Checked and Unchecked Exceptions</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Checked Exception</th>
+            <th>Unchecked Exception</th>
+        </tr>
+        <tr>
+            <td>Checked at compile time.</td>
+            <td>Not checked at compile time.</td>
+        </tr>
+        <tr>
+            <td>Handling or declaring is mandatory.</td>
+            <td>Handling or declaring is not mandatory.</td>
+        </tr>
+        <tr>
+            <td>Generally represents conditions outside the program's direct control.</td>
+            <td>Often represents programming errors.</td>
+        </tr>
+        <tr>
+            <td>Subclass of Exception, excluding RuntimeException and its subclasses.</td>
+            <td>Subclass of RuntimeException.</td>
+        </tr>
+        <tr>
+            <td>Example: IOException, SQLException.</td>
+            <td>Example: NullPointerException, ArithmeticException.</td>
+        </tr>
+    </table>
+
+    <h3>5. Exception Hierarchy</h3>
+
+    <pre><code>
+                 Throwable
+                     |
+          -----------------------
+          |                     |
+        Error                Exception
+                                |
+                    -----------------------
+                    |                     |
+             Checked Exceptions    RuntimeException
+                                          |
+                                  Unchecked Exceptions
+    </code></pre>
+
+    <ul>
+        <li><strong>Error:</strong> Serious problems generally not handled by application code.</li>
+        <li><strong>Exception:</strong> Conditions that an application may handle.</li>
+        <li><strong>RuntimeException:</strong> Parent class of unchecked exceptions.</li>
+    </ul>
+
+    <h3>6. Interview Answer</h3>
+
+    <p>
+        <strong>
+            Checked exceptions are checked by the compiler, so we must either
+            handle them using try-catch or declare them using throws.
+            Unchecked exceptions are not checked by the compiler, and handling
+            them is not mandatory. Checked exceptions include IOException and
+            SQLException, whereas unchecked exceptions include
+            NullPointerException and ArithmeticException.
+        </strong>
+    </p>
+</section>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -9726,7 +9881,167 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>Compare throw and throws in Java</h2>
+
+    <h3>1. What is throw?</h3>
+    <p>
+        The <strong>throw</strong> keyword is used to explicitly throw an
+        exception from a method or block of code.
+    </p>
+
+    <h4>Example:</h4>
+    <pre><code>
+public class Main {
+    public static void main(String[] args) {
+
+        int age = 15;
+
+        if (age &lt; 18) {
+            throw new ArithmeticException("Not eligible to vote");
+        }
+
+        System.out.println("Eligible to vote");
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong> ArithmeticException: Not eligible to vote</p>
+
+    <p>
+        <strong>Reason:</strong> We explicitly throw an exception when
+        age is less than 18.
+    </p>
+
+    <h3>2. What is throws?</h3>
+    <p>
+        The <strong>throws</strong> keyword is used in a method declaration
+        to indicate that the method may pass one or more exceptions to
+        its caller.
+    </p>
+
+    <h4>Example:</h4>
+    <pre><code>
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Main {
+
+    public static void readFile() throws IOException {
+
+        FileReader reader = new FileReader("test.txt");
+        reader.close();
+    }
+
+    public static void main(String[] args) {
+
+        try {
+            readFile();
+        } catch (IOException e) {
+            System.out.println("File error: " + e.getMessage());
+        }
+    }
+}
+    </code></pre>
+
+    <p>
+        <strong>Reason:</strong> readFile() declares that it may throw
+        IOException. The caller handles that exception using try-catch.
+    </p>
+
+    <h3>3. Difference Between throw and throws</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>throw</th>
+            <th>throws</th>
+        </tr>
+        <tr>
+            <td>Used to explicitly throw an exception.</td>
+            <td>Used to declare possible exceptions in a method signature.</td>
+        </tr>
+        <tr>
+            <td>Used inside a method or block.</td>
+            <td>Used in a method declaration.</td>
+        </tr>
+        <tr>
+            <td>Throws one exception object at a time.</td>
+            <td>Can declare multiple exception types.</td>
+        </tr>
+        <tr>
+            <td>Followed by an exception object.</td>
+            <td>Followed by exception class names.</td>
+        </tr>
+        <tr>
+            <td>Example: throw new IOException();</td>
+            <td>Example: void readFile() throws IOException</td>
+        </tr>
+    </table>
+
+    <h3>4. Can We Use Both Together?</h3>
+
+    <p><strong>Yes.</strong> We can use throw and throws in the same method.</p>
+
+    <pre><code>
+import java.io.IOException;
+
+public class Main {
+
+    static void validateAge(int age) throws IOException {
+
+        if (age &lt; 18) {
+            throw new IOException("Age must be 18 or above");
+        }
+
+        System.out.println("Valid age");
+    }
+
+    public static void main(String[] args) {
+
+        try {
+            validateAge(15);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong> Age must be 18 or above</p>
+
+    <p>
+        <strong>Explanation:</strong>
+    </p>
+    <ul>
+        <li><code>throws IOException</code> declares the exception in the method signature.</li>
+        <li><code>throw new IOException()</code> actually creates and throws the exception.</li>
+        <li>The caller handles it using try-catch.</li>
+    </ul>
+
+    <h3>5. Important Interview Points</h3>
+
+    <ul>
+        <li><strong>throw:</strong> Actually throws an exception.</li>
+        <li><strong>throws:</strong> Declares exceptions that may be passed to the caller.</li>
+        <li>Both checked and unchecked exceptions can be thrown using throw.</li>
+        <li>Checked exceptions must be handled or declared.</li>
+        <li>Unchecked exceptions do not require mandatory handling or declaration.</li>
+    </ul>
+
+    <h3>6. Interview Answer</h3>
+
+    <p>
+        <strong>
+            throw is used to explicitly throw an exception from a method
+            or block, whereas throws is used in a method declaration to
+            declare exceptions that may be passed to the caller.
+            throw is followed by an exception object, while throws is
+            followed by exception class names.
+        </strong>
+    </p>
+</section>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -9735,7 +10050,178 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>What Is the Exception Hierarchy? What Is the Difference Between Exception and Error?</h2>
+
+    <h3>1. What Is Exception Hierarchy?</h3>
+
+    <p>
+        In Java, all exceptions and errors are represented by classes
+        that inherit from the Throwable class.
+    </p>
+
+    <p>
+        Throwable is the root class of Java's exception-handling hierarchy.
+    </p>
+
+    <h3>2. Java Exception Hierarchy</h3>
+
+    <pre><code>
+                  Object
+                    |
+                 Throwable
+                    |
+          ---------------------
+          |                   |
+        Error              Exception
+          |                   |
+    VirtualMachineError       |
+    StackOverflowError        |
+    OutOfMemoryError          |
+                              |
+                    ---------------------
+                    |                   |
+             Checked Exceptions   RuntimeException
+                                        |
+                                  Unchecked Exceptions
+                                        |
+                              -----------------------
+                              |          |            |
+                         NullPointer  Arithmetic  ArrayIndexOutOfBounds
+                         Exception    Exception       Exception
+    </code></pre>
+
+    <h3>3. What Is Exception?</h3>
+
+    <p>
+        Exception represents conditions that an application may want
+        to handle during program execution.
+    </p>
+
+    <p>
+        Exceptions can be checked or unchecked.
+    </p>
+
+    <h4>Examples:</h4>
+    <ul>
+        <li>IOException</li>
+        <li>SQLException</li>
+        <li>FileNotFoundException</li>
+        <li>NullPointerException</li>
+        <li>ArithmeticException</li>
+    </ul>
+
+    <h4>Example:</h4>
+
+    <pre><code>
+public class Main {
+    public static void main(String[] args) {
+
+        int a = 10;
+        int b = 0;
+
+        try {
+            int result = a / b;
+        } catch (ArithmeticException e) {
+            System.out.println("Cannot divide by zero");
+        }
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong> Cannot divide by zero</p>
+
+    <h3>4. What Is Error?</h3>
+
+    <p>
+        Error represents serious problems that generally occur because
+        of JVM or system-level resource failures. Applications generally
+        should not try to handle these conditions.
+    </p>
+
+    <h4>Examples:</h4>
+    <ul>
+        <li>OutOfMemoryError</li>
+        <li>StackOverflowError</li>
+        <li>VirtualMachineError</li>
+        <li>NoClassDefFoundError</li>
+    </ul>
+
+    <h4>Example: StackOverflowError</h4>
+
+    <pre><code>
+public class Main {
+
+    static void display() {
+        display();
+    }
+
+    public static void main(String[] args) {
+        display();
+    }
+}
+    </code></pre>
+
+    <p>
+        <strong>Output:</strong> StackOverflowError
+    </p>
+
+    <p>
+        <strong>Reason:</strong> The method calls itself repeatedly
+        without stopping, eventually exhausting the thread's stack space.
+    </p>
+
+    <h3>5. Difference Between Exception and Error</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Exception</th>
+            <th>Error</th>
+        </tr>
+        <tr>
+            <td>Represents conditions an application may handle.</td>
+            <td>Represents serious JVM or system-level problems.</td>
+        </tr>
+        <tr>
+            <td>Can be checked or unchecked.</td>
+            <td>Unchecked by the compiler.</td>
+        </tr>
+        <tr>
+            <td>Can often be handled using try-catch.</td>
+            <td>Generally should not be handled by application code.</td>
+        </tr>
+        <tr>
+            <td>Example: IOException, SQLException, NullPointerException.</td>
+            <td>Example: OutOfMemoryError, StackOverflowError.</td>
+        </tr>
+    </table>
+
+    <h3>6. Important Interview Points</h3>
+
+    <ul>
+        <li>Throwable is the parent class of both Exception and Error.</li>
+        <li>Exception is divided into checked and unchecked exceptions.</li>
+        <li>RuntimeException and its subclasses are unchecked exceptions.</li>
+        <li>Error and its subclasses are unchecked by the compiler.</li>
+        <li>We generally handle exceptions, not serious JVM errors.</li>
+    </ul>
+
+    <h3>7. Interview Answer</h3>
+
+    <p>
+        <strong>
+            In Java, Throwable is the root class of the exception hierarchy.
+            It has two main subclasses: Exception and Error. Exception
+            represents conditions that an application may handle and is
+            divided into checked and unchecked exceptions. Error represents
+            serious JVM or system-level problems, such as OutOfMemoryError
+            and StackOverflowError, which applications generally should not
+            try to handle.
+        </strong>
+    </p>
+</section>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -9744,7 +10230,618 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>How Does try-catch-finally Work, Including When a return Is Present?</h2>
+
+    <h3>1. What Is try-catch-finally?</h3>
+
+    <p>
+        Java provides try, catch, and finally blocks to handle exceptions
+        and execute cleanup code.
+    </p>
+
+    <ul>
+        <li><strong>try:</strong> Contains code that may throw an exception.</li>
+        <li><strong>catch:</strong> Handles the exception thrown from the try block.</li>
+        <li><strong>finally:</strong> Executes cleanup code whether an exception occurs or not, with a few exceptional termination cases.</li>
+    </ul>
+
+    <h3>2. Basic Example</h3>
+
+    <pre><code>
+public class Main {
+    public static void main(String[] args) {
+
+        try {
+            int result = 10 / 2;
+            System.out.println(result);
+
+        } catch (ArithmeticException e) {
+            System.out.println("Exception occurred");
+
+        } finally {
+            System.out.println("Finally block executed");
+        }
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+
+    <pre><code>
+5
+Finally block executed
+    </code></pre>
+
+    <p>
+        <strong>Explanation:</strong> No exception occurs, so the catch block
+        is skipped. The finally block executes.
+    </p>
+
+    <h3>3. When an Exception Occurs</h3>
+
+    <pre><code>
+public class Main {
+    public static void main(String[] args) {
+
+        try {
+            int result = 10 / 0;
+            System.out.println(result);
+
+        } catch (ArithmeticException e) {
+            System.out.println("Exception handled");
+
+        } finally {
+            System.out.println("Finally block executed");
+        }
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+
+    <pre><code>
+Exception handled
+Finally block executed
+    </code></pre>
+
+    <p>
+        <strong>Explanation:</strong> An exception occurs in try, so control
+        moves to catch. After catch executes, finally also executes.
+    </p>
+
+    <h3>4. What Happens When return Is Present in try?</h3>
+
+    <p>
+        If return is present in the try block, Java executes the finally
+        block before completing the return.
+    </p>
+
+    <pre><code>
+public class Main {
+
+    static int test() {
+
+        try {
+            System.out.println("Try block");
+            return 10;
+
+        } finally {
+            System.out.println("Finally block");
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(test());
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+
+    <pre><code>
+Try block
+Finally block
+10
+    </code></pre>
+
+    <p>
+        <strong>Explanation:</strong>
+    </p>
+
+    <ol>
+        <li>Try executes and reaches return 10.</li>
+        <li>Before returning, finally executes.</li>
+        <li>After finally completes, the method returns 10.</li>
+    </ol>
+
+    <h3>5. What Happens When return Is Present in catch?</h3>
+
+    <pre><code>
+public class Main {
+
+    static int test() {
+
+        try {
+            int result = 10 / 0;
+            return 10;
+
+        } catch (ArithmeticException e) {
+            System.out.println("Catch block");
+            return 20;
+
+        } finally {
+            System.out.println("Finally block");
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(test());
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+
+    <pre><code>
+Catch block
+Finally block
+20
+    </code></pre>
+
+    <p>
+        <strong>Explanation:</strong> The exception moves control to catch.
+        Catch prepares to return 20, but finally executes first. Then 20
+        is returned.
+    </p>
+
+    <h3>6. What Happens When return Is Present in finally?</h3>
+
+    <p>
+        If finally also contains a return statement, it overrides a return
+        or exception from the try or catch block.
+    </p>
+
+    <pre><code>
+public class Main {
+
+    static int test() {
+
+        try {
+            return 10;
+
+        } finally {
+            return 20;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(test());
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+
+    <pre><code>
+20
+    </code></pre>
+	
+	
+<h3>Example: Finally Overrides Return from Try or Catch</h3>
+
+<pre><code>
+public class Main {
+
+    static int test() {
+
+        try {
+            System.out.println("Try block");
+            return 10;
+
+        } catch (ArithmeticException e) {
+            System.out.println("Catch block");
+            return 20;
+
+        } finally {
+            System.out.println("Finally block");
+            return 30;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(test());
+    }
+}
+
+// Output:
+// Try block
+// Finally block
+// 30
+</code></pre>
+
+<p>
+    <strong>Explanation:</strong> The return statement in finally
+    overrides the pending return value from try or catch. It can also
+    suppress a pending exception.
+</p>
+
+
+    <p>
+        <strong>Explanation:</strong> Try attempts to return 10, but finally
+        returns 20. Therefore, 20 is returned.
+    </p>
+
+    <p>
+        <strong>Important:</strong> Avoid return statements inside finally.
+        They can hide exceptions and override earlier return values.
+    </p>
+
+    <h3>7. Important Example: Return Value Is Calculated Before finally</h3>
+
+    <pre><code>
+public class Main {
+
+    static int test() {
+        int number = 10;
+
+        try {
+            return number;
+
+        } finally {
+            number = 20;
+            System.out.println("Finally: " + number);
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(test());
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+
+    <pre><code>
+Finally: 20
+10
+    </code></pre>
+
+    <p>
+        <strong>Why does it return 10 instead of 20?</strong>
+    </p>
+
+    <p>
+        Java evaluates and saves the return value before executing finally.
+        Changing the local variable inside finally does not change the
+        already-saved return value.
+    </p>
+
+    <h3>8. Summary of Return Behaviour</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Situation</th>
+            <th>Result</th>
+        </tr>
+        <tr>
+            <td>return in try</td>
+            <td>finally executes, then try's return completes.</td>
+        </tr>
+        <tr>
+            <td>return in catch</td>
+            <td>finally executes, then catch's return completes.</td>
+        </tr>
+        <tr>
+            <td>return in finally</td>
+            <td>Overrides the earlier return or pending exception.</td>
+        </tr>
+        <tr>
+            <td>Exception in try</td>
+            <td>Matching catch executes, then finally.</td>
+        </tr>
+        <tr>
+            <td>No exception</td>
+            <td>catch is skipped, finally executes.</td>
+        </tr>
+    </table>
+
+    <h3>9. Important Interview Points</h3>
+
+    <ul>
+        <li>Finally generally executes whether an exception occurs or not.</li>
+        <li>Finally executes before a pending return completes.</li>
+        <li>A return in finally overrides an earlier return.</li>
+        <li>A return in finally can suppress a pending exception.</li>
+        <li>Finally may not execute if the JVM terminates abruptly, such as through System.exit() or a JVM crash.</li>
+        <li>Use finally for cleanup operations, such as closing resources. Prefer try-with-resources for AutoCloseable resources.</li>
+    </ul>
+	
+	
+<section>
+    <h2>11. What Happens If catch or finally Is Missing?</h2>
+
+    <h3>Case 1: Can We Write try Without catch?</h3>
+
+    <p><strong>Yes.</strong> Java allows try without catch if it is followed by a finally block.</p>
+
+    <pre><code>
+public class Main {
+    public static void main(String[] args) {
+
+        try {
+            System.out.println("Try block");
+
+        } finally {
+            System.out.println("Finally block");
+        }
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+    <pre><code>
+Try block
+Finally block
+    </code></pre>
+
+    <p>
+        <strong>Explanation:</strong> The try block executes, and the finally block executes afterward, regardless of whether an exception occurs. There is no catch block to handle exceptions, so any exception propagates to the caller. The caller must handle the exception; otherwise, if it remains unhandled, it may cause the application or the current thread to terminate unexpectedly..
+    </p>
+
+    <h3>Case 2: Can We Write try Without finally?</h3>
+
+    <p>
+        <strong>Yes.</strong> Java allows try without finally if it is
+        followed by at least one catch block.
+    </p>
+
+    <pre><code>
+public class Main {
+    public static void main(String[] args) {
+
+        try {
+            int result = 10 / 2;
+            System.out.println(result);
+
+        } catch (ArithmeticException e) {
+            System.out.println("Exception handled");
+        }
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+    <pre><code>
+5
+    </code></pre>
+
+    <h3>Case 3: Can We Write try Without Both catch and finally?</h3>
+
+    <p><strong>No.</strong> This produces a compile-time error.</p>
+
+    <pre><code>
+// Compilation error
+
+try {
+    System.out.println("Try block");
+}
+    </code></pre>
+
+    <p>
+        <strong>Reason:</strong> A try block must be followed by at least
+        one catch block or a finally block.
+    </p>
+
+    <h3>Case 4: Can We Write Multiple catch Blocks?</h3>
+
+    <p><strong>Yes.</strong> We can use multiple catch blocks to handle different exceptions.</p>
+
+    <pre><code>
+public class Main {
+    public static void main(String[] args) {
+
+        try {
+            int[] numbers = {10, 20};
+
+            System.out.println(numbers[5]);
+
+        } catch (ArithmeticException e) {
+            System.out.println("Arithmetic exception");
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Array index exception");
+        }
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+    <pre><code>
+Array index exception
+    </code></pre>
+	
+	
+<h3>Can We Use Multiple catch Blocks?</h3>
+
+<p>
+    Yes. We can use multiple catch blocks to handle different exceptions.
+    However, we must follow the <strong>parent-child exception hierarchy</strong>:
+    child exception classes must be placed before their parent classes.
+    Otherwise, a compile-time error occurs because the parent catch block
+    would already handle the child exception.
+</p>
+
+<h4>Example:</h4>
+
+<pre><code>
+public class Main {
+    public static void main(String[] args) {
+
+        try {
+            int[] numbers = {10, 20};
+
+            System.out.println(numbers[5]);
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Array index exception");
+
+        } catch (RuntimeException e) {
+            System.out.println("Runtime exception");
+
+        } catch (Exception e) {
+            System.out.println("General exception");
+        }
+    }
+}
+
+// Output:
+// Array index exception
+</code></pre>
+
+<p><strong>Important:</strong></p>
+
+<ul>
+    <li><code>ArrayIndexOutOfBoundsException</code> is a child of <code>RuntimeException</code>.</li>
+    <li><code>RuntimeException</code> is a child of <code>Exception</code>.</li>
+    <li>Therefore, child catch blocks must come before parent catch blocks.</li>
+</ul>
+
+<h4>Incorrect Order – Compile-time Error</h4>
+
+<pre><code>
+try {
+    int[] numbers = {10, 20};
+    System.out.println(numbers[5]);
+
+} catch (Exception e) {
+    System.out.println("General exception");
+
+} catch (RuntimeException e) {
+    System.out.println("Runtime exception");
+}
+</code></pre>
+
+<p>
+    <strong>Reason:</strong> Exception is the parent of RuntimeException.
+    The first catch block already handles RuntimeException, making the
+    second catch block unreachable.
+</p>
+
+
+    <h3>Case 5: Can We Write Multiple finally Blocks?</h3>
+
+    <p><strong>No.</strong> A single try statement can have only one finally block.</p>
+
+    <pre><code>
+// Compilation error
+
+try {
+    System.out.println("Try block");
+
+} finally {
+    System.out.println("Finally 1");
+
+} finally {
+    System.out.println("Finally 2");
+}
+    </code></pre>
+
+    <h3>Case 6: Can We Write try-catch-finally Together?</h3>
+
+    <p><strong>Yes.</strong> This is a common exception-handling structure.</p>
+
+    <pre><code>
+try {
+    // Risky code
+
+} catch (Exception e) {
+    // Handle exception
+
+} finally {
+    // Cleanup code
+}
+    </code></pre>
+
+    <h3>12. Quick Interview Revision</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Question</th>
+            <th>Answer</th>
+        </tr>
+        <tr>
+            <td>Can try exist without catch?</td>
+            <td>Yes, if finally is present.</td>
+        </tr>
+        <tr>
+            <td>Can try exist without finally?</td>
+            <td>Yes, if catch is present.</td>
+        </tr>
+        <tr>
+            <td>Can try exist without catch and finally?</td>
+            <td>No, compile-time error.</td>
+        </tr>
+        <tr>
+            <td>Can we have multiple catch blocks?</td>
+            <td>Yes.</td>
+        </tr>
+        <tr>
+            <td>Can we have multiple finally blocks?</td>
+            <td>No.</td>
+        </tr>
+        <tr>
+            <td>Can we have try-catch-finally together?</td>
+            <td>Yes.</td>
+        </tr>
+        <tr>
+            <td>Can finally exist without try?</td>
+            <td>No.</td>
+        </tr>
+        <tr>
+            <td>Can catch exist without try?</td>
+            <td>No.</td>
+        </tr>
+    </table>
+
+    <h3>13. Important Interview Point: try-with-resources</h3>
+
+    <p>
+        Java also supports try-with-resources, where catch and finally
+        are optional because resources are closed automatically.
+    </p>
+
+    <pre><code>
+try (FileReader reader = new FileReader("test.txt")) {
+    System.out.println("Reading file");
+
+}
+    </code></pre>
+
+    <p>
+        <strong>Remember:</strong> A try-with-resources statement can
+        be written without catch or finally. Java automatically closes
+        the resource when the try block finishes.
+    </p>
+</section>
+
+
+    <h3>10. Interview Answer</h3>
+
+    <p>
+        <strong>
+            The try block contains code that may throw an exception, the
+            catch block handles the exception, and the finally block is
+            generally executed whether an exception occurs or not. If a
+            return statement is present in try or catch, finally executes
+            before the method returns. If finally itself contains a return,
+            it overrides the earlier return value or pending exception,
+            so return statements in finally should be avoided.
+        </strong>
+    </p>
+</section>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -9753,7 +10850,232 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<section>
+    <h2>What Is try-with-resources? What Is a Suppressed Exception?</h2>
+
+    <h3>1. What Is try-with-resources?</h3>
+
+    <p>
+        Try-with-resources is a feature introduced in
+        <strong>Java 7 (JDK 1.7)</strong> that automatically closes
+        resources after their use.
+    </p>
+
+    <p>
+        It is mainly used for resources such as FileReader, BufferedReader,
+        FileInputStream, database connections and statements.
+    </p>
+
+    <p>
+        The resource must implement the <strong>AutoCloseable</strong>
+        interface (or its subinterface Closeable).
+    </p>
+
+    <h4>Example Without try-with-resources:</h4>
+
+    <pre><code>
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Main {
+    public static void main(String[] args) {
+
+        FileReader reader = null;
+
+        try {
+            reader = new FileReader("test.txt");
+            System.out.println("Reading file");
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error closing file");
+            }
+        }
+    }
+}
+    </code></pre>
+
+    <h4>Example With try-with-resources (Java 7+):</h4>
+
+    <pre><code>
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Main {
+    public static void main(String[] args) {
+
+        try (FileReader reader = new FileReader("test.txt")) {
+
+            System.out.println("Reading file");
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+    </code></pre>
+
+    <p>
+        <strong>Explanation:</strong> Java automatically closes the
+        FileReader when the try block finishes, even if an exception occurs.
+        We do not need to call close() manually.
+    </p>
+
+    <h3>2. What Is a Suppressed Exception?</h3>
+
+    <p>
+        A suppressed exception occurs when an exception is thrown inside
+        the try block and another exception occurs while automatically
+        closing the resource.
+    </p>
+
+    <p>
+        The exception from the try block remains the primary exception.
+        The exception from closing the resource is attached to it as a
+        suppressed exception.
+    </p>
+
+    <h4>Example:</h4>
+
+    <pre><code>
+class MyResource implements AutoCloseable {
+
+    public void useResource() {
+        throw new RuntimeException("Exception from useResource");
+    }
+
+    @Override
+    public void close() {
+        throw new RuntimeException("Exception from close");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        try (MyResource resource = new MyResource()) {
+
+            resource.useResource();
+
+        } catch (Exception e) {
+
+            System.out.println("Main: " + e.getMessage());
+
+            for (Throwable suppressed : e.getSuppressed()) {
+                System.out.println(
+                    "Suppressed: " + suppressed.getMessage()
+                );
+            }
+        }
+    }
+}
+    </code></pre>
+
+    <p><strong>Output:</strong></p>
+
+    <pre><code>
+Main: Exception from useResource
+Suppressed: Exception from close
+    </code></pre>
+
+    <p><strong>Explanation:</strong></p>
+
+    <ol>
+        <li><code>useResource()</code> throws the primary exception.</li>
+        <li>Java attempts to close the resource automatically.</li>
+        <li><code>close()</code> also throws an exception.</li>
+        <li>The close exception is attached to the primary exception as a suppressed exception.</li>
+        <li><code>getSuppressed()</code> retrieves the suppressed exceptions.</li>
+    </ol>
+
+    <h3>3. Important Java Versions</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Java Version</th>
+            <th>Feature</th>
+        </tr>
+        <tr>
+            <td>Java 7</td>
+            <td>Introduced try-with-resources and suppressed exceptions.</td>
+        </tr>
+        <tr>
+            <td>Java 9</td>
+            <td>Allowed effectively final existing variables to be used as resources without redeclaring them.</td>
+        </tr>
+    </table>
+
+    <h4>Java 7 Syntax:</h4>
+
+    <pre><code>
+try (FileReader reader = new FileReader("test.txt")) {
+    // Use resource
+}
+    </code></pre>
+
+    <h4>Java 9 Syntax:</h4>
+
+    <pre><code>
+FileReader reader = new FileReader("test.txt");
+
+try (reader) {
+    // Use resource
+}
+    </code></pre>
+
+    <p>
+        <strong>Note:</strong> In Java 9, the existing resource variable
+        must be final or effectively final (not reassigned after initialization).
+    </p>
+
+    <h3>4. Difference Between try-finally and try-with-resources</h3>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>try-finally</th>
+            <th>try-with-resources</th>
+        </tr>
+        <tr>
+            <td>Resource closing is generally written manually.</td>
+            <td>Resource closing is automatic.</td>
+        </tr>
+        <tr>
+            <td>More boilerplate code.</td>
+            <td>Cleaner and shorter code.</td>
+        </tr>
+        <tr>
+            <td>Closing exceptions need manual handling.</td>
+            <td>Automatically preserves primary and suppressed exceptions.</td>
+        </tr>
+        <tr>
+            <td>Can be used with general cleanup logic.</td>
+            <td>Works with AutoCloseable resources.</td>
+        </tr>
+    </table>
+
+    <h3>5. Interview Answer</h3>
+
+    <p>
+        <strong>
+            Try-with-resources was introduced in Java 7. It automatically
+            closes resources that implement AutoCloseable, eliminating
+            the need to close them manually in finally. A suppressed
+            exception occurs when the main try block throws an exception
+            and another exception occurs while closing the resource.
+            The closing exception is attached to the primary exception
+            and can be retrieved using getSuppressed().
+        </strong>
+    </p>
+</section>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -9762,7 +11084,216 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Can you override a method and change its declared exceptions?</h2>
+
+<p><strong>Yes.</strong> An overriding method can change the declared exceptions, but certain rules must be followed.</p>
+
+<h3>1. Checked Exceptions</h3>
+
+<p>An overriding method can:</p>
+<ul>
+    <li>Declare the same checked exception as the parent method.</li>
+    <li>Declare a subclass (narrower exception) of the parent's checked exception.</li>
+    <li>Declare no checked exception.</li>
+    <li>It cannot declare a broader or unrelated checked exception.</li>
+</ul>
+
+<h4>Example 1: Allowed - Same Exception</h4>
+
+<pre><code>class Parent {
+    void show() throws IOException {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() throws IOException {
+        System.out.println("Child");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong> Both methods declare the same checked exception, so this is allowed.</p>
+
+<h4>Example 2: Allowed - Subclass Exception</h4>
+
+<pre><code>class Parent {
+    void show() throws IOException {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() throws FileNotFoundException {
+        System.out.println("Child");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong> FileNotFoundException is a subclass of IOException. Therefore, the child method can declare it.</p>
+
+<h4>Example 3: Allowed - No Exception</h4>
+
+<pre><code>class Parent {
+    void show() throws IOException {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() {
+        System.out.println("Child");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong> The child method can choose not to declare any checked exception.</p>
+
+<h4>Example 4: Not Allowed - Unrelated Checked Exception</h4>
+
+<pre><code>class Parent {
+    void show() throws IOException {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() throws SQLException { // Compilation error
+        System.out.println("Child");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong> SQLException is not a subclass of IOException. Therefore, the overriding method cannot declare it.</p>
+
+<h3>2. Unchecked Exceptions</h3>
+
+<p>An overriding method can declare any unchecked exception, regardless of whether the parent method declares an exception.</p>
+
+<h4>Example: Allowed</h4>
+
+<pre><code>class Parent {
+    void show() {
+        System.out.println("Parent");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() throws NullPointerException {
+        System.out.println("Child");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong> NullPointerException is an unchecked exception (a subclass of RuntimeException), so this is allowed.</p>
+
+<h3>3. Quick Interview Reference</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Parent Method</th>
+        <th>Child Method</th>
+        <th>Allowed?</th>
+    </tr>
+    <tr>
+        <td>throws IOException</td>
+        <td>throws IOException</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>throws IOException</td>
+        <td>throws FileNotFoundException</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>throws IOException</td>
+        <td>No exception</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>throws IOException</td>
+        <td>throws SQLException</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>No exception</td>
+        <td>throws IOException</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>No exception</td>
+        <td>throws RuntimeException</td>
+        <td>Yes</td>
+    </tr>
+</table>
+
+<h3>4. Interview Answer</h3>
+
+<p>An overriding method cannot declare broader checked exceptions than the overridden method. It can declare the same checked exception, its subclasses, or no checked exception. However, unchecked exceptions can be declared freely.</p>
+
+<hr>
+
+<h3>5. Checked Exception Hierarchy</h3>
+
+<p><strong>IOException and its subclasses:</strong></p>
+
+<pre><code>Throwable
+    |
+    +-- Exception
+          |
+          +-- IOException                 (Parent)
+          |     |
+          |     +-- FileNotFoundException (Child)
+          |     |
+          |     +-- EOFException          (Child)
+          |     |
+          |     +-- SocketException       (Child)
+          |     |
+          |     +-- InterruptedIOException (Child)
+          |
+          +-- SQLException
+          |     |
+          |     +-- BatchUpdateException  (Child)
+          |     |
+          |     +-- SQLTimeoutException   (Child)
+          |
+          +-- ReflectiveOperationException
+          |     |
+          |     +-- ClassNotFoundException (Child)
+          |     |
+          |     +-- NoSuchMethodException  (Child)
+          |     |
+          |     +-- NoSuchFieldException   (Child)
+          |
+          +-- RuntimeException (Unchecked)
+          |     |
+          |     +-- NullPointerException
+          |     +-- ArithmeticException
+          |     +-- ClassCastException
+          |     +-- NumberFormatException
+          |     +-- IndexOutOfBoundsException
+          |           |
+          |           +-- ArrayIndexOutOfBoundsException
+          |           +-- StringIndexOutOfBoundsException
+          |
+          +-- InterruptedException</code></pre>
+
+<p><strong>Note:</strong> The hierarchy above shows selected examples, not every Java exception. IOException, SQLException, ClassNotFoundException and InterruptedException are checked exceptions. RuntimeException and its subclasses are unchecked exceptions.</p>
+
+<h3>6. Key Rule to Remember</h3>
+
+<pre><code>Parent method:
+    throws IOException
+
+Child method:
+    throws FileNotFoundException  // Allowed
+
+Reason:
+    FileNotFoundException IS-A IOException</code></pre>
+
+<p><strong>Remember:</strong> A child method can declare a narrower checked exception, but cannot declare a broader checked exception than the parent method.</p>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -9771,7 +11302,564 @@ public class Main {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>How do you create a custom exception? When should it be checked or unchecked?</h2>
+
+<p>A <strong>custom exception</strong> is a user-defined exception created by a developer to represent application-specific error conditions.</p>
+
+<p>Java allows us to create custom exceptions by extending:</p>
+<ul>
+    <li><strong>Exception:</strong> To create a checked custom exception.</li>
+    <li><strong>RuntimeException:</strong> To create an unchecked custom exception.</li>
+</ul>
+
+<h3>1. Creating a Checked Custom Exception</h3>
+
+<p>To create a checked custom exception, extend the <strong>Exception</strong> class.</p>
+
+<h4>Example: InsufficientBalanceException</h4>
+
+<pre><code>// Custom checked exception
+class InsufficientBalanceException extends Exception {
+
+    public InsufficientBalanceException(String message) {
+        super(message);
+    }
+}
+
+// Main class
+public class BankAccount {
+
+    static void withdraw(double balance, double amount)
+            throws InsufficientBalanceException {
+
+        if (amount > balance) {
+            throw new InsufficientBalanceException(
+                "Insufficient balance!"
+            );
+        }
+
+        System.out.println("Withdrawal successful");
+    }
+
+    public static void main(String[] args) {
+
+        try {
+            withdraw(5000, 7000);
+        } catch (InsufficientBalanceException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Insufficient balance!</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>InsufficientBalanceException</code> extends <code>Exception</code>.</li>
+    <li>Therefore, it is a checked exception.</li>
+    <li>The method declares it using <code>throws</code>.</li>
+    <li>The exception is raised using <code>throw</code>.</li>
+    <li>The caller must catch it or declare it further using <code>throws</code>.</li>
+</ul>
+
+<h3>2. Creating an Unchecked Custom Exception</h3>
+
+<p>To create an unchecked custom exception, extend the <strong>RuntimeException</strong> class.</p>
+
+<h4>Example: InvalidAgeException</h4>
+
+<pre><code>// Custom unchecked exception
+class InvalidAgeException extends RuntimeException {
+
+    public InvalidAgeException(String message) {
+        super(message);
+    }
+}
+
+// Main class
+public class VotingApplication {
+
+    static void validateAge(int age) {
+
+        if (age < 18) {
+            throw new InvalidAgeException(
+                "Age must be 18 or above!"
+            );
+        }
+
+        System.out.println("Eligible to vote");
+    }
+
+    public static void main(String[] args) {
+
+        validateAge(16);
+    }
+}</code></pre>
+
+<h4>Output</h4>
+<pre><code>Exception in thread "main" InvalidAgeException:
+Age must be 18 or above!</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>InvalidAgeException</code> extends <code>RuntimeException</code>.</li>
+    <li>Therefore, it is an unchecked exception.</li>
+    <li>Using <code>throws</code> in the method declaration is not mandatory.</li>
+    <li>Handling it with try-catch is also not mandatory.</li>
+    <li>We can still catch it if required.</li>
+</ul>
+
+<h3>3. Checked vs Unchecked Custom Exceptions</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Point</th>
+        <th>Checked Custom Exception</th>
+        <th>Unchecked Custom Exception</th>
+    </tr>
+    <tr>
+        <td>Extends</td>
+        <td>Exception</td>
+        <td>RuntimeException</td>
+    </tr>
+    <tr>
+        <td>Compiler checking</td>
+        <td>Yes</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>try-catch mandatory?</td>
+        <td>Must catch or declare</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>throws mandatory?</td>
+        <td>Yes, if not caught</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>Typical use</td>
+        <td>Recoverable conditions</td>
+        <td>Programming errors or invalid usage</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td>InsufficientBalanceException</td>
+        <td>InvalidAgeException</td>
+    </tr>
+</table>
+
+<h3>4. When Should You Use Checked Exceptions?</h3>
+
+<p>Use a checked exception when:</p>
+<ul>
+    <li>The caller is expected to handle the error.</li>
+    <li>The application can reasonably recover from the condition.</li>
+    <li>The caller should be explicitly informed that this operation may fail.</li>
+</ul>
+
+<p><strong>Examples:</strong></p>
+<ul>
+    <li>FileNotFoundException</li>
+    <li>InvalidFileFormatException</li>
+    <li>ExternalServiceException (when callers are expected to handle the failure)</li>
+    <li>InsufficientBalanceException (if the application requires the caller to handle it)</li>
+</ul>
+
+<h3>5. When Should You Use Unchecked Exceptions?</h3>
+
+<p>Use an unchecked exception when:</p>
+<ul>
+    <li>The error is caused by incorrect programming or invalid API usage.</li>
+    <li>The caller is not generally expected to recover at that point.</li>
+    <li>You do not want to force every caller to catch or declare the exception.</li>
+</ul>
+
+<p><strong>Examples:</strong></p>
+<ul>
+    <li>InvalidAgeException</li>
+    <li>InvalidArgumentException</li>
+    <li>InvalidStateException</li>
+    <li>ResourceNotInitializedException</li>
+</ul>
+
+<h3>6. Exception Class Hierarchy</h3>
+
+<pre><code>Throwable
+    |
+    +-- Error
+    |
+    +-- Exception
+          |
+          +-- IOException
+          |
+          +-- SQLException
+          |
+          +-- InsufficientBalanceException
+          |       (Custom Checked Exception)
+          |
+          +-- RuntimeException
+                 |
+                 +-- NullPointerException
+                 |
+                 +-- ArithmeticException
+                 |
+                 +-- IllegalArgumentException
+                 |
+                 +-- InvalidAgeException
+                         (Custom Unchecked Exception)</code></pre>
+
+<h3>7. Important Interview Points</h3>
+
+<ul>
+    <li>Use <code>extends Exception</code> to create a checked custom exception.</li>
+    <li>Use <code>extends RuntimeException</code> to create an unchecked custom exception.</li>
+    <li>Use <code>throw</code> to explicitly throw an exception object.</li>
+    <li>Use <code>throws</code> to declare a checked exception in a method signature.</li>
+    <li>Both checked and unchecked custom exceptions can have constructors and custom messages.</li>
+    <li>Both types can be caught using try-catch.</li>
+</ul>
+
+<h3>8. Interview Answer</h3>
+
+<p>A custom exception is an application-specific exception created by extending an existing exception class. If we extend <code>Exception</code>, it becomes a checked exception, and the caller must catch or declare it. If we extend <code>RuntimeException</code>, it becomes an unchecked exception, and handling or declaration is optional.</p>
+
+<hr>
+
+<h3>9. Remember the Hierarchy</h3>
+
+<pre><code>Throwable
+    |
+    +-- Exception
+          |
+          +-- Checked Exceptions
+          |     |
+          |     +-- IOException
+          |     +-- SQLException
+          |     +-- InsufficientBalanceException
+          |
+          +-- RuntimeException
+                |
+                +-- Unchecked Exceptions
+                      |
+                      +-- NullPointerException
+                      +-- ArithmeticException
+                      +-- IllegalArgumentException
+                      +-- InvalidAgeException</code></pre>
+
+<p><strong>Key rule:</strong> Extend <code>Exception</code> for checked custom exceptions and <code>RuntimeException</code> for unchecked custom exceptions.</p>
+</p>
+
+
+<h2>10. Global Exception Handling with Custom Exceptions in Spring Boot</h2>
+
+<h3>What is Global Exception Handling?</h3>
+
+<p>Global Exception Handling is a centralized mechanism for handling exceptions across multiple controllers in a Spring Boot application.</p>
+
+<p>Instead of writing try-catch blocks in every controller method, we create a separate class using:</p>
+
+<ul>
+    <li><code>@RestControllerAdvice</code> - Handles exceptions globally across REST controllers and returns response bodies.</li>
+    <li><code>@ExceptionHandler</code> - Specifies which exception a particular handler method should handle.</li>
+</ul>
+
+<p><strong>Benefits:</strong></p>
+<ul>
+    <li>Centralized exception handling.</li>
+    <li>Reduces duplicate try-catch blocks.</li>
+    <li>Provides consistent API error responses.</li>
+    <li>Makes code cleaner and easier to maintain.</li>
+</ul>
+
+<h3>11. Practical Example: Checked Custom Exception</h3>
+
+<p><strong>Scenario:</strong> A user requests an employee record that does not exist. We create a checked custom exception called <code>EmployeeNotFoundException</code>.</p>
+
+<h4>Step 1: Create Checked Custom Exception</h4>
+
+<pre><code>public class EmployeeNotFoundException extends Exception {
+
+    public EmployeeNotFoundException(String message) {
+        super(message);
+    }
+}</code></pre>
+
+<p><strong>Why checked?</strong> It extends <code>Exception</code>, so the compiler requires the caller to catch or declare it.</p>
+
+<h4>Step 2: Create Employee Service</h4>
+
+<pre><code>@Service
+public class EmployeeService {
+
+    public String getEmployee(int id)
+            throws EmployeeNotFoundException {
+
+        if (id != 101) {
+            throw new EmployeeNotFoundException(
+                "Employee not found with ID: " + id
+            );
+        }
+
+        return "Employee found: Nikhil";
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>The service checks whether the employee exists.</li>
+    <li>If the employee does not exist, it throws the custom exception.</li>
+    <li>The method declares the checked exception using <code>throws</code>.</li>
+</ul>
+
+<h4>Step 3: Create Employee Controller</h4>
+
+<pre><code>@RestController
+@RequestMapping("/employees")
+public class EmployeeController {
+
+    @Autowired
+    private EmployeeService employeeService;
+
+    @GetMapping("/{id}")
+    public String getEmployee(@PathVariable int id)
+            throws EmployeeNotFoundException {
+
+        return employeeService.getEmployee(id);
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong> The controller declares the checked exception and allows it to propagate to the global exception handler.</p>
+
+<h3>12. Practical Example: Unchecked Custom Exception</h3>
+
+<p><strong>Scenario:</strong> A user tries to withdraw an amount greater than the available account balance. We create an unchecked custom exception called <code>InsufficientBalanceException</code>.</p>
+
+<h4>Step 1: Create Unchecked Custom Exception</h4>
+
+<pre><code>public class InsufficientBalanceException
+        extends RuntimeException {
+
+    public InsufficientBalanceException(String message) {
+        super(message);
+    }
+}</code></pre>
+
+<p><strong>Why unchecked?</strong> It extends <code>RuntimeException</code>, so the compiler does not force the caller to catch or declare it.</p>
+
+<h4>Step 2: Create Bank Service</h4>
+
+<pre><code>@Service
+public class BankService {
+
+    public String withdraw(double balance, double amount) {
+
+        if (amount > balance) {
+            throw new InsufficientBalanceException(
+                "Insufficient balance. Available balance: " + balance
+            );
+        }
+
+        return "Withdrawal successful";
+    }
+}</code></pre>
+
+<h4>Step 3: Create Bank Controller</h4>
+
+<pre><code>@RestController
+@RequestMapping("/bank")
+public class BankController {
+
+    @Autowired
+    private BankService bankService;
+
+    @GetMapping("/withdraw")
+    public String withdraw() {
+
+        return bankService.withdraw(5000, 7000);
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>The service checks the available balance.</li>
+    <li>If the requested amount is greater than the balance, it throws <code>InsufficientBalanceException</code>.</li>
+    <li>The controller does not need to declare this unchecked exception.</li>
+    <li>The exception is propagated to the global exception handler.</li>
+</ul>
+
+<h3>13. Create Global Exception Handler</h3>
+
+<p>Now we handle both checked and unchecked custom exceptions in one centralized class.</p>
+
+<pre><code>@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    // Handle checked custom exception
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    public ResponseEntity&lt;String&gt; handleEmployeeNotFound(
+            EmployeeNotFoundException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ex.getMessage());
+    }
+
+    // Handle unchecked custom exception
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity&lt;String&gt; handleInsufficientBalance(
+            InsufficientBalanceException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ex.getMessage());
+    }
+
+    // Handle other unexpected exceptions
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;String&gt; handleGenericException(
+            Exception ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Something went wrong. Please try again later.");
+    }
+}</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>@RestControllerAdvice</code> makes this class available for centralized REST exception handling.</li>
+    <li><code>@ExceptionHandler(EmployeeNotFoundException.class)</code> handles the checked custom exception.</li>
+    <li><code>@ExceptionHandler(InsufficientBalanceException.class)</code> handles the unchecked custom exception.</li>
+    <li><code>@ExceptionHandler(Exception.class)</code> acts as a fallback for other exceptions not handled by more specific handlers.</li>
+    <li><code>ResponseEntity</code> allows us to return an appropriate HTTP status and response body.</li>
+</ul>
+
+<h3>14. Expected API Responses</h3>
+
+<p><strong>Case 1: Employee does not exist</strong></p>
+
+<pre><code>GET /employees/999
+
+HTTP Status: 404 NOT FOUND
+
+Response:
+Employee not found with ID: 999</code></pre>
+
+<p><strong>Case 2: Insufficient bank balance</strong></p>
+
+<pre><code>GET /bank/withdraw
+
+HTTP Status: 400 BAD REQUEST
+
+Response:
+Insufficient balance. Available balance: 5000.0</code></pre>
+
+<p><strong>Case 3: Unexpected exception</strong></p>
+
+<pre><code>HTTP Status: 500 INTERNAL SERVER ERROR
+
+Response:
+Something went wrong. Please try again later.</code></pre>
+
+<h3>15. Application Flow</h3>
+
+<pre><code>Client Request
+      |
+      v
+Controller
+      |
+      v
+Service Layer
+      |
+      v
+Business Validation
+      |
+      +----------------------------+
+      |                            |
+      v                            v
+Employee Not Found          Insufficient Balance
+      |                            |
+      v                            v
+Checked Exception          Unchecked Exception
+      |                            |
+      +-------------+--------------+
+                    |
+                    v
+          GlobalExceptionHandler
+              (@RestControllerAdvice)
+                    |
+                    v
+              @ExceptionHandler
+                    |
+                    v
+             ResponseEntity
+                    |
+                    v
+              Client Response</code></pre>
+
+<h3>16. Checked vs Unchecked in Global Exception Handling</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Point</th>
+        <th>Checked</th>
+        <th>Unchecked</th>
+    </tr>
+    <tr>
+        <td>Custom exception</td>
+        <td>EmployeeNotFoundException</td>
+        <td>InsufficientBalanceException</td>
+    </tr>
+    <tr>
+        <td>Extends</td>
+        <td>Exception</td>
+        <td>RuntimeException</td>
+    </tr>
+    <tr>
+        <td>Must catch or declare?</td>
+        <td>Yes</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>Can global handler catch it?</td>
+        <td>Yes</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Handler annotation</td>
+        <td>@ExceptionHandler</td>
+        <td>@ExceptionHandler</td>
+    </tr>
+</table>
+
+<h3>17. Important Interview Questions</h3>
+
+<p><strong>Q1. Can GlobalExceptionHandler handle both checked and unchecked exceptions?</strong></p>
+<p>Yes. Spring's <code>@ExceptionHandler</code> can handle both checked and unchecked exceptions.</p>
+
+<p><strong>Q2. Do we need to use try-catch in every controller?</strong></p>
+<p>No. We can centralize exception handling using <code>@RestControllerAdvice</code> and <code>@ExceptionHandler</code>.</p>
+
+<p><strong>Q3. Is GlobalExceptionHandler mandatory in Spring Boot?</strong></p>
+<p>No. It is optional, but it is a recommended approach for consistent REST API error handling.</p>
+
+<p><strong>Q4. Can we handle all exceptions using Exception.class?</strong></p>
+<p>Yes. We can create a generic handler for <code>Exception.class</code>. However, it is better to define specific handlers for known exceptions and use a generic handler as a fallback.</p>
+
+<p><strong>Q5. Does GlobalExceptionHandler decide whether an exception is checked or unchecked?</strong></p>
+<p>No. The exception's inheritance determines whether it is checked or unchecked. GlobalExceptionHandler only handles the exception after it is raised and propagated.</p>
+
+<h3>18. Interview Answer</h3>
+
+<p>In Spring Boot, we use <code>@RestControllerAdvice</code> for centralized exception handling and <code>@ExceptionHandler</code> to handle specific exceptions. We can create custom checked exceptions by extending <code>Exception</code> and unchecked exceptions by extending <code>RuntimeException</code>. Both can be handled centrally without writing try-catch blocks in every controller.</p>
+
+<hr>
+
+<p><strong>Important takeaway:</strong> Checked or unchecked determines the compiler's handling requirement. Global exception handling determines where and how the application converts exceptions into API responses. These are two separate concepts.</p>
+
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
