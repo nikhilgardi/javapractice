@@ -71,9 +71,9 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q55" class="completed"><span class="number">55.</span>What is try-with-resources? What is a suppressed exception?</a>
 <a href="#q56" class="completed"><span class="number">56.</span>Can you override a method and change its declared exceptions?</a>
 <a href="#q57" class="completed"><span class="number">57.</span>How do you create a custom exception? When should it be checked or unchecked?</a>
-<a href="#q58"><span class="number">58.</span>Explain stack memory, heap memory, metaspace and native memory.</a>
-<a href="#q59"><span class="number">59.</span>What is the difference between a stack overflow and an out-of-memory error?</a>
-<a href="#q60"><span class="number">60.</span>Explain class loading, linking, initialization and class-loader delegation.</a>
+<a href="#q58" class="completed"><span class="number">58.</span>Explain stack memory, heap memory, metaspace and native memory.</a>
+<a href="#q59" class="completed"><span class="number">59.</span>What is the difference between a stack overflow and an out-of-memory error?</a>
+<a href="#q60" class="completed"><span class="number">60.</span>Explain class loading, linking, initialization and class-loader delegation.</a>
 <a href="#q61"><span class="number">61.</span>What are the main JVM components and their responsibilities?</a>
 <a href="#q62"><span class="number">62.</span>What is the JIT compiler, and how does it improve performance?</a>
 <a href="#q63"><span class="number">63.</span>Explain garbage collection roots and how objects become eligible for garbage collection.</a>
@@ -11559,12 +11559,172 @@ Age must be 18 or above!</code></pre>
 
 <p>Global Exception Handling is a centralized mechanism for handling exceptions across multiple controllers in a Spring Boot application.</p>
 
-<p>Instead of writing try-catch blocks in every controller method, we create a separate class using:</p>
+<p>Instead of writing try-catch blocks in every controller method, we use centralized exception handling in Spring Boot with the following annotations:</p>
 
 <ul>
-    <li><code>@RestControllerAdvice</code> - Handles exceptions globally across REST controllers and returns response bodies.</li>
-    <li><code>@ExceptionHandler</code> - Specifies which exception a particular handler method should handle.</li>
+    <li><strong>@ControllerAdvice</strong> - Provides centralized exception handling across multiple controllers. It can return a response body using <code>@ResponseBody</code> or return a view name.</li>
+
+    <li><strong>@ResponseBody</strong> - Tells Spring to write the method's return value directly into the HTTP response body instead of treating it as a view name.</li>
+
+    <li><strong>@RestControllerAdvice</strong> - A combination of <code>@ControllerAdvice</code> and <code>@ResponseBody</code>; provides centralized REST exception handling and returns response bodies directly.</li>
+
+    <li><strong>@ExceptionHandler</strong> - Defines a method to handle a specific exception type and generate an appropriate response.</li>
 </ul>
+
+<p>Key difference: @ControllerAdvice does not automatically return response bodies. Use @ResponseBody on handler methods (or class-level @ResponseBody) to return data directly. @RestControllerAdvice includes this behavior automatically.</p>
+
+
+<h2>Global Exception Handling in Spring Boot</h2>
+
+<p>Spring Boot provides <code>@ControllerAdvice</code> and <code>@RestControllerAdvice</code> to handle exceptions centrally instead of writing try-catch blocks in every controller.</p>
+
+<h3>1. Using @ControllerAdvice</h3>
+
+<p>With <code>@ControllerAdvice</code>, we need to use <code>@ResponseBody</code> on the handler method to return data directly in the HTTP response body.</p>
+
+<h4>GlobalExceptionHandler.java</h4>
+
+<pre><code>@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public String handleException(Exception ex) {
+
+        return "Error: " + ex.getMessage();
+    }
+}</code></pre>
+
+<h4>Controller.java</h4>
+
+<pre><code>@Controller
+public class MyController {
+
+    @GetMapping("/test")
+    @ResponseBody
+    public String test() {
+
+        throw new RuntimeException("Something went wrong");
+    }
+}</code></pre>
+
+<h4>Response</h4>
+
+<pre><code>Error: Something went wrong</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>@ControllerAdvice</code> provides centralized exception handling.</li>
+    <li><code>@ExceptionHandler(Exception.class)</code> handles exceptions of type Exception and its subclasses.</li>
+    <li><code>@ResponseBody</code> returns the message directly in the HTTP response body.</li>
+</ul>
+
+<hr>
+
+<h3>2. Using @RestControllerAdvice</h3>
+
+<p>With <code>@RestControllerAdvice</code>, we do not need to add <code>@ResponseBody</code> separately because it is already included.</p>
+
+<h4>GlobalExceptionHandler.java</h4>
+
+<pre><code>@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(Exception.class)
+    public String handleException(Exception ex) {
+
+        return "Error: " + ex.getMessage();
+    }
+}</code></pre>
+
+<h4>Controller.java</h4>
+
+<pre><code>@RestController
+public class MyController {
+
+    @GetMapping("/test")
+    public String test() {
+
+        throw new RuntimeException("Something went wrong");
+    }
+}</code></pre>
+
+<h4>Response</h4>
+
+<pre><code>Error: Something went wrong</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><code>@RestControllerAdvice</code> provides centralized exception handling for REST controllers.</li>
+    <li><code>@ExceptionHandler(Exception.class)</code> handles the specified exception type.</li>
+    <li><code>@ResponseBody</code> behavior is automatic, so the return value goes directly into the HTTP response body.</li>
+</ul>
+
+<hr>
+
+<h3>3. Difference Between Both</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Annotation</th>
+        <th>Purpose</th>
+        <th>Response Behavior</th>
+    </tr>
+    <tr>
+        <td>@ControllerAdvice</td>
+        <td>Centralized controller handling.</td>
+        <td>Can return a view name or response body. Use @ResponseBody to return data directly.</td>
+    </tr>
+    <tr>
+        <td>@RestControllerAdvice</td>
+        <td>Centralized REST controller handling.</td>
+        <td>Returns response bodies directly by default.</td>
+    </tr>
+    <tr>
+        <td>@ResponseBody</td>
+        <td>Writes the return value into the HTTP response body.</td>
+        <td>Does not treat the return value as a view name.</td>
+    </tr>
+    <tr>
+        <td>@ExceptionHandler</td>
+        <td>Handles a specific exception type.</td>
+        <td>Can return a response body or a view, depending on the controller advice configuration.</td>
+    </tr>
+</table>
+
+<h3>4. Important Interview Points</h3>
+
+<ul>
+    <li><strong>@ControllerAdvice</strong> = Centralized controller handling.</li>
+    <li><strong>@ResponseBody</strong> = Returns data directly in the HTTP response body.</li>
+    <li><strong>@RestControllerAdvice</strong> = Combination of @ControllerAdvice + @ResponseBody.</li>
+    <li><strong>@ExceptionHandler</strong> = Handles a specific exception.</li>
+</ul>
+
+<p><strong>Note:</strong> These examples return HTTP 200 by default when the handler succeeds. In production REST APIs, use <code>ResponseEntity</code> to return appropriate HTTP status codes such as 400, 404 or 500.</p>
+
+<h3>5. Production-Style ResponseEntity Example</h3>
+
+<pre><code>@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity&lt;String&gt; handleException(
+            RuntimeException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ex.getMessage());
+    }
+}</code></pre>
+
+<h4>Response</h4>
+
+<pre><code>HTTP Status: 400 BAD REQUEST
+
+Response Body:
+Something went wrong</code></pre>
+
 
 <p><strong>Benefits:</strong></p>
 <ul>
@@ -11868,7 +12028,7 @@ Checked Exception          Unchecked Exception
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">check document word file</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -11877,7 +12037,455 @@ Checked Exception          Unchecked Exception
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>What is the difference between StackOverflowError and OutOfMemoryError?</h2>
+
+<p>Both are errors in Java that extend the <code>Error</code> class, but they occur due to different memory-related problems.</p>
+
+<h3>1. StackOverflowError</h3>
+
+<p><strong>StackOverflowError</strong> occurs when a thread's JVM stack cannot grow further to accommodate additional stack frames.</p>
+<p><strong>StackOverflowError:</strong> Occurs when a method keeps calling itself or calls other methods too deeply, causing the thread's stack memory to become full.</p>
+<p><strong>Common reasons:</strong></p>
+<ul>
+    <li>Infinite recursion.</li>
+    <li>Very deep recursive method calls.</li>
+    <li>Excessive stack frame usage.</li>
+</ul>
+
+<h4>Example: Infinite Recursion</h4>
+
+<pre><code>public class StackDemo {
+
+    static void display() {
+        display(); // Calls itself continuously
+    }
+
+    public static void main(String[] args) {
+        display();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Exception in thread "main"
+java.lang.StackOverflowError</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>Every method call creates a new stack frame.</li>
+    <li>The display() method keeps calling itself.</li>
+    <li>New stack frames continue to accumulate.</li>
+    <li>Eventually, the thread's stack capacity is exhausted.</li>
+    <li>The JVM throws StackOverflowError.</li>
+</ul>
+
+<h3>2. OutOfMemoryError</h3>
+
+<p><strong>OutOfMemoryError</strong> occurs when the JVM cannot allocate more memory required for an operation, even after attempting the applicable memory management and reclamation steps.</p>
+
+<p><strong>Common reasons:</strong></p>
+<ul>
+    <li>Creating too many objects.</li>
+    <li>Memory leaks caused by retaining unnecessary object references.</li>
+    <li>Very large arrays or collections.</li>
+    <li>Insufficient heap memory.</li>
+    <li>Exhaustion of Metaspace or native memory.</li>
+</ul>
+
+<h4>Example: Excessive Object Creation</h4>
+
+<pre><code>import java.util.ArrayList;
+import java.util.List;
+
+public class MemoryDemo {
+
+    public static void main(String[] args) {
+
+        List&lt;byte[]&gt; list = new ArrayList&lt;&gt;();
+
+        while (true) {
+            list.add(new byte[1024 * 1024]);
+        }
+    }
+}</code></pre>
+
+<h4>Possible Output</h4>
+
+<pre><code>Exception in thread "main"
+java.lang.OutOfMemoryError: Java heap space</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li>The program continuously creates 1 MB byte arrays.</li>
+    <li>The list retains references to all created arrays.</li>
+    <li>Therefore, these objects cannot be reclaimed by GC while the list retains them.</li>
+    <li>Eventually, the JVM cannot allocate more heap memory.</li>
+    <li>The JVM throws OutOfMemoryError.</li>
+</ul>
+
+<h3>3. Difference Between StackOverflowError and OutOfMemoryError</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Point</th>
+        <th>StackOverflowError</th>
+        <th>OutOfMemoryError</th>
+    </tr>
+    <tr>
+        <td>Meaning</td>
+        <td>Thread stack capacity is exhausted.</td>
+        <td>JVM cannot allocate required memory.</td>
+    </tr>
+    <tr>
+        <td>Memory area</td>
+        <td>Stack</td>
+        <td>Heap, Metaspace or other memory areas</td>
+    </tr>
+    <tr>
+        <td>Common cause</td>
+        <td>Infinite or deep recursion</td>
+        <td>Excessive allocation or memory retention</td>
+    </tr>
+    <tr>
+        <td>GC involvement</td>
+        <td>GC generally cannot solve stack exhaustion.</td>
+        <td>GC may attempt to reclaim memory, but may not free enough.</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td>Method calling itself continuously</td>
+        <td>Creating and retaining too many objects</td>
+    </tr>
+    <tr>
+        <td>Java error</td>
+        <td>StackOverflowError</td>
+        <td>OutOfMemoryError</td>
+    </tr>
+</table>
+
+<h3>4. Types of OutOfMemoryError</h3>
+
+<p>OutOfMemoryError can occur in different JVM memory areas.</p>
+
+<pre><code>OutOfMemoryError
+    |
+    +-- Java heap space
+<p><strong>Java heap space:</strong> Occurs when the JVM cannot allocate memory for a new object because sufficient heap memory is unavailable, often due to excessive object creation or memory leaks.</p>
+
+    |
+    +-- GC overhead limit exceeded<p><strong>GC overhead limit exceeded:</strong> Occurs when the JVM spends too much time performing Garbage Collection but reclaims very little memory.</p>
+    |
+    +-- Metaspace
+    |
+    +-- Direct buffer memory
+    |
+    +-- Unable to create native thread<p><strong>Native Memory:</strong> Memory allocated outside the Java Heap by the JVM and native libraries to manage resources such as thread stacks, Metaspace, JIT code cache and direct buffers.</p>
+
+<p><strong>Unable to create native thread:</strong> Occurs when the JVM or operating system cannot create a new thread due to insufficient native memory or system resource limits.</p>
+    |
+    +-- Requested array size exceeds VM limit</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+    <li><strong>Java heap space:</strong> JVM cannot allocate an object in the heap.</li>
+    <li><strong>GC overhead limit exceeded:</strong> JVM spends excessive time performing GC while recovering very little memory.</li>
+    <li><strong>Metaspace:</strong> JVM cannot allocate additional class metadata memory.</li>
+    <li><strong>Direct buffer memory:</strong> Direct buffer allocation cannot obtain sufficient native memory within applicable limits.</li>
+    <li><strong>Unable to create native thread:</strong> JVM or operating system cannot create another native thread.</li>
+    <li><strong>Requested array size exceeds VM limit:</strong> Requested array size exceeds the JVM's supported limit.</li>
+</ul>
+
+<h3>5. Exception and Error Hierarchy</h3>
+
+<pre><code>Object
+  |
+  +-- Throwable
+        |
+        +-- Error
+        |     |
+        |     +-- StackOverflowError
+        |     |
+        |     +-- OutOfMemoryError
+        |     |
+        |     +-- VirtualMachineError
+        |
+        +-- Exception
+              |
+              +-- IOException
+              |
+              +-- SQLException
+              |
+              +-- RuntimeException
+                    |
+                    +-- NullPointerException
+                    +-- ArithmeticException</code></pre>
+
+<p><strong>Important:</strong> Both StackOverflowError and OutOfMemoryError are unchecked errors because they extend Error, not Exception.</p>
+
+<h3>6. How to Troubleshoot These Errors</h3>
+
+<h4>For StackOverflowError</h4>
+<ul>
+    <li>Check recursive methods for missing termination conditions.</li>
+    <li>Reduce unnecessary recursion depth.</li>
+    <li>Consider using iteration instead of recursion.</li>
+    <li>Review thread stack size if appropriate.</li>
+</ul>
+</hr>
+
+<ul>
+    <li>
+        <strong>Check recursive methods for missing termination conditions.</strong>
+        <p>Example: Add a base condition to stop recursion.</p>
+        <pre><code>void display(int n) {
+    if (n == 0) return;
+    display(n - 1);
+}</code></pre>
+    </li>
+
+    <li>
+        <strong>Reduce unnecessary recursion depth.</strong>
+        <p>Example: Instead of recursively processing 1 lakh elements, divide the work into smaller parts or use a suitable iterative approach.</p>
+    </li>
+
+    <li>
+        <strong>Consider using iteration instead of recursion.</strong>
+        <p>Example: Replace recursive counting with a loop.</p>
+        <pre><code>// Instead of recursion
+for (int i = 1; i <= 1000; i++) {
+    System.out.println(i);
+}</code></pre>
+    </li>
+
+    <li>
+        <strong>Review thread stack size if appropriate.</strong>
+        <p>Example: Increase the thread stack size using <code>-Xss</code> if deep recursion is genuinely required.</p>
+        <pre><code>java -Xss2m MyApplication</code></pre>
+        <p><em>Note: Increasing stack size is not a substitute for fixing infinite or unnecessary recursion.</em></p>
+    </li>
+</ul>
+
+
+</hr>
+<h4>For OutOfMemoryError</h4>
+<ul>
+    <li>Analyze heap dumps.</li>
+    <li>Check for memory leaks and unnecessary object retention.</li>
+    <li>Review collection sizes and object creation patterns.</li>
+    <li>Monitor heap and GC metrics.</li>
+    <li>Check Metaspace and native memory usage when relevant.</li>
+    <li>Increase memory limits only after understanding the cause.</li>
+</ul>
+
+<h3>7. Interview Questions and Answers</h3>
+
+<p><strong>Q1. Is StackOverflowError an exception or an error?</strong></p>
+<p>It is an Error. It extends VirtualMachineError.</p>
+
+<p><strong>Q2. Can Garbage Collection solve StackOverflowError?</strong></p>
+<p>Generally, no. StackOverflowError is caused by thread stack exhaustion, not unreachable heap objects.</p>
+
+<p><strong>Q3. Can OutOfMemoryError occur even when GC is running?</strong></p>
+<p>Yes. GC may run but fail to reclaim enough memory to satisfy the allocation request.</p>
+
+<p><strong>Q4. Can OutOfMemoryError occur in Metaspace?</strong></p>
+<p>Yes. If the JVM cannot allocate additional class metadata memory, it can throw OutOfMemoryError: Metaspace.</p>
+
+<p><strong>Q5. Are StackOverflowError and OutOfMemoryError checked or unchecked?</strong></p>
+<p>Both are unchecked because they extend Error.</p>
+
+<h3>8. Quick Interview Answer</h3>
+
+<p><strong>StackOverflowError</strong> occurs when a thread's stack runs out of capacity, commonly due to infinite recursion or excessive method calls.</p>
+
+<p><strong>OutOfMemoryError</strong> occurs when the JVM cannot allocate required memory in an applicable memory area, such as the heap or Metaspace.</p>
+
+<p><strong>Remember:</strong> StackOverflowError = Stack exhaustion. OutOfMemoryError = Memory allocation failure.</p>
+</p>
+
+
+<h2>1. StackOverflowError</h2>
+
+<p><strong>Meaning:</strong> Occurs when a method keeps calling itself repeatedly, filling up the thread's stack memory.</p>
+
+<h3>Example</h3>
+
+<pre><code>public class Demo {
+
+    static void display() {
+        display(); // Calls itself repeatedly
+    }
+
+    public static void main(String[] args) {
+        display();
+    }
+}</code></pre>
+
+<h3>How Stack Memory Works</h3>
+
+<p>Every method call creates a new stack frame.</p>
+
+<pre><code>       STACK MEMORY
+    (Main Thread Stack)
+    
+    +----------------------+
+    | display() - Call 5   |
+    +----------------------+
+    | display() - Call 4   |
+    +----------------------+
+    | display() - Call 3   |
+    +----------------------+
+    | display() - Call 2   |
+    +----------------------+
+    | display() - Call 1   |
+    +----------------------+
+    | main()               |
+    +----------------------+
+
+    Each call adds a new frame.
+    The method never stops calling itself.
+    
+    +----------------------+
+    |     STACK FULL       |
+    +----------------------+
+              |
+              v
+       StackOverflowError</code></pre>
+
+<p><strong>Step-by-step:</strong></p>
+<ol>
+    <li>main() calls display().</li>
+    <li>display() calls itself again.</li>
+    <li>Every call creates another stack frame.</li>
+    <li>Stack memory eventually becomes full.</li>
+    <li>JVM throws StackOverflowError.</li>
+</ol>
+
+<hr/>
+
+<h2>2. OutOfMemoryError</h2>
+
+<p><strong>Meaning:</strong> Occurs when the JVM cannot allocate enough memory to create an object or perform an operation.</p>
+
+<h3>Example</h3>
+
+<pre><code>import java.util.ArrayList;
+import java.util.List;
+
+public class Demo {
+
+    public static void main(String[] args) {
+
+        List&lt;byte[]&gt; list = new ArrayList&lt;&gt;();
+
+        while (true) {
+            list.add(new byte[1024 * 1024]);
+        }
+    }
+}</code></pre>
+
+<h3>How Heap Memory Works</h3>
+
+<p>Every new byte array is allocated in heap memory. The list keeps references to these arrays, so they cannot be garbage collected while the list retains them.</p>
+
+<pre><code>             HEAP MEMORY
+
+    +--------------------------+
+    | Object 1 (1 MB byte[])   |
+    +--------------------------+
+    | Object 2 (1 MB byte[])   |
+    +--------------------------+
+    | Object 3 (1 MB byte[])   |
+    +--------------------------+
+    | Object 4 (1 MB byte[])   |
+    +--------------------------+
+    | Object 5 (1 MB byte[])   |
+    +--------------------------+
+    | Object 6 (1 MB byte[])   |
+    +--------------------------+
+    |                          |
+    |       More Objects       |
+    |                          |
+    +--------------------------+
+    |       HEAP FULL          |
+    +--------------------------+
+                 |
+                 v
+          OutOfMemoryError
+          (Java heap space)</code></pre>
+
+<p><strong>Step-by-step:</strong></p>
+<ol>
+    <li>Program creates a byte array of 1 MB.</li>
+    <li>The array is added to the list.</li>
+    <li>The program continuously creates more arrays.</li>
+    <li>The list retains references to all arrays.</li>
+    <li>GC cannot reclaim those reachable arrays.</li>
+    <li>Eventually, JVM cannot allocate more heap memory and throws OutOfMemoryError.</li>
+</ol>
+
+<hr/>
+
+<h2>3. Difference Between Both Errors</h2>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>StackOverflowError</th>
+        <th>OutOfMemoryError</th>
+    </tr>
+    <tr>
+        <td>Stack memory becomes full.</td>
+        <td>Required memory allocation fails.</td>
+    </tr>
+    <tr>
+        <td>Usually caused by excessive method calls or recursion.</td>
+        <td>Can be caused by excessive object creation or memory retention.</td>
+    </tr>
+    <tr>
+        <td>Related to thread stack memory.</td>
+        <td>Can involve heap, Metaspace or native memory.</td>
+    </tr>
+    <tr>
+        <td>Example: Infinite recursion.</td>
+        <td>Example: Continuously creating and retaining objects.</td>
+    </tr>
+</table>
+
+<h2>4. Remember This for Interviews</h2>
+
+<pre><code>StackOverflowError
+        |
+        v
+Too many method calls
+        |
+        v
+Stack frames keep increasing
+        |
+        v
+Stack memory becomes full
+        |
+        v
+StackOverflowError
+
+
+OutOfMemoryError
+        |
+        v
+JVM needs more memory
+        |
+        v
+Cannot allocate required memory
+        |
+        v
+OutOfMemoryError</code></pre>
+
+<p><strong>Easy way to remember:</strong></p>
+<ul>
+    <li>StackOverflowError = Too many method calls.</li>
+    <li>OutOfMemoryError = JVM cannot allocate required memory.</li>
+</ul>
+
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -11886,7 +12494,298 @@ Checked Exception          Unchecked Exception
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Explain Class Loading, Linking, Initialization and Class-Loader Delegation</h2>
+
+<p>When a Java application runs, the JVM loads classes, prepares them for execution and initializes them before their active use.</p>
+
+<h3>1. Class Loading</h3>
+
+<p><strong>Class Loading</strong> is the process of finding the compiled <code>.class</code> file and loading its bytecode into JVM memory.</p>
+
+<p><strong>Steps:</strong></p>
+<ul>
+    <li>JVM identifies the required class.</li>
+    <li>Class Loader finds and reads the compiled <code>.class</code> file.</li>
+    <li>JVM creates the corresponding Class object and makes the class metadata available.</li>
+</ul>
+
+<p><strong>Example:</strong></p>
+
+<pre><code>public class Employee {
+
+    public void display() {
+        System.out.println("Employee");
+    }
+}</code></pre>
+
+<p>When the JVM needs the Employee class, its class loader loads the Employee.class bytecode.</p>
+
+<h3>2. Linking</h3>
+
+<p><strong>Linking</strong> is the process of verifying and preparing the loaded class so that it can be used by the JVM.</p>
+
+<p>Linking has three steps:</p>
+
+<h4>A. Verification</h4>
+<p>Checks whether the class bytecode is valid and follows JVM rules.</p>
+<p><strong>Example:</strong> Checks bytecode structure, type safety and valid instructions.</p>
+
+<h4>B. Preparation</h4>
+<p>Allocates memory for static fields and assigns their default values.</p>
+
+<p><strong>Example:</strong></p>
+
+<pre><code>class Employee {
+
+    static int id = 101;
+    static String name = "Nikhil";
+}</code></pre>
+
+<p>During preparation, the JVM assigns default values:</p>
+
+<pre><code>id = 0
+name = null</code></pre>
+
+<p>The explicit values <code>101</code> and <code>"Nikhil"</code> are assigned later during initialization.</p>
+
+<h4>C. Resolution</h4>
+<p>Converts symbolic references in the class's runtime constant pool into direct references to the required classes, fields and methods. The JVM may perform resolution lazily.</p>
+
+<p><strong>Example:</strong> Resolving a reference to the Employee class or its display() method.</p>
+
+<h3>3. Initialization</h3>
+
+<p><strong>Initialization</strong> is the process of executing static initializers and assigning the programmer-defined initial values to static fields.</p>
+
+<p><strong>Example:</strong></p>
+
+<pre><code>class Employee {
+
+    static int id = 101;
+
+    static String name = "Nikhil";
+
+    static {
+        System.out.println("Static block executed");
+    }
+}</code></pre>
+
+<p>During initialization:</p>
+
+<pre><code>id = 101
+name = "Nikhil"
+
+Output:
+Static block executed</code></pre>
+
+<p><strong>Important:</strong> Static field initializers and static blocks execute in their textual order during class initialization.</p>
+
+<h3>4. Complete Class Loading Lifecycle</h3>
+
+<pre><code>       Java Application
+              |
+              v
+        Class Loading
+              |
+              v
+           Linking
+              |
+       +------+------+
+       |      |      |
+       v      v      v
+   Verify Prepare Resolve
+              |
+              v
+       Initialization
+              |
+              v
+       Class Ready to Use
+              |
+              v
+       Object Creation /
+       Static Method Calls</code></pre>
+
+<h3>5. Class-Loader Delegation Model</h3>
+
+<p><strong>Class-Loader Delegation</strong> is a mechanism in which a class loader first asks its parent class loader to load a class before trying to load it itself.</p>
+
+<p>Java follows a parent-delegation model by default.</p>
+
+<h4>Types of Built-in Class Loaders</h4>
+
+<ol>
+    <li>
+        <strong>Bootstrap Class Loader</strong>
+        <p>Loads core Java classes such as String, Object and System. It is implemented as part of the JVM.</p>
+    </li>
+    <li>
+        <strong>Platform Class Loader</strong>
+        <p>Loads platform classes and libraries provided by the Java platform.</p>
+    </li>
+    <li>
+        <strong>Application Class Loader</strong>
+        <p>Loads application classes from the classpath or application module path.</p>
+    </li>
+    <li>
+        <strong>Custom Class Loader</strong>
+        <p>Developer-created class loader used to load classes from custom locations or using custom loading logic.</p>
+    </li>
+</ol>
+
+<h4>Class-Loader Hierarchy</h4>
+
+<pre><code>       Bootstrap Class Loader
+                 |
+                 v
+       Platform Class Loader
+                 |
+                 v
+      Application Class Loader
+                 |
+                 v
+        Custom Class Loader</code></pre>
+
+<h4>How Parent Delegation Works</h4>
+
+<p>Suppose the Application Class Loader needs to load Employee.class.</p>
+
+<pre><code>Application Class Loader
+          |
+          | Requests Employee.class
+          v
+Platform Class Loader
+          |
+          | Not found
+          v
+Bootstrap Class Loader
+          |
+          | Not found
+          v
+Platform Class Loader
+          |
+          | Not found
+          v
+Application Class Loader
+          |
+          | Loads Employee.class
+          v
+       Class Loaded</code></pre>
+
+<p><strong>Step-by-step:</strong></p>
+<ol>
+    <li>Application Class Loader receives the request.</li>
+    <li>It delegates the request to its parent, Platform Class Loader.</li>
+    <li>Platform delegates to Bootstrap Class Loader.</li>
+    <li>Bootstrap searches for the class. If it cannot find it, the request returns to Platform.</li>
+    <li>Platform also searches. If it cannot find it, the request returns to Application.</li>
+    <li>Application searches its own classpath and loads the class if available.</li>
+</ol>
+
+<h3>6. Why Does Java Use Parent Delegation?</h3>
+
+<ul>
+    <li><strong>Security:</strong> Prevents application classes from easily replacing trusted core Java classes.</li>
+    <li><strong>Consistency:</strong> Helps ensure commonly used Java classes are loaded by a common parent loader.</li>
+    <li><strong>Avoids duplication:</strong> Prevents the same class from being independently loaded by child loaders when the parent can load it.</li>
+</ul>
+
+<h3>7. Practical Example: Class Loading and Initialization</h3>
+
+<pre><code>class Employee {
+
+    static int id = 101;
+
+    static {
+        System.out.println("Employee class initialized");
+    }
+
+    Employee() {
+        System.out.println("Employee object created");
+    }
+}
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        System.out.println("Main started");
+
+        Employee emp = new Employee();
+    }
+}</code></pre>
+
+<h4>Output</h4>
+
+<pre><code>Main started
+Employee class initialized
+Employee object created</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+    <li>JVM loads and initializes Main before executing its main() method.</li>
+    <li>main() starts executing.</li>
+    <li>When new Employee() is executed, Employee is initialized if it has not already been initialized.</li>
+    <li>The static block executes.</li>
+    <li>The Employee constructor executes and creates the object.</li>
+</ol>
+
+<h3>8. Quick Interview Reference</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Phase</th>
+        <th>What Happens?</th>
+    </tr>
+    <tr>
+        <td>Loading</td>
+        <td>Loads class bytecode and creates its Class object.</td>
+    </tr>
+    <tr>
+        <td>Verification</td>
+        <td>Checks bytecode validity and JVM rules.</td>
+    </tr>
+    <tr>
+        <td>Preparation</td>
+        <td>Allocates static fields and assigns default values.</td>
+    </tr>
+    <tr>
+        <td>Resolution</td>
+        <td>Resolves symbolic references.</td>
+    </tr>
+    <tr>
+        <td>Initialization</td>
+        <td>Executes static initializers and assigns explicit static values.</td>
+    </tr>
+    <tr>
+        <td>Class-Loader Delegation</td>
+        <td>Asks parent class loaders to load a class before searching locally.</td>
+    </tr>
+</table>
+
+<h3>9. Important Interview Questions</h3>
+
+<p><strong>Q1. Which Java version introduced the Platform Class Loader?</strong></p>
+<p>Java 9. It replaced the Extension Class Loader used in earlier Java versions.</p>
+
+<p><strong>Q2. Does class loading execute static blocks?</strong></p>
+<p>No. Static blocks execute during class initialization, not during the loading phase itself.</p>
+
+<p><strong>Q3. When does class initialization happen?</strong></p>
+<p>Typically before the first active use of a class, such as creating an instance, invoking a static method or accessing a non-constant static field.</p>
+
+<p><strong>Q4. Can we create our own Class Loader?</strong></p>
+<p>Yes. We can extend <code>ClassLoader</code> and implement custom class-loading logic.</p>
+
+<p><strong>Q5. Is parent delegation mandatory?</strong></p>
+<p>No. It is the default model, but custom class loaders can use different delegation strategies.</p>
+
+<h3>10. Interview Answer</h3>
+
+<p>Class loading loads the compiled class bytecode into the JVM. Linking verifies the bytecode, prepares static fields with default values and resolves symbolic references. Initialization executes static field initializers and static blocks. Class-loader delegation means a class loader first delegates the loading request to its parent before searching for the class itself.</p>
+
+<p><strong>Remember:</strong> Loading → Linking (Verification, Preparation, Resolution) → Initialization.</p>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
