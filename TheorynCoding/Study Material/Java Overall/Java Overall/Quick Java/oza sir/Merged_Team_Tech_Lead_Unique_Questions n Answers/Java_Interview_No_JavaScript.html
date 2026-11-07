@@ -74,8 +74,8 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q58" class="completed"><span class="number">58.</span>Explain stack memory, heap memory, metaspace and native memory.</a>
 <a href="#q59" class="completed"><span class="number">59.</span>What is the difference between a stack overflow and an out-of-memory error?</a>
 <a href="#q60" class="completed"><span class="number">60.</span>Explain class loading, linking, initialization and class-loader delegation.</a>
-<a href="#q61"><span class="number">61.</span>What are the main JVM components and their responsibilities?</a>
-<a href="#q62"><span class="number">62.</span>What is the JIT compiler, and how does it improve performance?</a>
+<a href="#q61" class="completed"><span class="number">61.</span>What are the main JVM components and their responsibilities?</a>
+<a href="#q62" class="completed"><span class="number">62.</span>What is the JIT compiler, and how does it improve performance?</a>
 <a href="#q63"><span class="number">63.</span>Explain garbage collection roots and how objects become eligible for garbage collection.</a>
 <a href="#q64"><span class="number">64.</span>What are common causes of memory leaks in Java applications?</a>
 <a href="#q65"><span class="number">65.</span>How would you investigate high CPU usage, memory growth, frequent GC pauses or a slow Java application?</a>
@@ -12554,6 +12554,79 @@ name = null</code></pre>
 
 <p><strong>Example:</strong> Resolving a reference to the Employee class or its display() method.</p>
 
+
+<h3>Resolution (Linking Phase)</h3>
+
+<p>Let's understand <strong>Resolution</strong> with a simple example.</p>
+
+<h4>1. What is a Symbolic Reference?</h4>
+
+<p>Suppose you have two Java classes:</p>
+
+<p><strong>Employee.java</strong></p>
+<pre><code>public class Employee {
+    public void display() {
+        System.out.println("Employee details");
+    }
+}</code></pre>
+
+<p><strong>Main.java</strong></p>
+<pre><code>public class Main {
+    public static void main(String[] args) {
+        Employee emp = new Employee();
+        emp.display();
+    }
+}</code></pre>
+
+<p>When Java compiles <code>Main.java</code>, it stores references to the <code>Employee</code> class and its <code>display()</code> method in the runtime constant pool.</p>
+
+<p>Initially, these are called <strong>Symbolic References</strong>. They identify the required class and method by their names and related information.</p>
+
+<h4>2. What happens during Resolution?</h4>
+
+<p>The JVM resolves these symbolic references by:</p>
+<ol>
+    <li>Finding the <code>Employee</code> class.</li>
+    <li>Identifying the <code>display()</code> method.</li>
+    <li>Converting symbolic references into direct runtime references that the JVM can use.</li>
+</ol>
+
+<h4>3. Simple Diagram</h4>
+
+<pre><code>     Symbolic Reference
+       Employee.display
+              |
+              v
+       JVM Resolution
+              |
+              v
+      Finds Employee class
+              |
+              v
+      Identifies display()
+              |
+              v
+       Direct Reference</code></pre>
+
+<h4>4. What does Lazy Resolution mean?</h4>
+
+<p>The JVM does not necessarily resolve every reference immediately during class loading or linking.</p>
+
+<p>It may resolve a reference only when that reference is actually needed.</p>
+
+<p><strong>Example:</strong> If a method refers to another class but that code is never executed, the JVM may delay resolving that reference.</p>
+
+<h4>5. Interview Answer</h4>
+
+<p>Resolution converts symbolic references (class, field and method names) into direct runtime references so the JVM can access the required classes, fields and methods.</p>
+
+<h4>Remember</h4>
+<ul>
+    <li><strong>Symbolic Reference:</strong> Identifies a class, field or method by name.</li>
+    <li><strong>Direct Reference:</strong> A resolved runtime reference that the JVM can use.</li>
+</ul>
+
+
 <h3>3. Initialization</h3>
 
 <p><strong>Initialization</strong> is the process of executing static initializers and assigning the programmer-defined initial values to static fields.</p>
@@ -12621,15 +12694,19 @@ Static block executed</code></pre>
     </li>
     <li>
         <strong>Platform Class Loader</strong>
-        <p>Loads platform classes and libraries provided by the Java platform.</p>
+       
+<p><strong>Example:</strong> Loads platform classes such as <code>java.sql</code> and <code>javax.crypto</code> from the Java platform modules.</p>
+
     </li>
     <li>
         <strong>Application Class Loader</strong>
-        <p>Loads application classes from the classpath or application module path.</p>
+        <p><strong>Example:</strong> Loads application classes such as <code>com.example.Main</code> from the application's classpath or module path.</p>
     </li>
     <li>
         <strong>Custom Class Loader</strong>
-        <p>Developer-created class loader used to load classes from custom locations or using custom loading logic.</p>
+        
+<p><strong>Example:</strong> A custom class loader can load classes from a remote server, database, or encrypted class files.</p>
+
     </li>
 </ol>
 
@@ -12794,7 +12871,141 @@ Employee object created</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Main JVM Components and Their Responsibilities</h2>
+
+<p>The JVM (Java Virtual Machine) consists of several components that work together to load, execute and manage Java applications.</p>
+
+<h3>1. Class Loader Subsystem</h3>
+<p><strong>Responsibility:</strong> Loads Java <code>.class</code> files into JVM memory.</p>
+<ul>
+    <li><strong>Loading:</strong> Loads class bytecode.</li>
+    <li><strong>Linking:</strong> Verifies, prepares and resolves class references.</li>
+    <li><strong>Initialization:</strong> Executes static initializers and assigns explicit static values.</li>
+</ul>
+
+<h3>2. Runtime Data Areas (Memory Areas)</h3>
+<p><strong>Responsibility:</strong> Provides memory areas required for executing Java applications.</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Memory Area</th>
+        <th>Responsibility</th>
+    </tr>
+    <tr>
+        <td><strong>Heap</strong></td>
+        <td>Stores objects and arrays. Shared among threads.</td>
+    </tr>
+    <tr>
+        <td><strong>Java Stack</strong></td>
+        <td>Stores method stack frames, local variables and intermediate results. Each thread has its own stack.</td>
+    </tr>
+    <tr>
+        <td><strong>Method Area</strong></td>
+        <td>Stores class-level structures, runtime constant pools, method data and code.</td>
+    </tr>
+    <tr>
+        <td><strong>PC Register</strong></td>
+        <td>Tracks the address of the current JVM instruction being executed by each thread.</td>
+    </tr>
+    <tr>
+        <td><strong>Native Method Stack</strong></td>
+        <td>Supports execution of native methods written in languages such as C or C++.</td>
+    </tr>
+</table>
+
+<p><strong>Note:</strong> In HotSpot JVM, class metadata for the Method Area is mainly stored in Metaspace, which uses native memory.</p>
+
+<h3>3. Execution Engine</h3>
+<p><strong>Responsibility:</strong> Executes the bytecode loaded into JVM memory.</p>
+<ul>
+    <li><strong>Interpreter:</strong> Executes bytecode instructions one by one.</li>
+    <li><strong>JIT Compiler:</strong> Compiles frequently executed bytecode into native machine code to improve performance.</li>
+    <li><strong>Garbage Collector (GC):</strong> Automatically reclaims heap memory occupied by objects that are no longer reachable.</li>
+</ul>
+
+<h3>4. Java Native Interface (JNI)</h3>
+<p><strong>Responsibility:</strong> Allows Java code to interact with native code written in languages such as C and C++.</p>
+<p><strong>Example:</strong> A Java application can call a native C library through JNI.</p>
+
+<h3>5. Native Method Libraries</h3>
+<p><strong>Responsibility:</strong> Provides native libraries required by the JVM to execute native methods.</p>
+<p><strong>Example:</strong> Platform-specific C/C++ libraries used by Java applications.</p>
+
+<h3>JVM Architecture Diagram</h3>
+
+<pre><code>             Java Application
+                    |
+                    v
+          +---------------------+
+          | Class Loader        |
+          | Subsystem           |
+          +---------------------+
+                    |
+                    v
+          +---------------------+
+          | Runtime Data Areas  |
+          |                     |
+          |  Heap               |
+          |  Java Stack         |
+          |  Method Area        |
+          |  PC Register        |
+          |  Native Method Stack|
+          +---------------------+
+                    |
+                    v
+          +---------------------+
+          | Execution Engine    |
+          |                     |
+          |  Interpreter        |
+          |  JIT Compiler       |
+          |  Garbage Collector  |
+          +---------------------+
+                    |
+                    v
+          +---------------------+
+          | JNI                 |
+          +---------------------+
+                    |
+                    v
+          +---------------------+
+          | Native Method       |
+          | Libraries           |
+          +---------------------+</code></pre>
+
+<h3>Interview Summary</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Component</th>
+        <th>Main Responsibility</th>
+    </tr>
+    <tr>
+        <td>Class Loader</td>
+        <td>Loads Java classes.</td>
+    </tr>
+    <tr>
+        <td>Runtime Data Areas</td>
+        <td>Manages JVM memory.</td>
+    </tr>
+    <tr>
+        <td>Execution Engine</td>
+        <td>Executes bytecode.</td>
+    </tr>
+    <tr>
+        <td>JNI</td>
+        <td>Connects Java with native code.</td>
+    </tr>
+    <tr>
+        <td>Native Libraries</td>
+        <td>Provide native functionality.</td>
+    </tr>
+</table>
+
+<h3>Interview Answer</h3>
+<p>The main JVM components are the Class Loader Subsystem, Runtime Data Areas, Execution Engine, JNI and Native Method Libraries. Together, they load Java classes, manage memory, execute bytecode and support interaction with native code.</p>
+</p>
+
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -12803,7 +13014,57 @@ Employee object created</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h3>What is JIT Compiler?</h3>
+
+<p><strong>JIT (Just-In-Time) Compiler</strong> is a component of the JVM Execution Engine that converts frequently executed Java bytecode into native machine code at runtime.</p>
+
+<h4>How does it improve performance?</h4>
+
+<p>Instead of interpreting the same bytecode repeatedly, JIT compiles frequently executed code into native machine code, which can execute faster.</p>
+
+<h4>Simple Flow Diagram</h4>
+
+<pre><code>Java Source (.java)
+        |
+        v
+   Java Compiler
+        |
+        v
+   Bytecode (.class)
+        |
+        v
+   JVM Execution Engine
+        |
+        v
+     Interpreter
+        |
+        v
+ Frequently Executed Code
+        |
+        v
+    JIT Compiler
+        |
+        v
+ Native Machine Code
+        |
+        v
+   Faster Execution</code></pre>
+
+<h4>Example</h4>
+
+<pre><code>for (int i = 0; i < 1000000; i++) {
+    calculate(i);
+}</code></pre>
+
+<p>If <code>calculate()</code> is called frequently, the JVM may identify it as a hot method and JIT-compile it into native machine code.</p>
+
+<h4>Interview Answer</h4>
+
+<p>JIT Compiler improves Java application performance by compiling frequently executed bytecode into native machine code at runtime, reducing repeated interpretation overhead.</p>
+
+<p><strong>Remember:</strong> Interpreter executes bytecode; JIT compiler optimizes frequently executed code by compiling it into native machine code.</p>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
