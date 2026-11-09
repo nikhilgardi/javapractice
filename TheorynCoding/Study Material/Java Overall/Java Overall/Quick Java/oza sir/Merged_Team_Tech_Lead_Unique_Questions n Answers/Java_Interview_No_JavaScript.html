@@ -76,8 +76,8 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q60" class="completed"><span class="number">60.</span>Explain class loading, linking, initialization and class-loader delegation.</a>
 <a href="#q61" class="completed"><span class="number">61.</span>What are the main JVM components and their responsibilities?</a>
 <a href="#q62" class="completed"><span class="number">62.</span>What is the JIT compiler, and how does it improve performance?</a>
-<a href="#q63"><span class="number">63.</span>Explain garbage collection roots and how objects become eligible for garbage collection.</a>
-<a href="#q64"><span class="number">64.</span>What are common causes of memory leaks in Java applications?</a>
+<a href="#q63" class="completed"><span class="number">63.</span>Explain garbage collection roots and how objects become eligible for garbage collection.</a>
+<a href="#q64" class="completed"><span class="number">64.</span>What are common causes of memory leaks in Java applications?</a>
 <a href="#q65"><span class="number">65.</span>How would you investigate high CPU usage, memory growth, frequent GC pauses or a slow Java application?</a>
 <div class="topic">Multithreading and concurrency — 15 questions</div>
 <a href="#q66"><span class="number">66.</span>Explain the Java thread lifecycle.</a>
@@ -13073,7 +13073,559 @@ Employee object created</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Garbage Collection (GC) – Roots, Eligibility and Life Cycle</h2>
+
+<h3>1. What is Garbage Collection?</h3>
+<p>Garbage Collection is an automatic JVM process that identifies unreachable objects and reclaims the heap memory occupied by them.</p>
+
+<h3>2. What are GC Roots?</h3>
+<p>GC Roots are starting references used by the JVM to determine whether objects are reachable.</p>
+
+
+<p><strong>Common GC Roots with Examples:</strong></p>
+
+<ul>
+    <li>
+        <strong>Local references in active Java Stack frames:</strong>
+        <pre><code>public void display() {
+    Employee emp = new Employee();
+}</code></pre>
+        <p>The local variable <code>emp</code> references the Employee object. While this reference is active, the object is reachable.</p>
+    </li>
+
+    <li>
+        <strong>Static references of loaded classes:</strong>
+        <pre><code>class Employee {
+    static Employee emp = new Employee();
+}</code></pre>
+        <p>The static field <code>emp</code> holds a reference to the Employee object. It can keep the object reachable while the class remains loaded and the reference is retained.</p>
+    </li>
+
+    
+<li>
+    <strong>Active threads:</strong>
+    <pre><code>Thread t = new Thread(() -> {
+    Employee emp = new Employee();
+    System.out.println(emp);
+});
+
+t.start();</code></pre>
+    <p>An active thread is a GC Root. Objects referenced by its active execution, such as local variables, can remain reachable and cannot be garbage collected.</p>
+</li>
+
+
+    <li>
+        <strong>JNI references used by native code:</strong>
+        <pre><code>// Native C/C++ code using JNI
+jobject obj = (*env)->NewGlobalRef(env, javaObject);</code></pre>
+        <p>A JNI global reference keeps the referenced Java object reachable while the native reference exists.</p>
+    </li>
+</ul>
+
+
+<h3>3. How does an object become eligible for GC?</h3>
+<p>An object becomes eligible for GC when it is no longer reachable through any path from GC Roots.</p>
+
+<p><strong>Example:</strong></p>
+<pre><code>class Employee {
+    public static void main(String[] args) {
+        Employee emp = new Employee();
+
+        emp = null;
+    }
+}</code></pre>
+
+<p><strong>Object reference diagram:</strong></p>
+<pre><code>STEP 1: Object Created
+
+Stack                 Heap
++---------+          +------------------+
+| emp     | -------->| Employee Object  |
++---------+          +------------------+
+
+STEP 2: emp = null
+
+Stack                 Heap
++---------+          +------------------+
+| emp=null|          | Employee Object  |
++---------+          +------------------+
+                           |
+                     No reachable path
+                           |
+                           v
+                    Eligible for GC</code></pre>
+
+<h3>4. Garbage Collection Life Cycle</h3>
+
+<p><strong>Step 1: Object Creation</strong></p>
+<p>Objects are generally allocated in Heap memory when created using <code>new</code>.</p>
+
+<p><strong>Step 2: Reachability Analysis</strong></p>
+<p>The GC identifies GC Roots and checks which objects are reachable.</p>
+
+<p><strong>Step 3: Identify Unreachable Objects</strong></p>
+<p>Objects that cannot be reached from any GC Root are identified as garbage.</p>
+
+<p><strong>Step 4: Memory Reclamation</strong></p>
+<p>The Garbage Collector reclaims memory occupied by unreachable objects.</p>
+
+<p><strong>Step 5: Memory Reuse</strong></p>
+<p>The reclaimed heap memory becomes available for future object allocations.</p>
+
+<h3>5. Complete GC Life Cycle Diagram</h3>
+
+<pre><code>       OBJECT CREATION
+              |
+              v
+       OBJECT IN HEAP
+              |
+              v
+     REACHABILITY ANALYSIS
+              |
+              v
+       CHECK GC ROOTS
+              |
+       +------+------+
+       |             |
+       v             v
+   REACHABLE     UNREACHABLE
+       |             |
+       v             v
+   OBJECT       GARBAGE OBJECT
+   RETAINED          |
+                     v
+              MEMORY RECLAMATION
+                     |
+                     v
+               MEMORY REUSED</code></pre>
+
+<h3>6. Other Ways Objects Become Eligible for GC</h3>
+
+<p><strong>Case 1: Reference Reassignment</strong></p>
+<pre><code>Employee e1 = new Employee();
+e1 = new Employee();</code></pre>
+<p>The first object becomes eligible if no other references point to it.</p>
+
+<p><strong>Case 2: Null Reference</strong></p>
+<pre><code>Employee e = new Employee();
+e = null;</code></pre>
+<p>The object becomes eligible if no other references point to it.</p>
+
+<p><strong>Case 3: Local Variable Goes Out of Scope</strong></p>
+<pre><code>static void display() {
+    Employee e = new Employee();
+}</code></pre>
+<p>After the method completes, its local reference is no longer active. The object becomes eligible if no other references point to it.</p>
+
+<p><strong>Case 4: Island of Isolation</strong></p>
+<pre><code>Employee e1 = new Employee();
+Employee e2 = new Employee();
+
+e1.friend = e2;
+e2.friend = e1;
+
+e1 = null;
+e2 = null;</code></pre>
+<p>Both objects reference each other, but neither is reachable from GC Roots. Both become eligible for GC.</p>
+
+<h3>7. Important Interview Points</h3>
+<ul>
+    <li>Java uses reachability analysis, not simple reference counting.</li>
+    <li>Objects reachable from GC Roots are retained.</li>
+    <li>Unreachable objects become eligible for GC.</li>
+    <li>Eligible for GC does not mean immediately deleted.</li>
+    <li>The JVM decides when garbage collection actually runs.</li>
+    <li><code>System.gc()</code> requests garbage collection but does not guarantee it.</li>
+</ul>
+
+<h3>Interview Answer</h3>
+<p>Garbage Collection is an automatic JVM memory management process. It starts from GC Roots, identifies reachable and unreachable objects, and reclaims heap memory occupied by unreachable objects so that the memory can be reused.</p>
+</p>
+
+
+<h2>Java Garbage Collection (GC)</h2>
+
+<h3>1. What is Garbage Collection?</h3>
+
+<p>Garbage Collection is an automatic JVM memory management process that identifies unreachable objects and reclaims the heap memory occupied by them.</p>
+
+<h3>2. Main GC Components</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Component</th>
+        <th>Responsibility</th>
+    </tr>
+    <tr>
+        <td>Heap Memory</td>
+        <td>Stores Java objects and arrays.</td>
+    </tr>
+    <tr>
+        <td>GC Roots</td>
+        <td>Starting references used to identify reachable objects.</td>
+    </tr>
+    <tr>
+        <td>Reachability Analysis</td>
+        <td>Checks whether objects are reachable from GC Roots.</td>
+    </tr>
+    <tr>
+        <td>Garbage Collector</td>
+        <td>Identifies and reclaims memory occupied by unreachable objects.</td>
+    </tr>
+    <tr>
+        <td>Memory Reclamation</td>
+        <td>Makes reclaimed heap memory available for reuse.</td>
+    </tr>
+</table>
+
+<h3>3. Common GC Roots with Examples</h3>
+
+<ul>
+    <li>
+        <strong>Local references in active Java Stack frames:</strong>
+        <pre><code>Employee emp = new Employee();</code></pre>
+        <p>The local variable <code>emp</code> references the Employee object. While the reference is active, the object is reachable.</p>
+    </li>
+
+    <li>
+        <strong>Static references of loaded classes:</strong>
+        <pre><code>static Employee emp = new Employee();</code></pre>
+        <p>The static field holds a reference to the Employee object and can keep it reachable while the class is loaded and the reference is retained.</p>
+    </li>
+
+    <li>
+        <strong>Active threads:</strong>
+        <pre><code>Thread t = new Thread(() -> {
+    Employee emp = new Employee();
+    System.out.println(emp);
+});
+t.start();</code></pre>
+        <p>An active thread can keep objects reachable through references used in its execution, such as local variables in active stack frames.</p>
+    </li>
+
+    <li>
+        <strong>JNI references:</strong>
+        <pre><code>jobject obj = (*env)->NewGlobalRef(env, javaObject);</code></pre>
+        <p>A JNI global reference keeps the referenced Java object reachable while the native reference exists.</p>
+    </li>
+</ul>
+
+<h3>4. Generational Garbage Collection Architecture</h3>
+
+<p>In the traditional generational GC model, Heap memory is divided into Young Generation and Old Generation.</p>
+
+<pre><code>                  JVM HEAP MEMORY
+                         |
+          +--------------+--------------+
+          |                             |
+          v                             v
+   YOUNG GENERATION              OLD GENERATION
+          |                             |
+   +------+------+                 Long-lived
+   |      |      |                  Objects
+   v      v      v                     |
+ Eden    S0     S1                     |
+   |      |      |                     |
+   +------+------+
+          |
+          v
+       MINOR GC
+          |
+          v
+   Surviving Objects
+          |
+          v
+       PROMOTION
+          |
+          +---------------------------> OLD GENERATION
+                                           |
+                                           v
+                                  OLD GENERATION GC</code></pre>
+
+<h3>5. Components of Generational GC</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Component</th>
+        <th>Responsibility</th>
+    </tr>
+    <tr>
+        <td>Eden</td>
+        <td>New objects are generally allocated here.</td>
+    </tr>
+    <tr>
+        <td>Survivor S0</td>
+        <td>Stores objects that survive a Young Generation collection.</td>
+    </tr>
+    <tr>
+        <td>Survivor S1</td>
+        <td>Alternate Survivor space used during copying.</td>
+    </tr>
+    <tr>
+        <td>Minor GC</td>
+        <td>Collects the Young Generation.</td>
+    </tr>
+    <tr>
+        <td>Old Generation</td>
+        <td>Stores long-lived objects.</td>
+    </tr>
+    <tr>
+        <td>Major / Old Generation GC</td>
+        <td>Common interview term for collection of Old Generation; exact behavior depends on the collector.</td>
+    </tr>
+</table>
+
+<h3>6. Complete Garbage Collection Life Cycle</h3>
+
+<h4>Step 1: Object Creation in Eden</h4>
+
+<pre><code>Employee e1 = new Employee();
+Employee e2 = new Employee();
+Employee e3 = new Employee();</code></pre>
+
+<p>New objects are generally allocated in Eden.</p>
+
+<pre><code>+----------------+  +------+  +------+
+|     EDEN       |  |  S0  |  |  S1  |
+|                |  |      |  |      |
+| Employee e1    |  | Empty|  | Empty|
+| Employee e2    |  |      |  |      |
+| Employee e3    |  |      |  |      |
++----------------+  +------+  +------+</code></pre>
+
+<h4>Step 2: Eden Fills Up</h4>
+
+<p>When Eden cannot accommodate further allocations, the JVM may trigger a Young Generation collection (Minor GC).</p>
+
+
+<h3>Example: Total Heap = 3 GB</h3>
+
+<p><strong>Step 1: Young and Old Generation</strong></p>
+
+<p>NewRatio = 2 (Old : Young = 2 : 1)</p>
+
+<ul>
+    <li>Young Generation = 3 GB / 3 = <strong>1 GB</strong></li>
+    <li>Old Generation = 1 GB × 2 = <strong>2 GB</strong></li>
+</ul>
+
+<p><strong>Step 2: Eden, S0 and S1</strong></p>
+
+<p>SurvivorRatio = 8 (Eden : S0 : S1 = 8 : 1 : 1)</p>
+
+<p>Total units = 8 + 1 + 1 = 10</p>
+
+<ul>
+    <li>Eden = 1 GB × 8/10 = <strong>819.2 MB</strong></li>
+    <li>S0 = 1 GB × 1/10 = <strong>102.4 MB</strong></li>
+    <li>S1 = 1 GB × 1/10 = <strong>102.4 MB</strong></li>
+</ul>
+
+<pre><code>Total Heap = 3 GB
+|
++-- Young Generation = 1 GB
+|   |
+|   +-- Eden = 819.2 MB
+|   +-- S0   = 102.4 MB
+|   +-- S1   = 102.4 MB
+|
++-- Old Generation = 2 GB</code></pre>
+
+
+<h4>Step 3: Reachability Analysis</h4>
+
+<p>The Garbage Collector checks which objects are reachable from GC Roots.</p>
+
+<pre><code>EDEN
+
++----------------------+
+| Employee e1          | REACHABLE
+| Employee e2          | UNREACHABLE
+| Employee e3          | REACHABLE
++----------------------+</code></pre>
+
+<ul>
+    <li><strong>e1 and e3:</strong> Survive because they are reachable.</li>
+    <li><strong>e2:</strong> Can be reclaimed because it is unreachable.</li>
+</ul>
+
+<h4>Step 4: Surviving Objects Move to Survivor Space</h4>
+
+<p>In a traditional copying-based collector, surviving objects are copied into a Survivor space.</p>
+
+<pre><code>+--------+  +----------------+  +------+
+| EDEN   |  |   SURVIVOR S0  |  |  S1  |
+|        |  |                |  |      |
+| Empty  |  | Employee e1    |  | Empty|
+|        |  | Employee e3    |  |      |
++--------+  +----------------+  +------+</code></pre>
+
+<p>The unreachable object e2 is reclaimed.</p>
+
+<h4>Step 5: Survivor Spaces Alternate</h4>
+
+<p>During the next Young Generation collection, surviving objects may be copied from S0 into S1. New surviving Eden objects can also be copied into S1.</p>
+<p>During the next Minor GC, surviving objects are copied from S0 to S1, and the Survivor spaces alternate roles.</p>
+
+<pre><code>BEFORE COLLECTION
+
++--------+  +--------+  +--------+
+|  EDEN  |  |   S0   |  |   S1   |
+|  New   |  | e1, e3 |  | Empty  |
++--------+  +--------+  +--------+
+
+AFTER COLLECTION
+
++--------+  +--------+  +--------+
+|  EDEN  |  |   S0   |  |   S1   |
+| Empty  |  | Empty  |  | e1, e3 |
++--------+  +--------+  +--------+</code></pre>
+
+<p>S0 and S1 alternate roles during copying.</p>
+
+<h4>Step 6: Promotion to Old Generation</h4>
+
+<p>Objects that survive multiple Young Generation collections may eventually be promoted to Old Generation. Promotion can also happen earlier depending on collector-specific age and space policies.</p>
+
+<pre><code>YOUNG GENERATION             OLD GENERATION
+
++------------------+        +------------------+
+| Eden             |        | Employee e1      |
+| Survivor S0      | -----> | Employee e3      |
+| Survivor S1      |        |                  |
++------------------+        +------------------+
+                 PROMOTION</code></pre>
+
+<h4>Step 7: Old Generation Collection</h4>
+
+<p>When Old Generation collection is required, unreachable objects are identified and their memory is reclaimed.</p>
+
+<pre><code>BEFORE COLLECTION
+
++----------------------+
+| Employee e1          | REACHABLE
+| Employee e3          | UNREACHABLE
+| Employee e4          | REACHABLE
++----------------------+
+
+AFTER COLLECTION
+
++----------------------+
+| Employee e1          |
+| Employee e4          |
+| Reclaimed space      |
++----------------------+</code></pre>
+
+<h4>Step 8: Memory Reuse</h4>
+
+<p>Reclaimed heap memory becomes available for future allocations. Some collectors also compact or relocate surviving objects to reduce fragmentation.</p>
+
+<h3>7. Complete GC Flow – Start to End</h3>
+
+<pre><code>       OBJECT CREATION
+              |
+              v
+          EDEN SPACE
+              |
+              v
+          EDEN FILLS
+              |
+              v
+           MINOR GC
+              |
+              v
+      REACHABILITY ANALYSIS
+              |
+         +----+----+
+         |         |
+         v         v
+     REACHABLE  UNREACHABLE
+         |         |
+         v         v
+     SURVIVOR   RECLAIMED
+      SPACE     MEMORY
+         |
+         v
+    S0 / S1 ALTERNATION
+         |
+         v
+      PROMOTION
+         |
+         v
+    OLD GENERATION
+         |
+         v
+   OLD GENERATION GC
+         |
+         v
+   MEMORY RECLAMATION
+         |
+         v
+      MEMORY REUSE</code></pre>
+
+<h3>8. Practical Java Example</h3>
+
+<pre><code>class Employee {
+    int id;
+
+    Employee(int id) {
+        this.id = id;
+    }
+}
+
+public class GCDemo {
+
+    public static void main(String[] args) {
+
+        Employee e1 = new Employee(101);
+        Employee e2 = new Employee(102);
+        Employee e3 = new Employee(103);
+
+        // First object's reference removed
+        e1 = null;
+
+        // e2 and e3 are still reachable
+        System.out.println(e2.id);
+        System.out.println(e3.id);
+
+        // Request garbage collection
+        System.gc();
+    }
+}</code></pre>
+
+<p><strong>What happens?</strong></p>
+<ul>
+    <li>Three Employee objects are created.</li>
+    <li><code>e1 = null</code> removes the local reference to the first object.</li>
+    <li>The first object becomes eligible for GC if no other reachable reference points to it.</li>
+    <li>e2 and e3 remain reachable.</li>
+    <li><code>System.gc()</code> requests GC but does not guarantee immediate collection.</li>
+</ul>
+
+<h3>9. Important Interview Questions</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr><th>Question</th><th>Answer</th></tr>
+    <tr><td>Where are new objects generally created?</td><td>Eden space.</td></tr>
+    <tr><td>What is Minor GC?</td><td>Young Generation collection.</td></tr>
+    <tr><td>What are S0 and S1?</td><td>Two Survivor spaces.</td></tr>
+    <tr><td>What is object promotion?</td><td>Moving surviving objects to Old Generation.</td></tr>
+    <tr><td>Why does an object enter Old Generation?</td><td>It survives enough collections or meets promotion criteria.</td></tr>
+    <tr><td>Does GC always compact memory?</td><td>No. It depends on the collector.</td></tr>
+    <tr><td>Does System.gc() guarantee collection?</td><td>No. It is only a request.</td></tr>
+</table>
+
+<h3>10. Interview Answer</h3>
+
+<p>Java uses automatic garbage collection to manage Heap memory. In the traditional generational model, new objects are allocated in Eden. When Young Generation collection occurs, the JVM identifies reachable objects using GC Roots. Surviving objects are copied into Survivor spaces and may eventually be promoted to Old Generation. Unreachable objects are reclaimed, making memory available for reuse.</p>
+
+<h3>Remember This Flow</h3>
+
+<p><strong>Eden → Minor GC → Reachability Analysis → Survivor S0/S1 → Promotion → Old Generation → Old Generation Collection → Memory Reuse.</strong></p>
+
+<p><strong>Note:</strong> This is the traditional generational GC model. Serial GC and Parallel GC use generational layouts; G1 uses regions, while ZGC and Shenandoah use different approaches. Internal phases and terminology vary by collector.</p>
+
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -13082,7 +13634,293 @@ Employee object created</code></pre>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Application Architecture</h2>
+<pre>
+          Thymeleaf UI
+               |
+          API Gateway
+               |
+          Eureka Server
+               |
+     ---------------------
+     |         |         |
+  Employee  Payment   Insurance
+  Service   Service   Service
+     |         |         |
+     ---------------------
+               |
+          PostgreSQL
+
+Services communicate using
+Spring Cloud OpenFeign.
+</pre>
+
+<h2>Common Memory Leak Scenarios</h2>
+
+
+<h2>Common Causes of Memory Leaks in Microservices</h2>
+
+<h3>1. API Gateway – Storing every API request in memory</h3>
+
+<p><b>Example:</b> Suppose 10,000 users send requests to your API Gateway. The application stores every request in an ArrayList.</p>
+
+<pre>
+@Service
+public class RequestService {
+
+    private List&lt;String&gt; requestLogs = new ArrayList&lt;&gt;();
+
+    public void saveRequest(String request) {
+        requestLogs.add(request);
+    }
+}
+</pre>
+
+<p><b>Problem:</b> Every request adds a new entry. If entries are never removed, the list keeps growing and consumes more memory.</p>
+
+<p><b>Solution:</b> Do not store all request logs in an ArrayList. Use SLF4J logging instead.</p>
+
+<pre>
+@Service
+public class RequestService {
+
+    private static final Logger log =
+        LoggerFactory.getLogger(RequestService.class);
+
+    public void saveRequest(String request) {
+        log.info("API Request: {}", request);
+    }
+}
+</pre>
+
+<p>Configure Logback to rotate old log files.</p>
+
+<hr/>
+
+<h3>2. Eureka Server – Old service registrations</h3>
+
+<p><b>Example:</b> Your Employee Service starts and registers with Eureka.</p>
+
+<pre>
+Employee-Service : 8081  → Registered
+Payment-Service  : 8082  → Registered
+Insurance-Service: 8083  → Registered
+</pre>
+
+<p>Now suppose Employee Service stops unexpectedly.</p>
+
+<p><b>Problem:</b> Eureka may temporarily retain its old registration even though the service is no longer running.</p>
+
+<p><b>Solution:</b> Configure Eureka heartbeat and lease expiration. Eureka can then identify services that are no longer responding and remove their stale registrations.</p>
+
+
+<h3>Solution: Configure Eureka heartbeat and lease expiration</h3>
+
+<p><b>Example:</b> Employee Service sends a heartbeat to Eureka every 30 seconds to inform it that the service is running.</p>
+
+<p>Suppose Employee Service crashes and stops sending heartbeats.</p>
+
+<p>After the configured lease expiration time (for example, 90 seconds), Eureka can identify the instance as unavailable and remove its registration.</p>
+
+
+<h4>application.yml – Eureka Server</h4>
+
+<pre>
+server:
+  enable-self-preservation: false
+  # Allows Eureka to remove expired service registrations even during network issues.
+
+  eviction-interval-timer-in-ms: 60000
+  # Eureka checks for expired registrations every 60 seconds.
+</pre>
+
+<h4>application.yml – Employee Service</h4>
+
+<pre>
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 30
+    # Employee Service sends a heartbeat to Eureka every 30 seconds.
+
+    lease-expiration-duration-in-seconds: 90
+    # Eureka considers the instance expired if no heartbeat arrives within 90 seconds.
+</pre>
+
+<p><b>Remember:</b></p>
+<ul>
+<li>30 seconds = Employee Service sends a heartbeat.</li>
+<li>90 seconds = Lease expiration threshold if heartbeats stop.</li>
+<li>Eureka periodically checks and removes expired registrations.</li>
+</ul>
+
+<p><b>Note:</b> These are example settings. Disabling self-preservation is not generally recommended in production because temporary network problems can cause healthy instances to be removed.</p>
+
+
+<p><b>Simple example:</b> Eureka is like a phone directory. When a service permanently stops, its old entry should be removed.</p>
+
+<hr/>
+
+<h3>Interview Summary</h3>
+
+<table>
+<tr>
+<th>Component</th>
+<th>Problem</th>
+<th>Solution</th>
+</tr>
+<tr>
+<td>API Gateway</td>
+<td>Request data keeps growing in an ArrayList.</td>
+<td>Use SLF4J and Logback rolling logs.</td>
+</tr>
+<tr>
+<td>Eureka Server</td>
+<td>Old service registrations remain temporarily.</td>
+<td>Configure heartbeat and lease expiration.</td>
+</tr>
+</table>
+
+
+<h3>3. Feign Client – Large response objects</h3>
+<pre>
+List<Employee> employees =
+    employeeClient.getAllEmployees();
+</pre>
+<b>Problem:</b> A service retrieves thousands of employee records from another microservice and retains the complete response in memory.
+
+<b>Solution:</b> Use pagination and return only the required fields.
+
+<h3>4. JDBC – Connections not closed</h3>
+<pre>
+Connection con = dataSource.getConnection();
+PreparedStatement ps =
+    con.prepareStatement("SELECT * FROM employee");
+
+ResultSet rs = ps.executeQuery();
+
+// Connection and resources not closed
+</pre>
+<b>Problem:</b> Database connections remain occupied and the connection pool may become exhausted.
+
+<b>Solution:</b> Use try-with-resources or Spring-managed JDBC operations.
+
+
+<h3>Problem: JDBC connections not closed</h3>
+
+<pre>
+Connection con = dataSource.getConnection();
+
+PreparedStatement ps =
+    con.prepareStatement("SELECT * FROM employee");
+
+ResultSet rs = ps.executeQuery();
+
+while (rs.next()) {
+    System.out.println(rs.getString("name"));
+}
+
+// Connection and resources are not closed
+</pre>
+
+<p><b>Problem:</b> Database connections remain occupied and the connection pool may become exhausted.</p>
+
+<h3>Solution 1: Use try-with-resources</h3>
+
+<p>Java automatically closes Connection, PreparedStatement and ResultSet after execution.</p>
+
+<pre>
+public void getEmployees() throws SQLException {
+
+    String sql = "SELECT * FROM employee";
+
+    try (Connection con = dataSource.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        while (rs.next()) {
+            System.out.println(rs.getString("name"));
+        }
+    }
+}
+</pre>
+
+<h3>Solution 2: Use Spring JdbcTemplate (recommended)</h3>
+
+<p>Spring manages JDBC resource cleanup automatically.</p>
+
+<pre>
+@Repository
+public class EmployeeRepository {
+
+    private final JdbcTemplate jdbcTemplate;
+
+    public EmployeeRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public List&lt;String&gt; getEmployees() {
+
+        String sql = "SELECT name FROM employee";
+
+        return jdbcTemplate.query(
+            sql,
+            (rs, rowNum) -> rs.getString("name")
+        );
+    }
+}
+</pre>
+
+<h3>Interview Answer</h3>
+
+<p>Always close JDBC resources after use. We can use try-with-resources in core JDBC or Spring JdbcTemplate, which handles resource cleanup automatically and helps prevent connection pool exhaustion.</p>
+
+
+<h3>5. Hibernate – Large query results</h3>
+<pre>
+List<Employee> employees =
+    entityManager.createQuery(
+        "SELECT e FROM Employee e", Employee.class
+    ).getResultList();
+</pre>
+<b>Problem:</b> Loading a very large number of records into memory increases heap usage.
+
+<b>Solution:</b> Use pagination or process records in batches.
+
+<h3>6. Thymeleaf – Large data passed to the view</h3>
+<pre>
+model.addAttribute("employees",
+                   employeeService.getAllEmployees());
+</pre>
+<b>Problem:</b> Loading thousands of records for a single page increases memory consumption during request processing.
+
+<b>Solution:</b> Use pagination and send only the data required by the page.
+
+<h3>7. Microservice – ExecutorService not shut down</h3>
+<pre>
+ExecutorService executor =
+    Executors.newFixedThreadPool(10);
+
+executor.submit(() -> {
+    // Background processing
+});
+</pre>
+<b>Problem:</b> Repeatedly creating executors without shutting them down can leave threads and associated resources alive.
+
+<b>Solution:</b> Manage thread pools through Spring configuration and shut them down during application shutdown.
+
+<h2>Interview Summary</h2>
+<table>
+<tr><th>Component</th><th>Memory/resource issue</th></tr>
+<tr><td>API Gateway</td><td>Unbounded request data retention</td></tr>
+<tr><td>Eureka</td><td>Excessive or stale registrations</td></tr>
+<tr><td>Feign Client</td><td>Large API responses retained</td></tr>
+<tr><td>JDBC</td><td>Unclosed database resources</td></tr>
+<tr><td>Hibernate</td><td>Large entity collections</td></tr>
+<tr><td>Thymeleaf</td><td>Large model data per request</td></tr>
+<tr><td>ExecutorService</td><td>Unmanaged threads and executors</td></tr>
+</table>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
