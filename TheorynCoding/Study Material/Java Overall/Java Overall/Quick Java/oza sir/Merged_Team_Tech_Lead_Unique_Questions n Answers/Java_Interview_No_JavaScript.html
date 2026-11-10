@@ -78,7 +78,7 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q62" class="completed"><span class="number">62.</span>What is the JIT compiler, and how does it improve performance?</a>
 <a href="#q63" class="completed"><span class="number">63.</span>Explain garbage collection roots and how objects become eligible for garbage collection.</a>
 <a href="#q64" class="completed"><span class="number">64.</span>What are common causes of memory leaks in Java applications?</a>
-<a href="#q65"><span class="number">65.</span>How would you investigate high CPU usage, memory growth, frequent GC pauses or a slow Java application?</a>
+<a href="#q65" class="completed"><span class="number">65.</span>How would you investigate high CPU usage, memory growth, frequent GC pauses or a slow Java application?</a>
 <div class="topic">Multithreading and concurrency — 15 questions</div>
 <a href="#q66"><span class="number">66.</span>Explain the Java thread lifecycle.</a>
 <a href="#q67"><span class="number">67.</span>Compare `Thread`, `Runnable` and `Callable`.</a>
@@ -13929,7 +13929,195 @@ executor.submit(() -> {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>How would you investigate high CPU usage, memory growth, frequent GC pauses or a slow Java application?</h2>
+
+<p><b>Answer:</b> I would first identify which microservice is affected, check application metrics and logs, and then investigate CPU, memory, garbage collection, threads and database performance.</p>
+
+<hr/>
+
+<h3>1. High CPU Usage</h3>
+
+<p><b>Problem:</b> Employee Service is consuming 95% CPU.</p>
+
+<p><b>Possible causes:</b></p>
+<ul>
+<li>Infinite loops or unnecessary repeated processing.</li>
+<li>Too many threads executing simultaneously.</li>
+<li>Complex calculations or inefficient code.</li>
+<li>Excessive retry operations between microservices.</li>
+</ul>
+
+<p><b>How to investigate?</b></p>
+
+<pre>
+# Check CPU usage
+top
+
+# Find Java process ID
+jps -l
+
+# Check Java thread information
+jstack &lt;PID&gt;
+</pre>
+
+<p><b>Example:</b> If one thread is continuously executing an infinite loop, it may consume high CPU.</p>
+
+<p><b>Solution:</b> Identify the problematic thread and review its code. Fix unnecessary loops, optimize processing and control thread execution.</p>
+
+<hr/>
+
+<h3>2. Memory Growth</h3>
+
+<p><b>Problem:</b> Employee Service memory usage continuously increases from 500 MB to 2 GB.</p>
+
+<p><b>Possible causes:</b></p>
+<ul>
+<li>Collections continuously storing objects.</li>
+<li>Hibernate loading thousands of records.</li>
+<li>Large Feign API responses.</li>
+<li>Unbounded application caches.</li>
+<li>Objects unnecessarily retained in HTTP sessions.</li>
+</ul>
+
+<p><b>How to investigate?</b></p>
+
+<pre>
+# Check JVM memory information
+jcmd &lt;PID&gt; GC.heap_info
+
+# Generate heap dump
+jcmd &lt;PID&gt; GC.heap_dump memory.hprof
+</pre>
+
+<p>Open the heap dump using Eclipse Memory Analyzer (MAT).</p>
+
+<p><b>Example:</b> MAT shows that an Employee ArrayList is retaining 1 million Employee objects.</p>
+
+<p><b>Solution:</b> Identify why the list retains those objects. Remove unnecessary references, implement pagination or use a bounded cache.</p>
+
+<hr/>
+
+<h3>3. Frequent Garbage Collection (GC) Pauses</h3>
+
+<p><b>Problem:</b> Application becomes slow because the JVM frequently performs garbage collection.</p>
+
+<p><b>Possible causes:</b></p>
+<ul>
+<li>Creating too many temporary objects.</li>
+<li>Loading large database result sets.</li>
+<li>Retaining unnecessary objects.</li>
+<li>Insufficient heap memory for the workload.</li>
+</ul>
+
+<p><b>How to investigate?</b></p>
+
+<pre>
+# Check GC activity
+jstat -gcutil &lt;PID&gt; 1000
+
+# Enable GC logging (Java 9+)
+java -Xlog:gc*:file=gc.log:time,uptime,level,tags -jar app.jar
+</pre>
+
+<p><b>Example:</b> Employee Service repeatedly loads 100,000 records from PostgreSQL. The JVM creates many objects and performs frequent GC.</p>
+
+<p><b>Solution:</b> Use pagination, process records in batches and avoid unnecessary object creation. Tune heap size only after analyzing the GC data.</p>
+
+<hr/>
+
+<h3>4. Slow Java Application</h3>
+
+<p><b>Problem:</b> Employee details page takes 20 seconds to load.</p>
+
+<p><b>Possible causes:</b></p>
+<ul>
+<li>Slow PostgreSQL queries.</li>
+<li>Slow Feign Client calls.</li>
+<li>Too many database calls.</li>
+<li>Large responses from microservices.</li>
+<li>Slow Thymeleaf page rendering.</li>
+<li>Connection pool exhaustion.</li>
+</ul>
+
+<p><b>How to investigate?</b></p>
+
+<p>Check the time taken by each component.</p>
+
+<pre>
+Browser Request
+      |
+  API Gateway       100 ms
+      |
+ Employee Service   200 ms
+      |
+  Feign Client      500 ms
+      |
+  PostgreSQL       15 seconds
+      |
+ Thymeleaf          200 ms
+</pre>
+
+<p><b>Example:</b> PostgreSQL query takes 15 seconds while other components respond quickly.</p>
+
+<p><b>Solution:</b> Check the SQL execution plan using EXPLAIN ANALYZE, add appropriate indexes, optimize the query and use pagination where required.</p>
+
+<hr/>
+
+<h3>5. Important Monitoring Tools</h3>
+
+<table>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+<tr>
+<td>Actuator</td>
+<td>Application health and JVM metrics.</td>
+</tr>
+<tr>
+<td>Prometheus</td>
+<td>Collect application metrics.</td>
+</tr>
+<tr>
+<td>Grafana</td>
+<td>Display CPU, memory and GC dashboards.</td>
+</tr>
+<tr>
+<td>JConsole</td>
+<td>Monitor JVM memory and threads.</td>
+</tr>
+<tr>
+<td>VisualVM</td>
+<td>Analyze CPU, memory and threads.</td>
+</tr>
+<tr>
+<td>Eclipse MAT</td>
+<td>Analyze heap dumps and retained objects.</td>
+</tr>
+<tr>
+<td>JFR</td>
+<td>Analyze JVM runtime performance.</td>
+</tr>
+<tr>
+<td>Zipkin</td>
+<td>Trace requests across microservices.</td>
+</tr>
+</table>
+
+<h3>Interview Summary</h3>
+
+<p>I follow this approach:</p>
+
+<ol>
+<li><b>High CPU:</b> Identify CPU-intensive threads using thread dumps and profiling.</li>
+<li><b>Memory growth:</b> Analyze heap dumps and identify objects retaining memory.</li>
+<li><b>Frequent GC:</b> Analyze GC logs and object allocation patterns.</li>
+<li><b>Slow application:</b> Trace requests across microservices and investigate database queries, Feign calls and application processing.</li>
+</ol>
+
+<p><b>Conclusion:</b> I use Spring Boot Actuator, Prometheus, Grafana, JFR, heap dumps and distributed tracing to identify the root cause before making code or JVM configuration changes.</p>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
