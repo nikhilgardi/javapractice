@@ -80,9 +80,9 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q64" class="completed"><span class="number">64.</span>What are common causes of memory leaks in Java applications?</a>
 <a href="#q65" class="completed"><span class="number">65.</span>How would you investigate high CPU usage, memory growth, frequent GC pauses or a slow Java application?</a>
 <div class="topic">Multithreading and concurrency — 15 questions</div>
-<a href="#q66"><span class="number">66.</span>Explain the Java thread lifecycle.</a>
-<a href="#q67"><span class="number">67.</span>Compare `Thread`, `Runnable` and `Callable`.</a>
-<a href="#q68"><span class="number">68.</span>What is the difference between `start()` and `run()`?</a>
+<a href="#q66" class="completed"><span class="number">66.</span>Explain the Java thread lifecycle.</a>
+<a href="#q67" class="completed"><span class="number">67.</span>Compare `Thread`, `Runnable` and `Callable`.</a>
+<a href="#q68" class="completed"><span class="number">68.</span>What is the difference between `start()` and `run()`?</a>
 <a href="#q69"><span class="number">69.</span>Compare `sleep()`, `wait()` and `join()`.</a>
 <a href="#q70"><span class="number">70.</span>What is synchronization? Compare synchronized methods and blocks.</a>
 <a href="#q71"><span class="number">71.</span>What is a race condition, and how can you prevent it?</a>
@@ -14126,8 +14126,389 @@ Browser Request
 <h2><span class="number">66.</span>Explain the Java thread lifecycle.</h2>
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
-<!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+
+<h2>1. NEW State</h2>
+
+<p><b>Meaning:</b> A thread object is created, but execution has not started.</p>
+
+<h3>Example</h3>
+
+<pre>
+Thread t1 = new Thread(() -> {
+    System.out.println("Employee processing");
+});
+</pre>
+
+<h3>Internal Working</h3>
+
+<ul>
+<li>JVM creates a Thread object.</li>
+<li>The thread is not yet started.</li>
+<li>No thread execution is taking place.</li>
+<li>Its state is NEW.</li>
+</ul>
+
+<p><b>How to check?</b></p>
+
+<pre>
+System.out.println(t1.getState());
+
+// Output: NEW
+</pre>
+
+<hr/>
+
+<h2>2. RUNNABLE State</h2>
+
+<p><b>Meaning:</b> When we call start(), the thread becomes ready for execution.</p>
+
+<h3>Example</h3>
+
+<pre>
+Thread t1 = new Thread(() -> {
+    System.out.println("Employee processing");
+});
+
+t1.start();
+</pre>
+
+<h3>Internal Working</h3>
+
+<ul>
+<li>JVM starts the thread's execution.</li>
+<li>The thread becomes eligible for CPU scheduling.</li>
+<li>The operating system scheduler decides when it gets CPU time.</li>
+<li>It may be ready and waiting for CPU or actually executing.</li>
+</ul>
+
+<p><b>Important:</b> Java considers both ready and currently executing threads as RUNNABLE. RUNNING is not a separate official Java state.</p>
+
+<pre>
+System.out.println(t1.getState());
+
+// Usually RUNNABLE while executing,
+// but the state can change very quickly.
+</pre>
+
+<hr/>
+
+<h2>3. RUNNING (Conceptual Stage)</h2>
+
+<p><b>Meaning:</b> The thread gets CPU time and executes its run() method.</p>
+
+<h3>Example</h3>
+
+<pre>
+Thread t1 = new Thread(() -> {
+
+    for (int i = 1; i <= 5; i++) {
+        System.out.println("Processing employee: " + i);
+    }
+
+});
+
+t1.start();
+</pre>
+
+<h3>Internal Working</h3>
+
+<ul>
+<li>CPU executes the thread's instructions.</li>
+<li>Its run() method is executing.</li>
+<li>Local variables are maintained in its execution stack frames.</li>
+<li>After some time, the scheduler may give CPU time to another thread.</li>
+</ul>
+
+<p><b>Remember:</b> RUNNING is conceptually part of RUNNABLE in Java.</p>
+
+<hr/>
+
+<h2>4. BLOCKED State</h2>
+
+<p><b>Meaning:</b> A thread enters BLOCKED when it tries to enter a synchronized block or method but another thread already holds that lock.</p>
+
+<h3>Real-time Example</h3>
+
+<p>Suppose Thread-1 is processing an employee record and has acquired a lock. Thread-2 also wants to access the same synchronized method.</p>
+
+<pre>
+public class EmployeeService {
+
+    public synchronized void processEmployee() {
+
+        System.out.println(
+            Thread.currentThread().getName()
+            + " processing employee"
+        );
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+}
+</pre>
+
+<p>Run two threads:</p>
+
+<pre>
+EmployeeService service = new EmployeeService();
+
+Thread t1 = new Thread(
+    () -> service.processEmployee(), "Thread-1"
+);
+
+Thread t2 = new Thread(
+    () -> service.processEmployee(), "Thread-2"
+);
+
+t1.start();
+t2.start();
+</pre>
+
+<h3>Internal Working</h3>
+
+<ol>
+<li>Thread-1 acquires the EmployeeService object's monitor lock.</li>
+<li>Thread-1 enters processEmployee().</li>
+<li>Thread-2 tries to enter the same synchronized method.</li>
+<li>Thread-2 cannot acquire the lock because Thread-1 holds it.</li>
+<li>Thread-2 enters BLOCKED state.</li>
+<li>When Thread-1 releases the lock, Thread-2 can acquire it and continue.</li>
+</ol>
+
+<p><b>Important:</b> Thread-1 uses sleep() here but continues holding the synchronized lock. Sleeping does not release the lock.</p>
+
+<hr/>
+
+<h2>5. WAITING State</h2>
+
+<p><b>Meaning:</b> A thread waits until another thread performs a particular action.</p>
+
+<h3>Real-time Example</h3>
+
+<p>Suppose Thread-1 is waiting for Thread-2 to complete an operation.</p>
+
+<pre>
+Object lock = new Object();
+
+Thread t1 = new Thread(() -> {
+
+    synchronized (lock) {
+
+        try {
+            System.out.println("Thread-1 waiting");
+
+            lock.wait();
+
+            System.out.println("Thread-1 resumed");
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+});
+
+Thread t2 = new Thread(() -> {
+
+    synchronized (lock) {
+
+        System.out.println("Thread-2 notifying");
+
+        lock.notify();
+    }
+
+});
+
+t1.start();
+t2.start();
+</pre>
+
+<h3>Internal Working</h3>
+
+<ol>
+<li>Thread-1 acquires the lock.</li>
+<li>Thread-1 calls wait().</li>
+<li>Thread-1 releases the monitor lock and enters WAITING.</li>
+<li>Thread-2 acquires the same lock.</li>
+<li>Thread-2 calls notify().</li>
+<li>Thread-1 becomes eligible to resume, but must reacquire the lock first.</li>
+<li>After reacquiring the lock, Thread-1 continues execution.</li>
+</ol>
+
+<p><b>Important:</b> notify() does not immediately release the lock. The notifying thread must exit the synchronized block before the waiting thread can reacquire it.</p>
+
+<hr/>
+
+<h2>6. TIMED_WAITING State</h2>
+
+<p><b>Meaning:</b> A thread waits for a specified amount of time.</p>
+
+<h3>Example</h3>
+
+<pre>
+Thread t1 = new Thread(() -> {
+
+    System.out.println("Processing started");
+
+    try {
+        Thread.sleep(5000);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+
+    System.out.println("Processing resumed");
+});
+
+t1.start();
+</pre>
+
+<h3>Internal Working</h3>
+
+<ol>
+<li>Thread starts executing.</li>
+<li>It calls sleep(5000).</li>
+<li>Thread enters TIMED_WAITING for approximately five seconds.</li>
+<li>After the timeout, it becomes eligible for execution again.</li>
+<li>Scheduler gives it CPU time and execution continues.</li>
+</ol>
+
+<p><b>Other methods that can cause TIMED_WAITING:</b></p>
+
+<ul>
+<li>Thread.sleep(5000)</li>
+<li>Object.wait(5000)</li>
+<li>Thread.join(5000)</li>
+</ul>
+
+<p><b>Important:</b> sleep() does not release any synchronized lock held by the thread.</p>
+
+<hr/>
+
+<h2>7. TERMINATED State</h2>
+
+<p><b>Meaning:</b> The thread has completed its run() method.</p>
+
+<h3>Example</h3>
+
+<pre>
+Thread t1 = new Thread(() -> {
+    System.out.println("Employee processing completed");
+});
+
+t1.start();
+
+try {
+    t1.join();
+} catch (InterruptedException e) {
+    Thread.currentThread().interrupt();
+}
+
+System.out.println(t1.getState());
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Employee processing completed
+TERMINATED
+</pre>
+
+<h3>Internal Working</h3>
+
+<ul>
+<li>The run() method has completed.</li>
+<li>The thread has finished execution.</li>
+<li>Its state becomes TERMINATED.</li>
+<li>The same Thread object cannot be started again.</li>
+</ul>
+
+<hr/>
+
+<h2>8. Understand All Six Official Java States</h2>
+
+<table>
+<tr>
+<th>State</th>
+<th>What happens internally?</th>
+<th>Example</th>
+</tr>
+<tr>
+<td>NEW</td>
+<td>Thread created, not started.</td>
+<td>new Thread()</td>
+</tr>
+<tr>
+<td>RUNNABLE</td>
+<td>Ready or executing.</td>
+<td>start()</td>
+</tr>
+<tr>
+<td>BLOCKED</td>
+<td>Waiting to acquire a monitor lock.</td>
+<td>synchronized</td>
+</tr>
+<tr>
+<td>WAITING</td>
+<td>Waiting indefinitely for another action.</td>
+<td>wait(), join()</td>
+</tr>
+<tr>
+<td>TIMED_WAITING</td>
+<td>Waiting for a specified time.</td>
+<td>sleep(5000)</td>
+</tr>
+<tr>
+<td>TERMINATED</td>
+<td>Execution completed.</td>
+<td>run() finishes</td>
+</tr>
+</table>
+
+<h2>9. Most Important Interview Differences</h2>
+
+<table>
+<tr>
+<th>Method</th>
+<th>Thread State</th>
+<th>Releases monitor lock?</th>
+</tr>
+<tr>
+<td>sleep()</td>
+<td>TIMED_WAITING</td>
+<td>No</td>
+</tr>
+<tr>
+<td>wait()</td>
+<td>WAITING</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>wait(timeout)</td>
+<td>TIMED_WAITING</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>join()</td>
+<td>WAITING</td>
+<td>Does not release unrelated locks</td>
+</tr>
+<tr>
+<td>join(timeout)</td>
+<td>TIMED_WAITING</td>
+<td>Does not release unrelated locks</td>
+</tr>
+<tr>
+<td>Waiting for synchronized lock</td>
+<td>BLOCKED</td>
+<td>Does not own that lock yet</td>
+</tr>
+</table>
+
+<p><b>Final interview answer:</b> Java defines six thread states: NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING and TERMINATED. A thread starts in NEW, moves to RUNNABLE after start(), may enter waiting or blocked states during execution, returns to RUNNABLE when it can continue, and finally becomes TERMINATED when run() completes.</p>
+
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -14136,7 +14517,192 @@ Browser Request
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Compare Thread, Runnable and Callable in Java</h2>
+
+<p><b>Meaning:</b> Thread, Runnable and Callable are used to execute tasks concurrently in Java.</p>
+
+<h3>1. Thread</h3>
+
+<p><b>Meaning:</b> Thread is a class used to create and execute a separate thread of execution.</p>
+
+<p><b>Example:</b></p>
+
+<pre>
+public class EmployeeThread extends Thread {
+
+    @Override
+    public void run() {
+        System.out.println("Employee processing");
+    }
+
+    public static void main(String[] args) {
+
+        EmployeeThread t = new EmployeeThread();
+        t.start();
+    }
+}
+</pre>
+
+<p><b>Important:</b></p>
+<ul>
+<li>Extend the Thread class.</li>
+<li>Override the run() method.</li>
+<li>Call start() to start a new thread.</li>
+<li>Cannot extend another class because Java does not support multiple class inheritance.</li>
+</ul>
+
+<h3>2. Runnable</h3>
+
+<p><b>Meaning:</b> Runnable is a functional interface used to define a task that does not return a result.</p>
+
+<p><b>Example:</b></p>
+
+<pre>
+public class EmployeeTask implements Runnable {
+
+    @Override
+    public void run() {
+        System.out.println("Employee processing");
+    }
+
+    public static void main(String[] args) {
+
+        EmployeeTask task = new EmployeeTask();
+
+        Thread t = new Thread(task);
+        t.start();
+    }
+}
+</pre>
+
+<p><b>Important:</b></p>
+<ul>
+<li>Runnable is an interface.</li>
+<li>Implement the run() method.</li>
+<li>Does not return a result.</li>
+<li>Does not declare checked exceptions in its run() method.</li>
+<li>A class can implement Runnable and extend another class.</li>
+</ul>
+
+<h3>3. Callable</h3>
+
+<p><b>Meaning:</b> Callable is an interface used to define a task that returns a result and can throw checked exceptions.</p>
+
+<p><b>Example:</b></p>
+
+<pre>
+import java.util.concurrent.*;
+
+public class EmployeeTask {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        ExecutorService executor =
+            Executors.newSingleThreadExecutor();
+
+        Callable&lt;Integer&gt; task = () -> {
+            System.out.println("Calculating employee salary");
+            return 50000;
+        };
+
+        Future&lt;Integer&gt; future =
+            executor.submit(task);
+
+        Integer salary = future.get();
+
+        System.out.println("Salary: " + salary);
+
+        executor.shutdown();
+    }
+}
+</pre>
+
+<p><b>Important:</b></p>
+<ul>
+<li>Callable is an interface.</li>
+<li>Implement or define the call() method.</li>
+<li>Returns a result using a generic return type.</li>
+<li>Can throw checked exceptions.</li>
+<li>Usually submitted to ExecutorService.</li>
+<li>Future.get() retrieves the result and may block until it is available.</li>
+</ul>
+
+<hr/>
+
+<h3>4. Difference Between Thread, Runnable and Callable</h3>
+
+<table>
+<tr>
+<th>Feature</th>
+<th>Thread</th>
+<th>Runnable</th>
+<th>Callable</th>
+</tr>
+<tr>
+<td>Type</td>
+<td>Class</td>
+<td>Interface</td>
+<td>Interface</td>
+</tr>
+<tr>
+<td>Method</td>
+<td>run()</td>
+<td>run()</td>
+<td>call()</td>
+</tr>
+<tr>
+<td>Returns result</td>
+<td>No</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Checked exceptions</td>
+<td>Cannot declare them in run()</td>
+<td>Cannot declare them in run()</td>
+<td>Can declare them in call()</td>
+</tr>
+<tr>
+<td>Execution</td>
+<td>start()</td>
+<td>Thread or ExecutorService</td>
+<td>ExecutorService</td>
+</tr>
+<tr>
+<td>Future support</td>
+<td>Not directly</td>
+<td>Not directly</td>
+<td>Yes, through ExecutorService.submit()</td>
+</tr>
+</table>
+
+<h3>5. Real-time Example</h3>
+
+<p>Suppose an Employee Service performs three tasks:</p>
+
+<ul>
+<li><b>Thread:</b> Execute employee report processing.</li>
+<li><b>Runnable:</b> Send an employee notification without needing a return value.</li>
+<li><b>Callable:</b> Calculate employee salary and return the result.</li>
+</ul>
+
+<h3>6. Interview Important Points</h3>
+
+<ul>
+<li>Runnable was introduced in Java 1.0.</li>
+<li>Callable was introduced in Java 5.</li>
+<li>Thread is a class; Runnable and Callable are interfaces.</li>
+<li>Runnable and Callable separate the task definition from thread management.</li>
+<li>Callable returns a result through Future.</li>
+<li>In real-world applications, ExecutorService is commonly preferred for managing multiple tasks rather than manually creating many Thread objects.</li>
+</ul>
+
+<h3>Interview Answer</h3>
+
+<p>Thread is a class used to create a thread of execution. Runnable is an interface used to define a task without a return value. Callable is an interface used to define a task that returns a result and can throw checked exceptions. Callable tasks are commonly submitted to ExecutorService, and their results are retrieved using Future.</p>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -14145,7 +14711,147 @@ Browser Request
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>What is the difference between start() and run() in Java?</h2>
+
+<h3>1. start() Method</h3>
+
+<p><b>Meaning:</b> When we call start(), the JVM starts a new thread of execution. The thread becomes eligible for execution and waits for CPU scheduling.</p>
+
+<h4>Example</h4>
+<pre>
+Thread t = new Thread(() -> {
+    System.out.println("Thread is running");
+});
+
+t.start();
+</pre>
+
+<p><b>Internal Working:</b></p>
+<ol>
+<li><code>new Thread()</code> creates a Thread object in NEW state.</li>
+<li><code>start()</code> asks the JVM to start a new thread of execution.</li>
+<li>The thread moves from NEW to RUNNABLE.</li>
+<li>The thread waits for the CPU scheduler to give it CPU time.</li>
+<li>When scheduled, it executes the run() method.</li>
+</ol>
+
+<h3>2. run() Method</h3>
+
+<p><b>Meaning:</b> Calling run() directly executes its code like a normal method in the current thread. It does not start a new thread of execution.</p>
+
+<h4>Example</h4>
+<pre>
+Thread t = new Thread(() -> {
+    System.out.println(
+        Thread.currentThread().getName()
+    );
+});
+
+t.run();
+</pre>
+
+<p><b>Output:</b></p>
+<pre>
+main
+</pre>
+
+<p><b>Internal Working:</b></p>
+<ol>
+<li><code>new Thread()</code> creates a Thread object in NEW state.</li>
+<li><code>run()</code> is called directly by the main thread.</li>
+<li>No new thread of execution is started.</li>
+<li>The run() method executes within the main thread.</li>
+<li>The Thread object remains in NEW state because start() was never called.</li>
+</ol>
+
+<h3>3. Difference Between start() and run()</h3>
+
+<table>
+<tr><th>Feature</th><th>start()</th><th>run()</th></tr>
+<tr><td>Execution</td><td>Starts a new thread of execution.</td><td>Executes like a normal method.</td></tr>
+<tr><td>Thread state</td><td>NEW → RUNNABLE</td><td>Remains NEW if start() was never called.</td></tr>
+<tr><td>CPU scheduling</td><td>Thread waits for CPU scheduling.</td><td>No new thread is scheduled.</td></tr>
+<tr><td>Concurrency</td><td>Concurrent execution is possible.</td><td>Executes in the current thread.</td></tr>
+<tr><td>Multiple calls</td><td>Same Thread object cannot be started twice.</td><td>Can be called directly multiple times.</td></tr>
+</table>
+
+<h3>4. Interview Answer</h3>
+
+<p>When we call start(), the JVM starts a new thread of execution. The thread moves from NEW to RUNNABLE and becomes eligible for CPU scheduling. The JVM invokes run() on that thread. Calling run() directly executes it like a normal method in the current thread without starting a new thread.</p>
+</p>
+
+
+<h2>What happens if we call start() twice on the same Thread object?</h2>
+
+<p><b>Answer:</b> Java does not allow the same Thread object to be started more than once. Calling start() for the second time throws <code>IllegalThreadStateException</code>.</p>
+
+<h3>Example</h3>
+
+<pre>
+public class ThreadDemo {
+
+    public static void main(String[] args) {
+
+        Thread t = new Thread(() -> {
+            System.out.println("Thread is running");
+        });
+
+        t.start();  // First call - Successful
+
+        t.start();  // Second call - Exception
+    }
+}
+</pre>
+
+<h3>Output</h3>
+
+<pre>
+Thread is running
+
+Exception in thread "main"
+java.lang.IllegalThreadStateException
+</pre>
+
+<h3>Internal Working</h3>
+
+<ol>
+<li><b>Thread object created:</b> Its state is NEW.</li>
+<li><b>First start() call:</b> JVM starts the thread and it moves from NEW to RUNNABLE.</li>
+<li><b>Thread execution:</b> The run() method executes.</li>
+<li><b>Thread completes:</b> Its state becomes TERMINATED.</li>
+<li><b>Second start() call:</b> Java checks the thread's lifecycle state and throws IllegalThreadStateException.</li>
+</ol>
+
+<h3>Important Interview Points</h3>
+
+<ul>
+<li>A Thread object can be started only once.</li>
+<li>It cannot be restarted even after it reaches TERMINATED state.</li>
+<li>To execute the same task again, create a new Thread object.</li>
+</ul>
+
+<h3>Correct Way to Execute Again</h3>
+
+<pre>
+Thread t1 = new Thread(() ->
+    System.out.println("Task executed")
+);
+
+Thread t2 = new Thread(() ->
+    System.out.println("Task executed")
+);
+
+t1.start();
+t2.start();
+</pre>
+
+<p>Here, two different Thread objects are created, so both can be started independently.</p>
+
+<h3>Interview Answer</h3>
+
+<p>If we call start() twice on the same Thread object, Java throws IllegalThreadStateException because a Thread object can be started only once. To execute the task again, we must create a new Thread object.</p>
+
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
