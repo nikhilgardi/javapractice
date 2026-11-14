@@ -83,7 +83,7 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q66" class="completed"><span class="number">66.</span>Explain the Java thread lifecycle.</a>
 <a href="#q67" class="completed"><span class="number">67.</span>Compare `Thread`, `Runnable` and `Callable`.</a>
 <a href="#q68" class="completed"><span class="number">68.</span>What is the difference between `start()` and `run()`?</a>
-<a href="#q69"><span class="number">69.</span>Compare `sleep()`, `wait()` and `join()`.</a>
+<a href="#q69" class="completed"><span class="number">69.</span>Compare `sleep()`, `wait()` and `join()`.</a>
 <a href="#q70"><span class="number">70.</span>What is synchronization? Compare synchronized methods and blocks.</a>
 <a href="#q71"><span class="number">71.</span>What is a race condition, and how can you prevent it?</a>
 <a href="#q72"><span class="number">72.</span>What is the difference between `volatile` and `synchronized`?</a>
@@ -14508,6 +14508,352 @@ TERMINATED
 </table>
 
 <p><b>Final interview answer:</b> Java defines six thread states: NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING and TERMINATED. A thread starts in NEW, moves to RUNNABLE after start(), may enter waiting or blocked states during execution, returns to RUNNABLE when it can continue, and finally becomes TERMINATED when run() completes.</p>
+</hr>
+
+<h2>Understanding join() – WAITING State and Lock Behaviour</h2>
+
+<h3>1. Imagine this situation</h3>
+
+<p>There are three threads:</p>
+
+<ul>
+    <li><b>Main Thread:</b> Has a key (lockA).</li>
+    <li><b>Thread-1:</b> Is doing some work.</li>
+    <li><b>Thread-2:</b> Wants to use the same key (lockA).</li>
+</ul>
+
+<p>Main Thread calls <code>t1.join()</code> because it wants to wait until Thread-1 finishes.</p>
+
+<p><b>Important Question:</b> While Main Thread is waiting, does it release the key?</p>
+
+<p><b>Answer:</b> No! join() makes Main Thread wait, but it does not release the lock it already owns.</p>
+
+<hr/>
+
+<h3>2. Simple Java Example</h3>
+
+<pre>
+public class JoinDemo {
+
+    public static void main(String[] args) {
+
+        Object lockA = new Object();
+
+        Thread t1 = new Thread(() -> {
+
+            System.out.println("Thread-1 started");
+
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            System.out.println("Thread-1 completed");
+
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            System.out.println("Thread-2 wants lockA");
+
+            synchronized (lockA) {
+                System.out.println("Thread-2 acquired lockA");
+            }
+
+        });
+
+        synchronized (lockA) {
+
+            t1.start();
+
+            try {
+                System.out.println("Main waiting for Thread-1");
+                t1.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            System.out.println("Main finished waiting");
+        }
+
+        t2.start();
+    }
+}
+</pre>
+
+<hr/>
+
+<h3>3. Understand what happens step by step</h3>
+
+<h4>Step 1: Main Thread gets lockA</h4>
+<p>Main Thread enters <code>synchronized(lockA)</code>.</p>
+<p><b>Now Main Thread owns lockA.</b></p>
+
+<h4>Step 2: Main Thread starts Thread-1</h4>
+<p>Thread-1 starts and executes its task.</p>
+<p>It calls <code>sleep(3000)</code>, so it enters TIMED_WAITING.</p>
+
+<h4>Step 3: Main Thread calls join()</h4>
+<p>Main Thread says: "I will wait until Thread-1 finishes."</p>
+<p>Main Thread enters WAITING state.</p>
+<p><b>Important:</b> Main Thread is waiting, but it still owns lockA.</p>
+
+<h4>Step 4: Thread-1 completes</h4>
+<p>After three seconds, Thread-1 completes its work.</p>
+<p>Main Thread's <code>join()</code> returns.</p>
+
+<h4>Step 5: Main Thread releases lockA</h4>
+<p>Main Thread exits the synchronized block.</p>
+<p>Now lockA becomes available.</p>
+
+<h4>Step 6: Thread-2 starts</h4>
+<p>Thread-2 acquires lockA and executes its work.</p>
+
+<hr/>
+
+<h3>4. What does "Does not release unrelated locks" mean?</h3>
+
+<table>
+<tr>
+    <th>Thread</th>
+    <th>What happens?</th>
+</tr>
+<tr>
+    <td>Main Thread</td>
+    <td>Calls t1.join() and enters WAITING.</td>
+</tr>
+<tr>
+    <td>Main Thread</td>
+    <td>Still holds lockA.</td>
+</tr>
+<tr>
+    <td>Thread-1</td>
+    <td>Performs work and completes.</td>
+</tr>
+<tr>
+    <td>Thread-2</td>
+    <td>If it tries to acquire lockA during this time, it enters BLOCKED.</td>
+</tr>
+</table>
+
+<h3>5. Simple Real-World Understanding</h3>
+
+<ul>
+    <li><b>Main Thread:</b> Holds the key and waits for Thread-1 to finish.</li>
+    <li><b>Thread-1:</b> Completes its work.</li>
+    <li><b>Thread-2:</b> Wants the same key but cannot get it until Main Thread releases it.</li>
+</ul>
+
+<p><b>Remember:</b> Main Thread waits for Thread-1, but waiting does not mean releasing its lock.</p>
+
+<hr/>
+
+<h3>6. Compare sleep(), wait() and join()</h3>
+
+<table>
+<tr>
+    <th>Method</th>
+    <th>Thread State</th>
+    <th>Lock Behaviour</th>
+</tr>
+<tr>
+    <td>sleep()</td>
+    <td>TIMED_WAITING</td>
+    <td>Does not release locks.</td>
+</tr>
+<tr>
+    <td>wait()</td>
+    <td>WAITING</td>
+    <td>Releases the lock on which wait() is called.</td>
+</tr>
+<tr>
+    <td>join()</td>
+    <td>WAITING</td>
+    <td>Does not release locks held by the calling thread.</td>
+</tr>
+</table>
+
+<h3>7. Important Deadlock Scenario</h3>
+
+<p>Suppose Thread-1 also needs lockA to complete its work.</p>
+
+<ul>
+    <li>Main Thread holds lockA and waits for Thread-1 using join().</li>
+    <li>Thread-1 waits for Main Thread to release lockA.</li>
+    <li>Main Thread cannot release lockA until Thread-1 completes.</li>
+</ul>
+
+<p><b>Result:</b> Both threads wait forever. This is a deadlock.</p>
+
+<h3>Interview Answer</h3>
+
+<p><code>join()</code> makes the current thread wait until another thread completes, but the current thread continues holding any locks it already owns.</p>
+
+</hr>
+
+
+<h3>1. Problem Program – Deadlock (join() + synchronized)</h3>
+
+<p><b>Scenario:</b> Main Thread acquires lockA, starts Thread-1 and calls join() while still holding lockA. Thread-1 needs the same lock to complete.</p>
+
+<h4>Java Program</h4>
+
+<pre>
+public class JoinDeadlockDemo {
+
+    public static void main(String[] args) {
+
+        Object lockA = new Object();
+
+        Thread t1 = new Thread(() -> {
+
+            System.out.println("Thread-1 started");
+
+            synchronized (lockA) {
+
+                System.out.println("Thread-1 acquired lockA");
+
+            }
+
+            System.out.println("Thread-1 completed");
+
+        }, "Thread-1");
+
+        synchronized (lockA) {
+
+            System.out.println("Main Thread acquired lockA");
+
+            t1.start();
+
+            try {
+                System.out.println("Main Thread waiting for Thread-1");
+                t1.join();
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            System.out.println("Main Thread completed");
+        }
+    }
+}
+</pre>
+
+<h4>Possible Output</h4>
+
+<pre>
+Main Thread acquired lockA
+Main Thread waiting for Thread-1
+Thread-1 started
+</pre>
+
+<p><b>Result:</b> The program gets stuck because:</p>
+
+<ul>
+    <li>Main Thread holds lockA and waits for Thread-1 using join().</li>
+    <li>Thread-1 waits to acquire lockA.</li>
+    <li>Main Thread cannot release lockA until join() returns.</li>
+    <li>Thread-1 cannot complete until it acquires lockA.</li>
+</ul>
+
+<p><b>Conclusion:</b> Deadlock occurs.</p>
+
+<hr>
+
+<h3>2. Solution – Call join() Outside synchronized Block</h3>
+
+<p><b>Approach:</b> Start Thread-1 and call join() without holding lockA. This allows Thread-1 to acquire the lock and complete.</p>
+
+<h4>Java Program</h4>
+
+<pre>
+public class JoinDeadlockSolution {
+
+    public static void main(String[] args) {
+
+        Object lockA = new Object();
+
+        Thread t1 = new Thread(() -> {
+
+            System.out.println("Thread-1 started");
+
+            synchronized (lockA) {
+
+                System.out.println("Thread-1 acquired lockA");
+
+            }
+
+            System.out.println("Thread-1 completed");
+
+        }, "Thread-1");
+
+        t1.start();
+
+        try {
+            System.out.println("Main Thread waiting for Thread-1");
+            t1.join();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        synchronized (lockA) {
+
+            System.out.println("Main Thread acquired lockA");
+
+        }
+
+        System.out.println("Main Thread completed");
+    }
+}
+</pre>
+
+<h4>Possible Output</h4>
+
+<pre>
+Main Thread waiting for Thread-1
+Thread-1 started
+Thread-1 acquired lockA
+Thread-1 completed
+Main Thread acquired lockA
+Main Thread completed
+</pre>
+
+<p><b>Result:</b> Both threads complete successfully. No deadlock occurs.</p>
+
+<hr>
+
+<h3>3. Difference Between Problem and Solution</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Problem</th>
+        <th>Solution</th>
+    </tr>
+    <tr>
+        <td>Main Thread holds lockA while calling join().</td>
+        <td>Main Thread calls join() without holding lockA.</td>
+    </tr>
+    <tr>
+        <td>Thread-1 becomes BLOCKED.</td>
+        <td>Thread-1 acquires lockA.</td>
+    </tr>
+    <tr>
+        <td>Main Thread enters WAITING state.</td>
+        <td>Main Thread waits until Thread-1 completes.</td>
+    </tr>
+    <tr>
+        <td>Deadlock occurs.</td>
+        <td>Both threads complete successfully.</td>
+    </tr>
+</table>
+
+<h3>4. Interview Answer</h3>
+
+<p>Deadlock can occur when Main Thread holds a synchronized lock and calls join() on Thread-1, while Thread-1 needs the same lock to complete. Main Thread waits for Thread-1, and Thread-1 waits for the lock held by Main Thread.</p>
+
+<p><b>Prevention:</b> Call join() outside the synchronized block so that the required lock is not held while waiting for the other thread.</p>
 
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
@@ -14860,7 +15206,1248 @@ t2.start();
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint"><h1>Java Multithreading – Practical Programs</h1>
+
+<p><b>Objective:</b> Understand Java Thread methods practically by executing
+small programs and observing their behaviour and thread states.</p>
+
+<h2>PART 1: Basic Thread Methods</h2>
+
+<hr>
+
+<h3><u>1. start() – Start a New Thread</u></h3>
+
+<pre>
+public class StartDemo {
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+            System.out.println("Child Thread running");
+        });
+
+        t1.start();
+
+        System.out.println("Main Thread running");
+    }
+}
+</pre>
+
+<p><b>Observe:</b> Main Thread and Child Thread execute independently.
+Output order may vary.</p>
+
+<h3><u>2. run() – Execute Like a Normal Method</u></h3>
+
+<pre>
+public class RunDemo {
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+            System.out.println(
+                "Executing in: " +
+                Thread.currentThread().getName()
+            );
+        });
+
+        t1.run();
+
+        System.out.println(
+            "Main Thread: " +
+            Thread.currentThread().getName()
+        );
+    }
+}
+</pre>
+
+<p><b>Expected Output:</b></p>
+
+<pre>
+Executing in: main
+Main Thread: main
+</pre>
+
+<p><b>Observe:</b> Calling run() directly does not create a new thread.</p>
+
+<h3><u>3. sleep() – Pause Current Thread</u></h3>
+
+<pre>
+public class SleepDemo {
+
+    public static void main(String[] args) {
+
+        for (int i = 1; i <= 5; i++) {
+
+            System.out.println("Count: " + i);
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
+        System.out.println("Completed");
+    }
+}
+</pre>
+
+<p><b>Observe:</b> Each number appears approximately 2 seconds apart.</p>
+<p><b>Thread State:</b> TIMED_WAITING while sleeping.</p>
+
+<h3><u>4. join() – Wait for Another Thread</u></h3>
+
+<pre>
+public class JoinDemo {
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            for (int i = 1; i <= 3; i++) {
+                System.out.println("Child: " + i);
+            }
+
+        });
+
+        t1.start();
+
+        try {
+            t1.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        System.out.println("Main Thread completed");
+    }
+}
+</pre>
+
+<p><b>Observe:</b> Main Thread prints its completion message only after
+Thread-1 finishes.</p>
+
+<p><b>Thread State:</b> Main Thread enters WAITING while waiting for t1.</p>
+
+<h3><u>5. yield() – Give Other Threads a Scheduling Opportunity</u></h3>
+
+<pre>
+public class YieldDemo {
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            for (int i = 1; i <= 5; i++) {
+                System.out.println("Thread-1: " + i);
+                Thread.yield();
+            }
+
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            for (int i = 1; i <= 5; i++) {
+                System.out.println("Thread-2: " + i);
+            }
+
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+</pre>
+
+<p><b>Observe:</b> Output order may vary. yield() is only a scheduling
+hint; it does not guarantee that another thread executes next.</p>
+
+ <h2>Understanding Thread.yield() in Java</h2>
+
+    <p>
+        <b>Thread.yield()</b> does not guarantee that another thread
+        will execute immediately.
+    </p>
+
+    <h3>1. How does your code execute?</h3>
+
+    <pre>
+t3.start();
+t4.start();
+    </pre>
+
+    <p>Both threads become eligible for execution.</p>
+
+    <ul>
+        <li>Thread-1 starts executing its loop.</li>
+        <li>Thread-2 starts executing its loop.</li>
+        <li>The JVM thread scheduler decides which thread gets CPU time.</li>
+    </ul>
+
+    <h3>2. What happens when yield() is called?</h3>
+
+    <pre>
+Thread.yield();
+    </pre>
+
+    <p>
+        When Thread-1 calls yield(), it is essentially telling
+        the scheduler:
+    </p>
+
+    <blockquote>
+        "I am willing to give other threads a chance to execute."
+    </blockquote>
+
+    <p class="highlight">
+        But yield() does not force the scheduler to switch to Thread-2.
+    </p>
+
+    <h3>3. Why does Thread-2 print all five numbers first?</h3>
+
+    <ul>
+        <li>The scheduler may execute Thread-2 before Thread-1 gets CPU time.</li>
+        <li>Thread-2 may get CPU time for its entire loop.</li>
+        <li>yield() is only a scheduling hint. The scheduler can ignore it.</li>
+    </ul>
+
+    <p>Therefore, this output is perfectly valid:</p>
+
+    <pre>
+Thread-2: 1
+Thread-2: 2
+Thread-2: 3
+Thread-2: 4
+Thread-2: 5
+Thread-1: 1
+Thread-1: 2
+Thread-1: 3
+Thread-1: 4
+Thread-1: 5
+    </pre>
+
+    <h3>4. Can we expect this output?</h3>
+
+    <pre>
+Thread-1: 1
+Thread-2: 1
+Thread-2: 2
+Thread-2: 3
+Thread-2: 4
+Thread-2: 5
+Thread-1: 2
+Thread-1: 3
+Thread-1: 4
+Thread-1: 5
+    </pre>
+
+    <p>
+        Yes! This output is also possible, but it is not guaranteed.
+    </p>
+
+    <h3>5. Difference between yield(), sleep() and join()</h3>
+
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Meaning</th>
+        </tr>
+        <tr>
+            <td>yield()</td>
+            <td>Suggests that the current thread is willing to let another thread execute.</td>
+        </tr>
+        <tr>
+            <td>sleep()</td>
+            <td>Pauses the current thread for a specified duration.</td>
+        </tr>
+        <tr>
+            <td>join()</td>
+            <td>Makes the calling thread wait until another thread finishes.</td>
+        </tr>
+    </table>
+
+    <h3>6. Important Interview Point</h3>
+
+    <p>
+        Thread.yield() is just a hint to the thread scheduler.
+        It does not guarantee:
+    </p>
+
+    <ul>
+        <li>A context switch.Context Switch: The process of the CPU stopping execution of one thread and switching to another thread.</li>
+        <li>Which thread executes next.</li>
+        <li>Fair CPU allocation.</li>
+        <li>Alternating execution between threads.</li>
+    </ul>
+
+    <h3>Conclusion</h3>
+
+    <p class="highlight">
+        Even if you write yield() after every iteration, you cannot
+        predict the exact output because thread scheduling is
+        controlled by the JVM and operating system.
+    </p>
+
+
+<h3><u>6. interrupt() – Interrupt a Sleeping Thread</u></h3>
+
+<pre>
+public class InterruptDemo {
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            try {
+                System.out.println("Thread sleeping");
+
+                Thread.sleep(10000);
+
+                System.out.println("Thread completed");
+
+            } catch (InterruptedException e) {
+
+                System.out.println("Thread interrupted!");
+
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        t1.start();
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        t1.interrupt();
+    }
+}
+</pre>
+
+<p><b>Expected Output:</b></p>
+
+<pre>
+Thread sleeping
+Thread interrupted!
+</pre>
+
+<p><b>Observe:</b> interrupt() causes a sleeping thread to receive
+InterruptedException. It does not forcibly terminate a thread.</p>
+
+<h3><u>7. isInterrupted() vs interrupted()</u></h3>
+
+<pre>
+public class InterruptStatusDemo {
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            Thread.currentThread().interrupt();
+
+            System.out.println(
+                "isInterrupted(): " +
+                Thread.currentThread().isInterrupted()
+            );
+
+            System.out.println(
+                "interrupted(): " +
+                Thread.interrupted()
+            );
+
+            System.out.println(
+                "After clearing: " +
+                Thread.currentThread().isInterrupted()
+            );
+        });
+
+        t1.start();
+    }
+}
+</pre>
+
+<p><b>Expected Output:</b></p>
+
+<pre>
+isInterrupted(): true
+interrupted(): true
+After clearing: false
+</pre>
+
+<p><b>Observe:</b></p>
+<ul>
+    <li>isInterrupted() checks interrupt status without clearing it.</li>
+    <li>interrupted() checks the current thread's status and clears it.</li>
+</ul>
+
+<h3><u>8. isAlive() – Check Whether a Thread Is Alive</u></h3>
+
+<pre>
+public class IsAliveDemo {
+
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        Thread t1 = new Thread(() -> {
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+        });
+
+        System.out.println("Before start: " + t1.isAlive());
+
+        t1.start();
+
+        System.out.println("After start: " + t1.isAlive());
+
+        t1.join();
+
+        System.out.println("After completion: " + t1.isAlive());
+    }
+}
+</pre>
+
+<p><b>Expected Output:</b></p>
+
+<pre>
+Before start: false
+After start: true
+After completion: false
+</pre>
+
+<h3><u>9. currentThread(), getName() and setName()</u></h3>
+
+<pre>
+public class ThreadNameDemo {
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            System.out.println(
+                Thread.currentThread().getName()
+            );
+
+            Thread.currentThread().setName("Payment-Worker");
+
+            System.out.println(
+                Thread.currentThread().getName()
+            );
+
+        });
+
+        t1.start();
+    }
+}
+</pre>
+
+<p><b>Expected Output:</b></p>
+
+<pre>
+Thread-0
+Payment-Worker
+</pre>
+
+<h3><u>10. getState() – Observe Thread Lifecycle</u></h3>
+
+<pre>
+public class ThreadStateDemo {
+
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        Thread t1 = new Thread(() -> {
+
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+        });
+
+        System.out.println("Before start: " + t1.getState());
+
+        t1.start();
+
+        Thread.sleep(500);
+
+        System.out.println("During sleep: " + t1.getState());
+
+        t1.join();
+
+        System.out.println("After completion: " + t1.getState());
+    }
+}
+</pre>
+
+<p><b>Expected Output:</b></p>
+
+<pre>
+Before start: NEW
+During sleep: TIMED_WAITING
+After completion: TERMINATED
+</pre>
+
+<hr>
+
+<h2>PART 2: Deadlock – Problem and Solutions</h2>
+
+<h3><u>11. Deadlock Using Two Locks</u></h3>
+
+<p><b>Scenario:</b></p>
+
+<ul>
+    <li>Thread-1 acquires lockA and waits for lockB.</li>
+    <li>Thread-2 acquires lockB and waits for lockA.</li>
+    <li>Neither thread can proceed.</li>
+</ul>
+
+<pre>
+public class DeadlockDemo {
+
+    static Object lockA = new Object();
+    static Object lockB = new Object();
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            synchronized (lockA) {
+
+                System.out.println("Thread-1 acquired lockA");
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+
+                synchronized (lockB) {
+                    System.out.println("Thread-1 acquired lockB");
+                }
+            }
+
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            synchronized (lockB) {
+
+                System.out.println("Thread-2 acquired lockB");
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+
+                synchronized (lockA) {
+                    System.out.println("Thread-2 acquired lockA");
+                }
+            }
+
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Thread-1 acquired lockA
+Thread-2 acquired lockB
+</pre>
+
+<p><b>Result:</b> Both threads become BLOCKED while trying to acquire
+the lock held by the other thread.</p>
+
+<h3><u>12. Deadlock Solution – Maintain the Same Lock Order</u></h3>
+
+<p><b>Approach:</b> Both threads must acquire lockA first and lockB second.</p>
+
+<pre>
+public class DeadlockSolution {
+
+    static Object lockA = new Object();
+    static Object lockB = new Object();
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            synchronized (lockA) {
+
+                System.out.println("Thread-1 acquired lockA");
+
+                synchronized (lockB) {
+
+                    System.out.println("Thread-1 acquired lockB");
+
+                }
+            }
+
+            System.out.println("Thread-1 completed");
+
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            synchronized (lockA) {
+
+                System.out.println("Thread-2 acquired lockA");
+
+                synchronized (lockB) {
+
+                    System.out.println("Thread-2 acquired lockB");
+
+                }
+            }
+
+            System.out.println("Thread-2 completed");
+
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+</pre>
+
+<p><b>Result:</b> No deadlock because both threads follow the same
+lock acquisition order.</p>
+
+<hr>
+
+<h3><u>13. Deadlock Using join() and synchronized</u></h3>
+
+<p><b>Scenario:</b></p>
+
+<ul>
+    <li>Main Thread acquires lockA.</li>
+    <li>Main Thread starts Thread-1.</li>
+    <li>Main Thread calls t1.join() while still holding lockA.</li>
+    <li>Thread-1 tries to acquire lockA.</li>
+    <li>Thread-1 becomes BLOCKED.</li>
+    <li>Main Thread waits for Thread-1 to complete.</li>
+</ul>
+
+<h4>Problem Program</h4>
+
+<pre>
+public class JoinDeadlockDemo {
+
+    public static void main(String[] args) {
+
+        Object lockA = new Object();
+
+        Thread t1 = new Thread(() -> {
+
+            System.out.println("Thread-1 started");
+
+            synchronized (lockA) {
+                System.out.println("Thread-1 acquired lockA");
+            }
+
+            System.out.println("Thread-1 completed");
+
+        }, "Thread-1");
+
+        synchronized (lockA) {
+
+            System.out.println("Main Thread acquired lockA");
+
+            t1.start();
+
+            try {
+                System.out.println("Main Thread waiting for Thread-1");
+                t1.join();
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            System.out.println("Main Thread completed");
+        }
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Main Thread acquired lockA
+Main Thread waiting for Thread-1
+Thread-1 started
+</pre>
+
+<p><b>Thread States:</b></p>
+
+<table>
+    <tr>
+        <th>Thread</th>
+        <th>State</th>
+        <th>Reason</th>
+    </tr>
+    <tr>
+        <td>Main Thread</td>
+        <td>WAITING</td>
+        <td>Waiting for Thread-1 using join().</td>
+    </tr>
+    <tr>
+        <td>Thread-1</td>
+        <td>BLOCKED</td>
+        <td>Waiting to acquire lockA.</td>
+    </tr>
+</table>
+
+<h4>Solution Program – Call join() Outside synchronized</h4>
+
+<pre>
+public class JoinDeadlockSolution {
+
+    public static void main(String[] args) {
+
+        Object lockA = new Object();
+
+        Thread t1 = new Thread(() -> {
+
+            System.out.println("Thread-1 started");
+
+            synchronized (lockA) {
+                System.out.println("Thread-1 acquired lockA");
+            }
+
+            System.out.println("Thread-1 completed");
+
+        }, "Thread-1");
+
+        t1.start();
+
+        try {
+            System.out.println("Main Thread waiting for Thread-1");
+            t1.join();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        synchronized (lockA) {
+            System.out.println("Main Thread acquired lockA");
+        }
+
+        System.out.println("Main Thread completed");
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Main Thread waiting for Thread-1
+Thread-1 started
+Thread-1 acquired lockA
+Thread-1 completed
+Main Thread acquired lockA
+Main Thread completed
+</pre>
+
+<p class="success"><b>Solution:</b> Call join() without holding a lock
+that the joined thread needs.</p>
+
+<hr>
+
+<h2>PART 3: Important Thread Methods Reference</h2>
+
+<h3>Thread Class Methods</h3>
+
+<table>
+    <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+    </tr>
+    <tr><td>start()</td><td>Starts a new thread of execution.</td></tr>
+    <tr><td>run()</td><td>Contains the task executed by the thread.</td></tr>
+    <tr><td>sleep()</td><td>Pauses the current thread for a specified time.</td></tr>
+    <tr><td>join()</td><td>Waits for another thread to finish.</td></tr>
+    <tr><td>yield()</td><td>Hints that the current thread is willing to yield CPU time.</td></tr>
+    <tr><td>interrupt()</td><td>Requests interruption of a thread.</td></tr>
+    <tr><td>isInterrupted()</td><td>Checks interrupt status without clearing it.</td></tr>
+    <tr><td>interrupted()</td><td>Checks and clears current thread's interrupt status.</td></tr>
+    <tr><td>isAlive()</td><td>Checks whether a thread has started and not terminated.</td></tr>
+    <tr><td>currentThread()</td><td>Returns the currently executing thread.</td></tr>
+    <tr><td>getName()</td><td>Returns thread name.</td></tr>
+    <tr><td>setName()</td><td>Sets thread name.</td></tr>
+    <tr><td>getPriority()</td><td>Returns thread priority.</td></tr>
+    <tr><td>setPriority()</td><td>Sets thread priority from 1 to 10.</td></tr>
+    <tr><td>setDaemon()</td><td>Marks a thread as daemon before starting it.</td></tr>
+    <tr><td>isDaemon()</td><td>Checks whether a thread is daemon.</td></tr>
+    <tr><td>getState()</td><td>Returns current thread state.</td></tr>
+    <tr><td>threadId()</td><td>Returns thread ID (Java 19+).</td></tr>
+</table>
+
+<h3>Object Class Methods Used in Multithreading</h3>
+
+<table>
+    <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+    </tr>
+    <tr><td>wait()</td><td>Waits and releases the object's monitor.</td></tr>
+    <tr><td>wait(long timeout)</td><td>Waits for notification or timeout.</td></tr>
+    <tr><td>wait(long timeout, int nanos)</td><td>Waits with millisecond and nanosecond timeout.</td></tr>
+    <tr><td>notify()</td><td>Wakes one thread waiting on the same monitor.</td></tr>
+    <tr><td>notifyAll()</td><td>Wakes all threads waiting on the same monitor.</td></tr>
+</table>
+
+<p class="note"><b>Important:</b> wait(), notify() and notifyAll() must be
+called while owning the object's monitor, normally inside synchronized.</p>
+
+<h3>Deprecated Thread Methods – Avoid Using</h3>
+
+<table>
+    <tr>
+        <th>Method</th>
+        <th>Reason</th>
+    </tr>
+    <tr>
+        <td>stop()</td>
+        <td>Can terminate a thread abruptly and leave shared data inconsistent.</td>
+    </tr>
+    <tr>
+        <td>suspend()</td>
+        <td>Can cause deadlocks when a suspended thread holds a lock.</td>
+    </tr>
+    <tr>
+        <td>resume()</td>
+        <td>Part of the unsafe suspend/resume mechanism.</td>
+    </tr>
+</table>
+
+<hr>
+
+<h2>PART 4: Next Topics for Practical Learning</h2>
+
+<ol>
+    <li>wait(), notify() and notifyAll().</li>
+    <li>synchronized method vs synchronized block.</li>
+    <li>Race condition and thread safety.</li>
+    <li>volatile keyword.</li>
+    <li>AtomicInteger and atomic operations.</li>
+    <li>ReentrantLock and tryLock().</li>
+    <li>Semaphore.</li>
+    <li>Runnable vs Callable.</li>
+    <li>ExecutorService and ThreadPoolExecutor.</li>
+    <li>Future and CompletableFuture.</li>
+    <li>CountDownLatch and CyclicBarrier.</li>
+    <li>BlockingQueue and Producer-Consumer problem.</li>
+    <li>Virtual Threads (Java 21+).</li>
+</ol>
+
+<h2>Important Interview Points</h2>
+
+<ul>
+    <li>start() starts a new thread; run() called directly does not.</li>
+    <li>sleep() does not release locks held by the current thread.</li>
+    <li>wait() releases the monitor on which it is called.</li>
+    <li>join() does not release other locks held by the calling thread.</li>
+    <li>yield() is a scheduling hint, not a guarantee.</li>
+    <li>interrupt() is a cooperative interruption request.</li>
+    <li>Deadlock can be prevented by consistent lock ordering.</li>
+</ul>
+</p>
+
+
+<hr>
+
+<h2>PART 5: wait(), notify() and notifyAll()</h2>
+
+<h3>1. wait() – Make a Thread Wait</h3>
+
+<p><b>Purpose:</b> Makes the current thread wait until notification, interruption or timeout. It releases the monitor lock of the object on which wait() is called.</p>
+
+<h4>Java Program</h4>
+
+<pre>
+public class WaitDemo {
+
+    public static void main(String[] args) {
+
+        Object lock = new Object();
+
+        Thread t1 = new Thread(() -> {
+
+            synchronized (lock) {
+
+                try {
+                    System.out.println("Thread-1 waiting");
+
+                    lock.wait();
+
+                    System.out.println("Thread-1 resumed");
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+        });
+
+        t1.start();
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Thread-1 waiting
+</pre>
+
+<p><b>Observe:</b> Thread-1 enters WAITING state and releases lock. It remains waiting until another thread calls notify() or notifyAll() on the same object.</p>
+
+<hr>
+
+<h3>2. notify() – Wake Up One Waiting Thread</h3>
+
+<p><b>Purpose:</b> Wakes up one thread waiting on the same object's monitor. The selected thread must reacquire the monitor before continuing.</p>
+
+<h4>Java Program</h4>
+
+<pre>
+public class NotifyDemo {
+
+    public static void main(String[] args) {
+
+        Object lock = new Object();
+
+        Thread t1 = new Thread(() -> {
+
+            synchronized (lock) {
+
+                try {
+                    System.out.println("Thread-1 waiting");
+
+                    lock.wait();
+
+                    System.out.println("Thread-1 resumed");
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+        });
+
+        t1.start();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        synchronized (lock) {
+
+            System.out.println("Main Thread sending notification");
+
+            lock.notify();
+
+        }
+
+        System.out.println("Main Thread completed");
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Thread-1 waiting
+Main Thread sending notification
+Main Thread completed
+Thread-1 resumed
+</pre>
+
+<p><b>Observe:</b></p>
+<ul>
+    <li>Thread-1 calls wait() and releases lock.</li>
+    <li>Main Thread acquires lock and calls notify().</li>
+    <li>Thread-1 becomes eligible to continue but must reacquire lock.</li>
+    <li>After Main Thread exits synchronized, Thread-1 reacquires lock and resumes.</li>
+</ul>
+
+<hr>
+
+<h3>3. notifyAll() – Wake Up All Waiting Threads</h3>
+
+<p><b>Purpose:</b> Wakes all threads waiting on the same object's monitor. They compete to reacquire the lock one at a time.</p>
+
+<h4>Java Program</h4>
+
+<pre>
+public class NotifyAllDemo {
+
+    public static void main(String[] args) {
+
+        Object lock = new Object();
+
+        Runnable task = () -> {
+
+            synchronized (lock) {
+
+                try {
+                    System.out.println(
+                        Thread.currentThread().getName() +
+                        " waiting"
+                    );
+
+                    lock.wait();
+
+                    System.out.println(
+                        Thread.currentThread().getName() +
+                        " resumed"
+                    );
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        };
+
+        Thread t1 = new Thread(task, "Thread-1");
+        Thread t2 = new Thread(task, "Thread-2");
+        Thread t3 = new Thread(task, "Thread-3");
+
+        t1.start();
+        t2.start();
+        t3.start();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        synchronized (lock) {
+
+            System.out.println("Main Thread sending notification");
+
+            lock.notifyAll();
+
+        }
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Thread-1 waiting
+Thread-2 waiting
+Thread-3 waiting
+Main Thread sending notification
+Thread-1 resumed
+Thread-3 resumed
+Thread-2 resumed
+</pre>
+
+<p><b>Observe:</b> All three threads are notified, but they reacquire the lock one by one. The order is not guaranteed.</p>
+
+<hr>
+
+<h3>4. Difference Between wait(), notify() and notifyAll()</h3>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>wait()</th>
+        <th>notify()</th>
+        <th>notifyAll()</th>
+    </tr>
+    <tr>
+        <td>Purpose</td>
+        <td>Makes current thread wait.</td>
+        <td>Wakes one waiting thread.</td>
+        <td>Wakes all waiting threads.</td>
+    </tr>
+    <tr>
+        <td>Releases monitor?</td>
+        <td>Yes, releases the called object's monitor.</td>
+        <td>No.</td>
+        <td>No.</td>
+    </tr>
+    <tr>
+        <td>Must own monitor?</td>
+        <td>Yes.</td>
+        <td>Yes.</td>
+        <td>Yes.</td>
+    </tr>
+    <tr>
+        <td>Thread behaviour</td>
+        <td>WAITING or TIMED_WAITING.</td>
+        <td>One selected thread can proceed after reacquiring the lock.</td>
+        <td>All waiting threads can compete to reacquire the lock.</td>
+    </tr>
+    <tr>
+        <td>Return type</td>
+        <td>void</td>
+        <td>void</td>
+        <td>void</td>
+    </tr>
+</table>
+
+<hr>
+
+<h3>5. Important: Why wait() Should Be Used Inside a while Loop</h3>
+
+<p><b>Problem:</b> A thread can wake up without receiving a notification (spurious wakeup). Also, another thread may change the condition before the awakened thread reacquires the lock.</p>
+
+<p><b>Correct approach:</b> Always check the condition again using while.</p>
+
+<pre>
+synchronized (lock) {
+
+    while (!condition) {
+
+        lock.wait();
+
+    }
+
+    // Continue only when condition is true
+}
+</pre>
+
+<p><b>Remember:</b> Use while instead of if when checking a condition before wait().</p>
+
+<hr>
+
+<h3>6. Practical Example – Producer and Consumer</h3>
+
+<p><b>Scenario:</b></p>
+<ul>
+    <li>Producer produces data.</li>
+    <li>Consumer waits if data is not available.</li>
+    <li>Producer notifies Consumer after producing data.</li>
+    <li>Consumer consumes data and notifies Producer.</li>
+</ul>
+
+<h4>Java Program</h4>
+
+<pre>
+public class ProducerConsumerDemo {
+
+    private static final Object lock = new Object();
+
+    private static boolean available = false;
+
+    public static void main(String[] args) {
+
+        Thread producer = new Thread(() -> {
+
+            synchronized (lock) {
+
+                try {
+
+                    System.out.println("Producer waiting for slot");
+
+                    while (available) {
+                        lock.wait();
+                    }
+
+                    System.out.println("Producer produced data");
+
+                    available = true;
+
+                    lock.notifyAll();
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+        });
+
+        Thread consumer = new Thread(() -> {
+
+            synchronized (lock) {
+
+                try {
+
+                    while (!available) {
+
+                        System.out.println("Consumer waiting for data");
+
+                        lock.wait();
+                    }
+
+                    System.out.println("Consumer consumed data");
+
+                    available = false;
+
+                    lock.notifyAll();
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+        });
+
+        consumer.start();
+        producer.start();
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Consumer waiting for data
+Producer waiting for slot
+Producer produced data
+Consumer consumed data
+</pre>
+
+<p><b>Observe:</b> Consumer waits until data is produced. Producer notifies Consumer, which then consumes the data.</p>
+
+<hr>
+
+<h3>7. Important Interview Questions</h3>
+
+<ol>
+    <li>What is the difference between wait() and sleep()?</li>
+    <li>Why must wait() be called inside synchronized?</li>
+    <li>What happens if notify() is called before wait()?</li>
+    <li>What is the difference between notify() and notifyAll()?</li>
+    <li>Why should wait() be used inside a while loop?</li>
+    <li>Does notify() immediately release the lock?</li>
+    <li>Can two threads execute inside the same synchronized block simultaneously?</li>
+    <li>What happens if wait() is called without owning the object's monitor?</li>
+</ol>
+
+<h3>8. Quick Interview Answers</h3>
+
+<ul>
+    <li><b>wait():</b> Releases the object's monitor and waits.</li>
+    <li><b>notify():</b> Wakes one waiting thread, which must reacquire the monitor.</li>
+    <li><b>notifyAll():</b> Wakes all threads waiting on the same monitor.</li>
+    <li><b>notify() before wait():</b> Notification is not remembered. A later wait() can wait indefinitely.</li>
+    <li><b>wait() without synchronized:</b> Throws IllegalMonitorStateException.</li>
+    <li><b>notify() does not release the lock:</b> The notifying thread releases it when it exits the synchronized region or otherwise releases the monitor.</li>
+</ul>
+
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
