@@ -16035,6 +16035,83 @@ called while owning the object's monitor, normally inside synchronized.</p>
     </tr>
 </table>
 
+<h3>Deprecated Thread Methods – stop(), suspend() and resume()</h3>
+
+<table>
+    <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+        <th>Problem</th>
+    </tr>
+    <tr>
+        <td>stop()</td>
+        <td>Terminates a thread permanently.</td>
+        <td>Can leave shared data inconsistent due to abrupt termination.</td>
+    </tr>
+    <tr>
+        <td>suspend()</td>
+        <td>Temporarily pauses a thread.</td>
+        <td>Does not release locks. Can cause deadlock.</td>
+    </tr>
+    <tr>
+        <td>resume()</td>
+        <td>Resumes a suspended thread.</td>
+        <td>Part of the unsafe suspend/resume mechanism.</td>
+    </tr>
+</table>
+
+<h4>1. stop() – Stopping a Thread</h4>
+
+<ul>
+    <li>Terminates thread execution permanently.</li>
+    <li>Thread moves to TERMINATED state.</li>
+    <li>Cannot restart the same Thread object.</li>
+    <li>Deprecated because abrupt termination can leave shared data inconsistent.</li>
+</ul>
+
+<h4>2. suspend() – Suspending a Thread</h4>
+
+<ul>
+    <li>Temporarily pauses thread execution.</li>
+    <li>Thread can later be resumed.</li>
+    <li>Does not release locks or monitors held by the thread.</li>
+    <li>Can cause deadlock if another thread needs the held lock.</li>
+</ul>
+
+<h4>3. resume() – Resuming a Thread</h4>
+
+<ul>
+    <li>Resumes a thread previously suspended using suspend().</li>
+    <li>Part of the deprecated and unsafe suspend/resume mechanism.</li>
+</ul>
+
+<h4>Modern Safe Alternatives</h4>
+
+<table>
+    <tr>
+        <th>Requirement</th>
+        <th>Recommended Approach</th>
+    </tr>
+    <tr>
+        <td>Stop a thread safely</td>
+        <td>interrupt() or a cooperative cancellation flag.</td>
+    </tr>
+    <tr>
+        <td>Temporarily pause a thread</td>
+        <td>wait()/notify() or LockSupport.park()/unpark().</td>
+    </tr>
+    <tr>
+        <td>Resume a waiting thread</td>
+        <td>notify(), notifyAll() or LockSupport.unpark(), depending on the coordination mechanism.</td>
+    </tr>
+    <tr>
+        <td>Manage task execution</td>
+        <td>ExecutorService.</td>
+    </tr>
+</table>
+
+<p><b>Important Interview Point:</b> stop() terminates a thread, whereas suspend() temporarily pauses it. suspend() does not release locks, which can cause deadlock. All three methods are deprecated in Java.</p>
+
 <hr>
 
 <h2>PART 4: Next Topics for Practical Learning</h2>
@@ -16073,7 +16150,7 @@ called while owning the object's monitor, normally inside synchronized.</p>
 
 <h2>PART 5: wait(), notify() and notifyAll()</h2>
 
-<h3>1. wait() – Make a Thread Wait</h3>
+<h3><u>1. wait() – Make a Thread Wait</u></h3>
 
 <p><b>Purpose:</b> Makes the current thread wait until notification, interruption or timeout. It releases the monitor lock of the object on which wait() is called.</p>
 
@@ -16119,7 +16196,7 @@ Thread-1 waiting
 
 <hr>
 
-<h3>2. notify() – Wake Up One Waiting Thread</h3>
+<h3><u>2. notify() – Wake Up One Waiting Thread</u></h3>
 
 <p><b>Purpose:</b> Wakes up one thread waiting on the same object's monitor. The selected thread must reacquire the monitor before continuing.</p>
 
@@ -16190,7 +16267,7 @@ Thread-1 resumed
 
 <hr>
 
-<h3>3. notifyAll() – Wake Up All Waiting Threads</h3>
+<h3><u>3. notifyAll() – Wake Up All Waiting Threads</u></h3>
 
 <p><b>Purpose:</b> Wakes all threads waiting on the same object's monitor. They compete to reacquire the lock one at a time.</p>
 
@@ -16424,18 +16501,886 @@ Consumer consumed data
 
 <hr>
 
-<h3>7. Important Interview Questions</h3>
+
+<h2>Problem 1: Spurious Wakeup</h2>
+
+<p>A consumer may wake up even when nobody calls notify() or notifyAll(). This is permitted by Java, but cannot be reliably reproduced on demand.</p>
+
+<h3>Scenario</h3>
+
+<ul>
+    <li>Consumer-1 and Consumer-2 are waiting for data.</li>
+    <li>Producer has not produced any data.</li>
+    <li>Consumer-1 unexpectedly wakes up without notification.</li>
+</ul>
+
+<h3>A. Problem – Using if</h3>
+
+<h4>Complete Java Program</h4>
+
+<pre>
+public class SpuriousWakeupProblem {
+
+    static final Object lock = new Object();
+    static boolean available = false;
+
+    public static void main(String[] args) {
+
+        Thread consumer1 = new Thread(() -> consume("Consumer-1"));
+        Thread consumer2 = new Thread(() -> consume("Consumer-2"));
+
+        consumer1.setDaemon(true);
+        consumer2.setDaemon(true);
+
+        consumer1.start();
+        consumer2.start();
+    }
+
+    static void consume(String name) {
+
+        synchronized (lock) {
+            try {
+                System.out.println(name + ": Checking data");
+
+                if (!available) {
+                    System.out.println(name + ": Waiting for data");
+                    lock.wait();
+                }
+
+                System.out.println(name + ": Consuming data");
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+}
+</pre>
+
+<h4>What can happen?</h4>
 
 <ol>
-    <li>What is the difference between wait() and sleep()?</li>
-    <li>Why must wait() be called inside synchronized?</li>
-    <li>What happens if notify() is called before wait()?</li>
-    <li>What is the difference between notify() and notifyAll()?</li>
-    <li>Why should wait() be used inside a while loop?</li>
-    <li>Does notify() immediately release the lock?</li>
-    <li>Can two threads execute inside the same synchronized block simultaneously?</li>
-    <li>What happens if wait() is called without owning the object's monitor?</li>
+    <li>Consumer-1 checks available = false.</li>
+    <li>Consumer-1 calls wait().</li>
+    <li>Consumer-2 also calls wait().</li>
+    <li>Suppose Consumer-1 wakes up due to a spurious wakeup.</li>
+    <li>Nobody called notify() or notifyAll().</li>
+    <li>Consumer-1 continues after wait().</li>
+    <li>It does not check the if condition again.</li>
+    <li>Consumer-1 incorrectly attempts to consume data.</li>
 </ol>
+
+<p><strong>Problem:</strong> Consumer-1 may continue even though no data is available.</p>
+
+<p><strong>Note:</strong> This program cannot force a genuine spurious wakeup. The execution above explains the possible behavior permitted by Java.</p>
+
+<h3>B. Solution – Using while</h3>
+
+<h4>Complete Java Program</h4>
+
+<pre>
+public class SpuriousWakeupSolution {
+
+    static final Object lock = new Object();
+    static boolean available = false;
+
+    public static void main(String[] args) {
+
+        Thread consumer1 = new Thread(() -> consume("Consumer-1"));
+        Thread consumer2 = new Thread(() -> consume("Consumer-2"));
+
+        consumer1.setDaemon(true);
+        consumer2.setDaemon(true);
+
+        consumer1.start();
+        consumer2.start();
+    }
+
+    static void consume(String name) {
+
+        synchronized (lock) {
+            try {
+                System.out.println(name + ": Checking data");
+
+                while (!available) {
+                    System.out.println(name + ": Waiting for data");
+                    lock.wait();
+                }
+
+                System.out.println(name + ": Consuming data");
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+}
+</pre>
+
+<h4>What happens?</h4>
+
+<ol>
+    <li>Consumer-1 checks available = false and waits.</li>
+    <li>Consumer-2 also waits.</li>
+    <li>Suppose Consumer-1 experiences a spurious wakeup.</li>
+    <li>Consumer-1 checks the while condition again.</li>
+    <li>available is still false.</li>
+    <li>Consumer-1 waits again instead of consuming data.</li>
+</ol>
+
+<p><strong>Solution:</strong> The while loop checks the condition again after every wakeup.</p>
+
+<hr>
+
+<h2>Problem 2: Another Thread Changes the Condition</h2>
+
+<p>Another thread may consume the item before the awakened consumer reacquires the lock.</p>
+
+<h3>Scenario: One Producer and Two Consumers</h3>
+
+<ul>
+    <li>Consumer-1 is waiting for data.</li>
+    <li>Consumer-2 is waiting for data.</li>
+    <li>Producer produces only ONE item.</li>
+    <li>Producer calls notifyAll(), waking both consumers.</li>
+    <li>Consumer-1 consumes the item before Consumer-2 gets the lock.</li>
+</ul>
+
+<h3>A. Problem – Using if</h3>
+
+<h4>Complete Java Program</h4>
+
+<pre>
+import java.util.concurrent.CountDownLatch;
+
+public class ConditionChangedProblem {
+
+    static final Object lock = new Object();
+    static boolean available = false;
+
+    static CountDownLatch waitingConsumers =
+            new CountDownLatch(2);
+
+    public static void main(String[] args) throws Exception {
+
+        Thread consumer1 = new Thread(() -> consume("Consumer-1"));
+        Thread consumer2 = new Thread(() -> consume("Consumer-2"));
+
+        Thread producer = new Thread(() -> {
+
+            synchronized (lock) {
+
+                System.out.println("Producer: Producing ONE item");
+
+                available = true;
+                lock.notifyAll();
+            }
+        });
+
+        consumer1.start();
+        consumer2.start();
+
+        // Wait until both consumers reach the waiting section
+        waitingConsumers.await();
+
+        producer.start();
+
+        producer.join();
+        consumer1.join();
+        consumer2.join();
+    }
+
+    static void consume(String name) {
+
+        synchronized (lock) {
+            try {
+
+                System.out.println(name + ": Checking data");
+
+                if (!available) {
+
+                    System.out.println(name + ": Waiting for data");
+
+                    waitingConsumers.countDown();
+
+                    lock.wait();
+                }
+
+                System.out.println(name + ": Consuming data");
+
+                available = false;
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+}
+</pre>
+
+<h4>Expected Output</h4>
+
+<pre>
+Consumer-1: Checking data
+Consumer-1: Waiting for data
+Consumer-2: Checking data
+Consumer-2: Waiting for data
+Producer: Producing ONE item
+Consumer-1: Consuming data
+Consumer-2: Consuming data
+</pre>
+
+<h4>What happened?</h4>
+
+<ol>
+    <li>Both consumers call wait().</li>
+    <li>Producer produces ONE item and calls notifyAll().</li>
+    <li>Consumer-1 gets the lock first.</li>
+    <li>Consumer-1 consumes the item and sets available = false.</li>
+    <li>Consumer-2 gets the lock next.</li>
+    <li>Consumer-2 does not check the if condition again.</li>
+    <li>Consumer-2 also attempts to consume the unavailable item.</li>
+</ol>
+
+<p><strong>Problem:</strong> Two consumers attempt to consume one item.</p>
+
+<h3>B. Solution – Using while</h3>
+
+<h4>Complete Java Program</h4>
+
+<pre>
+import java.util.concurrent.CountDownLatch;
+
+public class ConditionChangedSolution {
+
+    static final Object lock = new Object();
+    static boolean available = false;
+
+    static CountDownLatch waitingConsumers =
+            new CountDownLatch(2);
+
+    public static void main(String[] args) throws Exception {
+
+        Thread consumer1 = new Thread(() -> consume("Consumer-1"));
+        Thread consumer2 = new Thread(() -> consume("Consumer-2"));
+
+        // Allow remaining consumer to wait without keeping JVM alive
+        consumer1.setDaemon(true);
+        consumer2.setDaemon(true);
+
+        Thread producer = new Thread(() -> {
+
+            synchronized (lock) {
+
+                System.out.println("Producer: Producing ONE item");
+
+                available = true;
+                lock.notifyAll();
+            }
+        });
+
+        consumer1.start();
+        consumer2.start();
+
+        // Wait until both consumers reach the waiting section
+        waitingConsumers.await();
+
+        producer.start();
+
+        producer.join();
+
+        // Wait until one consumer consumes the item
+        Thread.sleep(500);
+    }
+
+    static void consume(String name) {
+
+        synchronized (lock) {
+            try {
+
+                System.out.println(name + ": Checking data");
+
+                while (!available) {
+
+                    System.out.println(name + ": Waiting for data");
+
+                    waitingConsumers.countDown();
+
+                    lock.wait();
+                }
+
+                System.out.println(name + ": Consuming data");
+
+                available = false;
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+}
+</pre>
+
+<h4>Expected Output</h4>
+
+<pre>
+Consumer-1: Checking data
+Consumer-1: Waiting for data
+Consumer-2: Checking data
+Consumer-2: Waiting for data
+Producer: Producing ONE item
+Consumer-1: Consuming data
+Consumer-2: Waiting for data
+</pre>
+
+<h4>What happened?</h4>
+
+<ol>
+    <li>Both consumers are waiting.</li>
+    <li>Producer produces ONE item and calls notifyAll().</li>
+    <li>Consumer-1 gets the lock and consumes the item.</li>
+    <li>Consumer-1 sets available = false.</li>
+    <li>Consumer-2 gets the lock.</li>
+    <li>Consumer-2 checks the while condition again.</li>
+    <li>available is false, so Consumer-2 waits again.</li>
+</ol>
+
+<p><strong>Solution:</strong> Only one consumer consumes the available item.</p>
+
+<hr>
+
+<h2>Why use CountDownLatch?</h2>
+
+<p>In Problem 2, we need to make sure both consumers are waiting before the producer starts.</p>
+
+<pre>
+static CountDownLatch waitingConsumers =
+        new CountDownLatch(2);
+</pre>
+
+<p>Each consumer executes:</p>
+
+<pre>
+waitingConsumers.countDown();
+lock.wait();
+</pre>
+
+<p>The main thread executes:</p>
+
+<pre>
+waitingConsumers.await();
+producer.start();
+</pre>
+
+<p><strong>How it works:</strong></p>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Event</th>
+        <th>Latch count</th>
+    </tr>
+    <tr>
+        <td>Initial count</td>
+        <td>2</td>
+    </tr>
+    <tr>
+        <td>Consumer-1 reaches waiting section</td>
+        <td>1</td>
+    </tr>
+    <tr>
+        <td>Consumer-2 reaches waiting section</td>
+        <td>0</td>
+    </tr>
+</table>
+
+<p>When the count reaches zero, main continues and starts the producer.</p>
+
+<p><strong>Why not just use Thread.sleep()?</strong> Sleep only waits for a fixed time. It does not guarantee that both consumers have reached wait(). CountDownLatch provides reliable coordination for this demonstration.</p>
+
+<hr>
+
+<h2>Final Interview Notes</h2>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Problem</th>
+        <th>Using if</th>
+        <th>Using while</th>
+    </tr>
+    <tr>
+        <td>Spurious wakeup</td>
+        <td>May continue without data.</td>
+        <td>Checks condition again.</td>
+    </tr>
+    <tr>
+        <td>Condition changed</td>
+        <td>May consume unavailable data.</td>
+        <td>Waits again if condition is false.</td>
+    </tr>
+</table>
+
+<h3>Golden Rule</h3>
+
+<pre>
+while (!available) {
+    lock.wait();
+}
+</pre>
+
+<p><strong>Remember:</strong> Waking up does not guarantee that the condition is true. Always check the condition again before proceeding.</p>
+
+<hr>
+
+<h2><u>CountDownLatch in Java</u></h2>
+
+<h3>1. What is CountDownLatch?</h3>
+
+<code>CountDownLatch</code> is a Java concurrency utility that allows one or more threads to wait until a specific number of operations are completed.
+
+Think of a teacher waiting for students to complete their assignments before starting the class.
+
+<h3>2. Understanding CountDownLatch(3)</h3>
+
+<pre>
+CountDownLatch latch = new CountDownLatch(3);
+</pre>
+
+Here, <code>3</code> is the initial count.
+
+It means three signals are required before the waiting thread can continue.
+
+<table>
+<tr><th>Action</th><th>Remaining count</th></tr>
+<tr><td>Initial count</td><td>3</td></tr>
+<tr><td>Student 1 calls countDown()</td><td>2</td></tr>
+<tr><td>Student 2 calls countDown()</td><td>1</td></tr>
+<tr><td>Student 3 calls countDown()</td><td>0</td></tr>
+</table>
+
+<h3>3. Important methods</h3>
+
+<ul>
+<li><code>new CountDownLatch(3)</code> – Creates a latch with an initial count of 3.</li>
+<li><code>countDown()</code> – Decreases the count by one.</li>
+<li><code>await()</code> – Blocks the calling thread until the count becomes zero.</li>
+</ul>
+
+<h3>4. Complete Java example</h3>
+
+<pre>
+import java.util.concurrent.CountDownLatch;
+
+public class CountDownLatchDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        CountDownLatch latch = new CountDownLatch(3);
+
+        Thread student1 = new Thread(() -> {
+            System.out.println("Student-1: Completing assignment");
+            latch.countDown();
+        });
+
+        Thread student2 = new Thread(() -> {
+            System.out.println("Student-2: Completing assignment");
+            latch.countDown();
+        });
+
+        Thread student3 = new Thread(() -> {
+            System.out.println("Student-3: Completing assignment");
+            latch.countDown();
+        });
+
+        student1.start();
+        student2.start();
+        student3.start();
+
+        System.out.println("Teacher: Waiting for students");
+
+        latch.await();
+
+        System.out.println("Teacher: All students completed!");
+        System.out.println("Teacher: Starting the class");
+    }
+}
+</pre>
+
+<h3>5. What happens when one count is still pending?</h3>
+
+Consider this example:
+
+<pre>
+CountDownLatch latch = new CountDownLatch(3);
+
+latch.countDown(); // Count becomes 2
+latch.countDown(); // Count becomes 1
+
+System.out.println("Main thread waiting...");
+
+latch.await();
+
+System.out.println("Continuing...");
+</pre>
+
+<strong>What happens step by step?</strong>
+
+<ol>
+<li>Initial count is 3.</li>
+<li>First countDown(): count becomes 2.</li>
+<li>Second countDown(): count becomes 1.</li>
+<li>Main thread calls await().</li>
+<li>Main thread gets blocked because the count is still 1.</li>
+<li>Unless another thread calls countDown(), the main thread waits indefinitely.</li>
+</ol>
+
+<strong>Output:</strong>
+
+<pre>
+Main thread waiting...
+</pre>
+
+The message <code>Continuing...</code> will not be printed until the count reaches zero.
+
+<h3>6. How is CountDownLatch(2) used in Producer-Consumer?</h3>
+
+In our earlier Producer-Consumer example:
+
+<pre>
+static CountDownLatch waitingConsumers =
+        new CountDownLatch(2);
+</pre>
+
+Here, <code>2</code> means we are waiting for two consumers to signal that they have reached the waiting section.
+
+Each consumer calls:
+
+<pre>
+waitingConsumers.countDown();
+</pre>
+
+The main thread calls:
+
+<pre>
+waitingConsumers.await();
+</pre>
+
+<strong>Execution flow:</strong>
+
+<ol>
+<li>Consumer-1 reaches the waiting section and calls countDown(). Count becomes 1.</li>
+<li>Consumer-2 reaches the waiting section and calls countDown(). Count becomes 0.</li>
+<li>Main thread's await() completes.</li>
+<li>Main thread can now start the producer.</li>
+</ol>
+
+This helps coordinate the demonstration so that both consumers are ready before the producer produces an item.
+
+<h3>7. Important points to remember</h3>
+
+<ul>
+<li>CountDownLatch is used for thread coordination.</li>
+<li>It does not replace synchronized, wait() or notifyAll().</li>
+<li>await() blocks until the count reaches zero.</li>
+<li>countDown() decreases the count by one.</li>
+<li>If one count remains pending, await() continues waiting.</li>
+<li>Once the count reaches zero, it stays zero.</li>
+<li>CountDownLatch is a one-time-use mechanism. It cannot be reset.</li>
+<li>The initial count represents the number of required signals, not necessarily the number of threads.</li>
+</ul>
+
+<h3>Remember with a simple example</h3>
+
+<strong>Teacher:</strong> I will start the class when all 3 students finish.
+
+<strong>Student 1:</strong> Completed – count is 2.
+
+<strong>Student 2:</strong> Completed – count is 1.
+
+<strong>Teacher:</strong> Still waiting!
+
+<strong>Student 3:</strong> Completed – count is 0.
+
+<strong>Teacher:</strong> Now I can start the class!
+
+
+<hr>
+
+<h3>7. Important Interview Questions</h3>
+
+
+<h2>Java Multithreading – wait(), sleep(), notify() and synchronized</h2>
+
+<ol>
+    <li>
+        <strong>What is the difference between wait() and sleep()?</strong>
+        <p><strong>wait():</strong></p>
+        <ul>
+            <li>Belongs to the Object class.</li>
+            <li>Releases the object's monitor lock while waiting.</li>
+            <li>Must be called while owning that object's monitor.</li>
+            <li>Wakes up through notification, interruption, timeout or a spurious wakeup.</li>
+        </ul>
+        <p><strong>sleep():</strong></p>
+        <ul>
+            <li>Belongs to the Thread class.</li>
+            <li>Does not release any monitor lock held by the thread.</li>
+            <li>Does not require synchronized.</li>
+            <li>Pauses the current thread for the specified time.</li>
+        </ul>
+    </li>
+
+    <li>
+        <strong>Why must wait() be called inside synchronized?</strong>
+        <p>Because wait() must be called by a thread that owns the object's monitor lock.</p>
+        <p>When wait() is called:</p>
+        <ol>
+            <li>The thread releases that object's monitor lock.</li>
+            <li>The thread enters the waiting state.</li>
+            <li>After notification, it must reacquire the same lock before continuing.</li>
+        </ol>
+        <p>Calling wait() without owning the monitor throws <code>IllegalMonitorStateException</code>.</p>
+    </li>
+
+    <li>
+        <strong>What happens if notify() is called before wait()?</strong>
+        <p>The notification is lost. Java does not remember notifications for future wait() calls.</p>
+        <p>Example:</p>
+        <pre>
+synchronized (lock) {
+    lock.notify();
+}
+
+// Later
+synchronized (lock) {
+    lock.wait(); // Can wait indefinitely
+}
+        </pre>
+        <p>If no further notification, interruption or timeout occurs, the thread can remain waiting.</p>
+        <p><strong>Remember:</strong> notify() does not store a signal for a future wait().</p>
+    </li>
+
+    <li>
+        <strong>What is the difference between notify() and notifyAll()?</strong>
+        <table>
+            <tr>
+                <th>notify()</th>
+                <th>notifyAll()</th>
+            </tr>
+            <tr>
+                <td>Wakes one arbitrarily selected waiting thread.</td>
+                <td>Wakes all threads waiting on that object's monitor.</td>
+            </tr>
+            <tr>
+                <td>Other waiting threads remain waiting.</td>
+                <td>All awakened threads compete to reacquire the lock.</td>
+            </tr>
+        </table>
+        <p>Neither method releases the lock immediately.</p>
+    </li>
+
+    <li>
+        <strong>Why should wait() be used inside a while loop?</strong>
+        <p>Because a thread can wake up without notification (spurious wakeup), or another thread may change the condition before the awakened thread reacquires the lock.</p>
+        <p><strong>Incorrect approach – if:</strong></p>
+        <pre>
+synchronized (lock) {
+    if (!available) {
+        lock.wait();
+    }
+
+    consumeData();
+}
+        </pre>
+        <p><strong>Correct approach – while:</strong></p>
+        <pre>
+synchronized (lock) {
+    while (!available) {
+        lock.wait();
+    }
+
+    consumeData();
+}
+        </pre>
+        <p>The while loop checks the condition again after every wakeup. If the condition is still false, the thread waits again.</p>
+    </li>
+
+    <li>
+        <strong>Does notify() immediately release the lock?</strong>
+        <p>No. notify() does not release the monitor lock.</p>
+        <p>The notifying thread continues executing inside the synchronized block. The waiting thread can proceed only after the notifying thread releases the lock and the waiting thread reacquires it.</p>
+    </li>
+
+  
+<li>
+    <strong>Can two threads execute inside the same synchronized block simultaneously?</strong>
+
+    <p><strong>Answer:</strong> No, when both threads synchronize on the same object, only one thread at a time can acquire that object's monitor lock.</p>
+
+    <h4>Example 1: Both threads use the same object</h4>
+
+    <pre>
+public class SameLockDemo {
+
+    static Object lock = new Object();
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+            synchronized (lock) {
+                System.out.println("Thread-1 entered");
+
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                System.out.println("Thread-1 exiting");
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            synchronized (lock) {
+                System.out.println("Thread-2 entered");
+                System.out.println("Thread-2 exiting");
+            }
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+    </pre>
+
+    <strong>Possible output:</strong>
+
+    <pre>
+Thread-1 entered
+Thread-1 exiting
+Thread-2 entered
+Thread-2 exiting
+    </pre>
+
+    <p><strong>Explanation:</strong></p>
+    <ol>
+        <li>Thread-1 acquires the lock and enters the synchronized block.</li>
+        <li>Thread-1 sleeps for 3 seconds but still holds the lock.</li>
+        <li>Thread-2 tries to acquire the same lock and must wait.</li>
+        <li>Thread-1 exits the synchronized block and releases the lock.</li>
+        <li>Thread-2 acquires the lock and enters the synchronized block.</li>
+    </ol>
+
+    <p><strong>Result:</strong> Both threads cannot execute inside synchronized blocks using the same object's monitor simultaneously.</p>
+
+    <hr/>
+
+    <h4>Example 2: Both threads use different objects</h4>
+
+    <pre>
+public class DifferentLockDemo {
+
+    static Object lock1 = new Object();
+    static Object lock2 = new Object();
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+            synchronized (lock1) {
+                System.out.println("Thread-1 entered");
+
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                System.out.println("Thread-1 exiting");
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            synchronized (lock2) {
+                System.out.println("Thread-2 entered");
+
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                System.out.println("Thread-2 exiting");
+            }
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+    </pre>
+
+    <strong>Possible output:</strong>
+
+    <pre>
+Thread-1 entered
+Thread-2 entered
+Thread-1 exiting
+Thread-2 exiting
+    </pre>
+
+    <p><strong>Explanation:</strong></p>
+    <ol>
+        <li>Thread-1 acquires lock1.</li>
+        <li>Thread-2 acquires lock2.</li>
+        <li>Both threads enter their synchronized blocks because they use different objects.</li>
+        <li>Both threads can execute simultaneously.</li>
+    </ol>
+
+    <p><strong>Result:</strong> Threads can execute synchronized blocks simultaneously when they synchronize on different objects.</p>
+
+    <h4>Quick comparison</h4>
+
+    <table>
+        <tr>
+            <th>Scenario</th>
+            <th>Execution</th>
+        </tr>
+        <tr>
+            <td>Both threads use synchronized(lock)</td>
+            <td>One thread at a time</td>
+        </tr>
+        <tr>
+            <td>Thread-1 uses synchronized(lock1), Thread-2 uses synchronized(lock2)</td>
+            <td>Both can execute simultaneously</td>
+        </tr>
+    </table>
+
+    <p><strong>Interview point:</strong> synchronized locks an object, not the entire application. Threads using the same object's monitor must take turns, while threads using different objects can execute independently.</p>
+</li>
+
+
+    <li>
+        <strong>What happens if wait() is called without owning the object's monitor?</strong>
+        <p>Java throws:</p>
+        <pre>
+java.lang.IllegalMonitorStateException
+        </pre>
+        <p>Example:</p>
+        <pre>
+Object lock = new Object();
+
+lock.wait(); // Throws IllegalMonitorStateException
+        </pre>
+        <p><strong>Correct approach:</strong></p>
+        <pre>
+Object lock = new Object();
+
+synchronized (lock) {
+    lock.wait();
+}
+        </pre>
+    </li>
+</ol>
+
 
 <h3>8. Quick Interview Answers</h3>
 
