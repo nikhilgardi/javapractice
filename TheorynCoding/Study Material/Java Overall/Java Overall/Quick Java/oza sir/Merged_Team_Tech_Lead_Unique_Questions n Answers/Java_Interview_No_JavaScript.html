@@ -84,10 +84,10 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q67" class="completed"><span class="number">67.</span>Compare `Thread`, `Runnable` and `Callable`.</a>
 <a href="#q68" class="completed"><span class="number">68.</span>What is the difference between `start()` and `run()`?</a>
 <a href="#q69" class="completed"><span class="number">69.</span>Compare `sleep()`, `wait()` and `join()`.</a>
-<a href="#q70"><span class="number">70.</span>What is synchronization? Compare synchronized methods and blocks.</a>
-<a href="#q71"><span class="number">71.</span>What is a race condition, and how can you prevent it?</a>
-<a href="#q72"><span class="number">72.</span>What is the difference between `volatile` and `synchronized`?</a>
-<a href="#q73"><span class="number">73.</span>Explain deadlock, livelock and starvation. How would you prevent deadlocks?</a>
+<a href="#q70" class="completed"><span class="number">70.</span>What is synchronization? Compare synchronized methods and blocks.</a>
+<a href="#q71" class="completed"><span class="number">71.</span>What is a race condition, and how can you prevent it?</a>
+<a href="#q72" class="completed"><span class="number">72.</span>What is the difference between `volatile` and `synchronized`?</a>
+<a href="#q73" class="completed"><span class="number">73.</span>Explain deadlock, livelock and starvation. How would you prevent deadlocks?</a>
 <a href="#q74"><span class="number">74.</span>Compare `synchronized` and `ReentrantLock`.</a>
 <a href="#q75"><span class="number">75.</span>What is the Java Memory Model? Explain happens-before.</a>
 <a href="#q76"><span class="number">76.</span>What are atomic classes and compare-and-set operations?</a>
@@ -17401,7 +17401,243 @@ synchronized (lock) {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>What is synchronization in Java?</h2>
+
+<p><strong>Synchronization</strong> is a mechanism in Java used to control access to shared resources by multiple threads.</p>
+
+<p>It ensures that only one thread at a time can execute code protected by the same object's monitor lock.</p>
+
+<p>This helps prevent <strong>race conditions</strong> and maintains data consistency.</p>
+
+<h3>1. Example without synchronization</h3>
+
+<pre>
+public class WithoutSynchronization {
+
+    static int count = 0;
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count++;
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count++;
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Count: " + count);
+    }
+}
+</pre>
+
+<p><strong>Expected result:</strong> Ideally, the count should be 2000. However, because <code>count++</code> is not atomic, a race condition can cause a smaller value.</p>
+
+<h3>2. Example with synchronization</h3>
+
+<pre>
+public class WithSynchronization {
+
+    static int count = 0;
+
+    static synchronized void increment() {
+        count++;
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Count: " + count);
+    }
+}
+</pre>
+
+<strong>Output:</strong>
+
+<pre>
+Final Count: 2000
+</pre>
+
+<p>Here, only one thread at a time can execute <code>increment()</code> because it is a static synchronized method and uses the class monitor lock.</p>
+
+<h3>3. Compare synchronized methods and synchronized blocks</h3>
+
+<p>Both provide synchronization, but they differ in how much code is protected by the lock.</p>
+
+<h4>A. Synchronized instance method</h4>
+
+<pre>
+public synchronized void increment() {
+    count++;
+    System.out.println(count);
+}
+</pre>
+
+<ul>
+    <li>The entire method is synchronized.</li>
+    <li>Java automatically acquires the current object's monitor lock (<code>this</code>).</li>
+    <li>Only one thread at a time can execute synchronized instance methods on the same object.</li>
+</ul>
+
+<h4>B. Synchronized block using this</h4>
+
+<pre>
+public void increment() {
+
+    // Other code can execute without acquiring this lock
+
+    synchronized (this) {
+        count++;
+        System.out.println(count);
+    }
+
+    // More code can execute without acquiring this lock
+}
+</pre>
+
+<ul>
+    <li>Only the code inside the synchronized block is protected.</li>
+    <li>We explicitly specify <code>this</code> to acquire the current object's monitor lock.</li>
+    <li>Code outside the block does not need to acquire this lock.</li>
+</ul>
+
+<p><strong>Important:</strong> A synchronized instance method is conceptually equivalent to synchronizing its entire method body on <code>this</code>.</p>
+
+<h4>C. Synchronized block using another object</h4>
+
+<pre>
+Object lock = new Object();
+
+public void increment() {
+
+    synchronized (lock) {
+        count++;
+    }
+}
+</pre>
+
+<ul>
+    <li>Java acquires the monitor lock of the <code>lock</code> object.</li>
+    <li>It does not acquire the current object's (<code>this</code>) lock.</li>
+    <li>This gives us flexibility to choose which object to synchronize on.</li>
+</ul>
+
+<h3>4. Static synchronized method vs instance synchronized method</h3>
+
+<pre>
+public synchronized void instanceMethod() {
+    // Locks the current object (this)
+}
+
+public static synchronized void staticMethod() {
+    // Locks the ClassName.class object
+}
+</pre>
+
+<ul>
+    <li><strong>Instance synchronized method:</strong> Locks the current object (<code>this</code>).</li>
+    <li><strong>Static synchronized method:</strong> Locks the class object (<code>ClassName.class</code>).</li>
+</ul>
+
+<p>These are different locks, so an instance synchronized method and a static synchronized method can execute simultaneously.</p>
+
+<h3>5. Comparison table</h3>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>Synchronized method</th>
+        <th>Synchronized block</th>
+    </tr>
+    <tr>
+        <td>Lock scope</td>
+        <td>Entire method</td>
+        <td>Only the block</td>
+    </tr>
+    <tr>
+        <td>Lock object</td>
+        <td>Automatically selected</td>
+        <td>Explicitly specified</td>
+    </tr>
+    <tr>
+        <td>Flexibility</td>
+        <td>Less control</td>
+        <td>More control</td>
+    </tr>
+    <tr>
+        <td>Use case</td>
+        <td>Entire method needs protection</td>
+        <td>Only a specific section needs protection</td>
+    </tr>
+</table>
+
+<h3>6. Which object is locked?</h3>
+
+<table>
+    <tr>
+        <th>Synchronization syntax</th>
+        <th>Lock acquired</th>
+    </tr>
+    <tr>
+        <td><code>public synchronized void method()</code></td>
+        <td><code>this</code></td>
+    </tr>
+    <tr>
+        <td><code>synchronized (this)</code></td>
+        <td><code>this</code></td>
+    </tr>
+    <tr>
+        <td><code>synchronized (lock)</code></td>
+        <td><code>lock</code></td>
+    </tr>
+    <tr>
+        <td><code>public static synchronized void method()</code></td>
+        <td><code>ClassName.class</code></td>
+    </tr>
+</table>
+
+<h3>7. Important interview points</h3>
+
+<ol>
+    <li>Synchronization prevents multiple threads from simultaneously executing code protected by the same monitor.</li>
+    <li>It helps prevent race conditions.</li>
+    <li>Java provides intrinsic locks (monitor locks) through <code>synchronized</code>.</li>
+    <li>An instance synchronized method locks <code>this</code>.</li>
+    <li>A static synchronized method locks the class object.</li>
+    <li>A synchronized block allows us to control the lock scope and lock object.</li>
+    <li>Different objects have different monitor locks.</li>
+</ol>
+
+<strong>Remember:</strong> Synchronization locks an object, not the entire Java application. Threads using the same object's monitor must take turns, while threads using different objects can execute independently.
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -17410,7 +17646,398 @@ synchronized (lock) {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>What is a race condition, and how can you prevent it?</h2>
+
+<p><strong>Race condition</strong> occurs when multiple threads access and modify shared data concurrently, and the final result depends on the timing or execution order of those threads.</p>
+
+<p>It can lead to unexpected or incorrect results.</p>
+
+<h3>1. Example without synchronization</h3>
+
+<pre>
+public class RaceConditionDemo {
+
+    static int count = 0;
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count++;
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count++;
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Count: " + count);
+    }
+}
+</pre>
+
+<p><strong>Expected result:</strong> Ideally, 2000.</p>
+
+<p>However, the actual result can be less than 2000 because both threads may update the shared variable at the same time.</p>
+
+<h3>2. Why does a race condition happen?</h3>
+
+<p>The statement <code>count++</code> is not an atomic operation. It involves three steps:</p>
+
+<ol>
+    <li>Read the current value of count.</li>
+    <li>Increment the value.</li>
+    <li>Write the updated value back.</li>
+</ol>
+
+<strong>Example execution:</strong>
+
+<p>Suppose <code>count = 5</code>.</p>
+
+<table>
+    <tr>
+        <th>Step</th>
+        <th>Thread-1</th>
+        <th>Thread-2</th>
+    </tr>
+    <tr><td>1</td><td>Reads 5</td><td></td></tr>
+    <tr><td>2</td><td></td><td>Reads 5</td></tr>
+    <tr><td>3</td><td>Increments to 6</td><td></td></tr>
+    <tr><td>4</td><td></td><td>Increments to 6</td></tr>
+    <tr><td>5</td><td>Writes 6</td><td></td></tr>
+    <tr><td>6</td><td></td><td>Writes 6</td></tr>
+</table>
+
+<p>Final count is 6, whereas it should be 7.</p>
+
+<p>This is called a <strong>race condition</strong>.</p>
+
+<h3>3. How can we prevent a race condition?</h3>
+
+<h4>A. Using synchronized method</h4>
+
+<pre>
+public class SynchronizedDemo {
+
+    static int count = 0;
+
+    static synchronized void increment() {
+        count++;
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Count: " + count);
+    }
+}
+</pre>
+
+<strong>Output:</strong>
+
+<pre>
+Final Count: 2000
+</pre>
+
+<p>Here, only one thread at a time can execute the <code>increment()</code> method because it is static synchronized and locks the class object.</p>
+
+<h4>B. Using synchronized block</h4>
+
+<pre>
+public class SynchronizedBlockDemo {
+
+    static int count = 0;
+    static Object lock = new Object();
+
+    static void increment() {
+
+        synchronized (lock) {
+            count++;
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Count: " + count);
+    }
+}
+</pre>
+
+<strong>Output:</strong>
+
+<pre>
+Final Count: 2000
+</pre>
+
+<p>Only the code inside the synchronized block is protected by the specified object's monitor lock.</p>
+
+<h4>C. Using AtomicInteger</h4>
+
+<pre>
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class AtomicDemo {
+
+    static AtomicInteger count = new AtomicInteger(0);
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count.incrementAndGet();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count.incrementAndGet();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Count: " + count.get());
+    }
+}
+</pre>
+
+<strong>Output:</strong>
+
+<pre>
+Final Count: 2000
+</pre>
+
+<p><code>AtomicInteger</code> provides atomic operations, so incrementing the shared counter is thread-safe without using <code>synchronized</code>.</p>
+
+<h4>D. Using ReentrantLock</h4>
+
+<p><code>ReentrantLock</code> is an explicit locking mechanism from the <code>java.util.concurrent.locks</code> package. It allows a thread to acquire and release a lock programmatically.</p>
+
+<pre>
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ReentrantLockDemo {
+
+    static int count = 0;
+
+    static ReentrantLock lock = new ReentrantLock();
+
+    static void increment() {
+
+        lock.lock();
+
+        try {
+            count++;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Count: " + count);
+    }
+}
+</pre>
+
+<strong>Output:</strong>
+
+<pre>
+Final Count: 2000
+</pre>
+
+<p><strong>Explanation:</strong></p>
+
+<ol>
+    <li><code>lock.lock()</code> acquires the lock.</li>
+    <li>Only the thread holding the lock can execute the protected code.</li>
+    <li>Other threads must wait until the lock becomes available.</li>
+    <li><code>lock.unlock()</code> releases the lock.</li>
+    <li>The <code>finally</code> block ensures that the lock is released even if an exception occurs.</li>
+</ol>
+
+<p><strong>Important:</strong> ReentrantLock is reentrant, meaning the same thread can acquire the same lock multiple times. It must release the lock the corresponding number of times.</p>
+
+<h4>E. Using Immutable Objects</h4>
+
+<p>An <strong>immutable object</strong> is an object whose state cannot be changed after it has been created.</p>
+
+<p>Since its data cannot be modified, multiple threads can safely share that object's state without competing to update it.</p>
+
+<strong>Example:</strong>
+
+<pre>
+final class Employee {
+
+    private final int id;
+    private final String name;
+
+    public Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+
+public class ImmutableDemo {
+
+    public static void main(String[] args) {
+
+        Employee employee = new Employee(101, "Nikhil");
+
+        Thread t1 = new Thread(() -> {
+            System.out.println(
+                "Thread-1: " + employee.getName()
+            );
+        });
+
+        Thread t2 = new Thread(() -> {
+            System.out.println(
+                "Thread-2: " + employee.getName()
+            );
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+</pre>
+
+<strong>Possible output:</strong>
+
+<pre>
+Thread-1: Nikhil
+Thread-2: Nikhil
+</pre>
+
+<p><strong>Explanation:</strong></p>
+
+<ul>
+    <li>The class is declared <code>final</code>, so it cannot be extended.</li>
+    <li>Fields are declared <code>private final</code>.</li>
+    <li>Values are initialized through the constructor.</li>
+    <li>There are no setter methods to modify the fields.</li>
+    <li>Both threads can safely read the shared Employee object's state.</li>
+</ul>
+
+<p><strong>Important:</strong> This example is safe because Employee contains only immutable fields (<code>int</code> and <code>String</code>). For mutable objects inside an immutable class, defensive copying is needed.</p>
+
+<h3>4. Comparison of prevention techniques</h3>
+
+<table>
+    <tr>
+        <th>Technique</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td><code>synchronized</code> method</td>
+        <td>Protects the entire method.</td>
+    </tr>
+    <tr>
+        <td><code>synchronized</code> block</td>
+        <td>Protects a specific section of code.</td>
+    </tr>
+    <tr>
+        <td><code>AtomicInteger</code></td>
+        <td>Provides atomic operations on integer values.</td>
+    </tr>
+    <tr>
+        <td><code>ReentrantLock</code></td>
+        <td>Provides explicit locking and unlocking.</td>
+    </tr>
+    <tr>
+        <td>Immutable objects</td>
+        <td>Prevent modification of shared object state.</td>
+    </tr>
+</table>
+
+<h3>5. Interview points to remember</h3>
+
+<ol>
+    <li>Race condition occurs when multiple threads access and modify shared data concurrently.</li>
+    <li>It can produce inconsistent or unexpected results.</li>
+    <li><code>count++</code> is not an atomic operation.</li>
+    <li>Synchronization ensures mutual exclusion when threads use the same monitor lock.</li>
+    <li><code>AtomicInteger</code> provides thread-safe atomic operations.</li>
+    <li><code>ReentrantLock</code> provides explicit control over locking and unlocking.</li>
+    <li>Immutable objects prevent changes to their state after creation.</li>
+</ol>
+
+<p><strong>Interview-ready answer:</strong> A race condition occurs when multiple threads access and modify shared data concurrently, and the result depends on their execution order. We can prevent it using synchronization, locks such as ReentrantLock, atomic classes such as AtomicInteger, or immutable objects.</p>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -17419,7 +18046,361 @@ synchronized (lock) {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>What is the difference between volatile and synchronized?</h2>
+
+<p>Both <code>volatile</code> and <code>synchronized</code> are used in Java multithreading to handle shared data between threads. However, they solve different problems.</p>
+
+<ul>
+    <li><strong>volatile:</strong> Ensures visibility of changes made by one thread to other threads.</li>
+    <li><strong>synchronized:</strong> Ensures mutual exclusion and visibility by allowing only one thread at a time to execute code protected by the same monitor lock.</li>
+</ul>
+
+<h3>1. Example using volatile</h3>
+
+<p>Suppose one thread updates a shared variable and another thread continuously checks its value.</p>
+
+<pre>
+public class VolatileDemo {
+
+    static volatile boolean running = true;
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+            while (running) {
+                // Waiting while running is true
+            }
+
+            System.out.println("Thread-1 stopped");
+        });
+
+        t1.start();
+
+        Thread.sleep(2000);
+
+        running = false;
+
+        System.out.println("Main thread changed running to false");
+    }
+}
+</pre>
+
+<strong>Possible output:</strong>
+
+<pre>
+Main thread changed running to false
+Thread-1 stopped
+</pre>
+
+<strong>Explanation:</strong>
+
+<ol>
+    <li>Thread-1 continuously checks the <code>running</code> variable.</li>
+    <li>The main thread changes <code>running</code> to <code>false</code>.</li>
+    <li>Because <code>running</code> is volatile, Thread-1 sees the updated value.</li>
+    <li>Thread-1 exits the loop.</li>
+</ol>
+
+<h3>2. Understanding the execution order of volatile example</h3>
+
+<p>In this code, the main thread starts executing first, but after <code>t1.start()</code>, both the main thread and Thread-1 execute independently.</p>
+
+<p>Let's understand the execution order.</p>
+
+<h4>Step-by-step execution</h4>
+
+<strong>Step 1: Main thread starts</strong>
+
+<pre>
+static volatile boolean running = true;
+</pre>
+
+<p>The variable <code>running</code> is initialized to <code>true</code>.</p>
+
+<strong>Step 2: Main thread creates Thread-1</strong>
+
+<pre>
+Thread t1 = new Thread(() -> {
+    while (running) {
+        // Waiting while running is true
+    }
+
+    System.out.println("Thread-1 stopped");
+});
+</pre>
+
+<p>At this point, Thread-1 is created but has not started executing.</p>
+
+<strong>Step 3: Main thread starts Thread-1</strong>
+
+<pre>
+t1.start();
+</pre>
+
+<p>Now Thread-1 becomes eligible for execution.</p>
+
+<p>Both threads can execute:</p>
+
+<ul>
+    <li>Main thread continues to the next statement.</li>
+    <li>Thread-1 starts checking <code>running</code>.</li>
+</ul>
+
+<strong>Step 4: Main thread sleeps for 2 seconds</strong>
+
+<pre>
+Thread.sleep(2000);
+</pre>
+
+<p>The main thread pauses for approximately 2 seconds.</p>
+
+<p>Meanwhile, Thread-1 keeps executing:</p>
+
+<pre>
+while (running) {
+}
+</pre>
+
+<p>Since <code>running</code> is <code>true</code>, it continues looping.</p>
+
+<strong>Step 5: Main thread changes the variable</strong>
+
+<pre>
+running = false;
+</pre>
+
+<p>Because <code>running</code> is volatile, Thread-1 can observe the updated value.</p>
+
+<p>The while loop terminates.</p>
+
+<strong>Step 6: Both threads print their messages</strong>
+
+<p><strong>Main thread:</strong></p>
+
+<pre>
+System.out.println("Main thread changed running to false");
+</pre>
+
+<p><strong>Thread-1:</strong></p>
+
+<pre>
+System.out.println("Thread-1 stopped");
+</pre>
+
+<h4>Expected output</h4>
+
+<p>Both messages will print, but their order is not guaranteed.</p>
+
+<strong>Possible output 1:</strong>
+
+<pre>
+Main thread changed running to false
+Thread-1 stopped
+</pre>
+
+<strong>Possible output 2:</strong>
+
+<pre>
+Thread-1 stopped
+Main thread changed running to false
+</pre>
+
+<p>Both are valid because after the main thread changes <code>running</code> to false, either thread may execute its next statement first.</p>
+
+<h4>Important interview concept</h4>
+
+<table>
+    <tr>
+        <th>Method / Keyword</th>
+        <th>What happens?</th>
+    </tr>
+    <tr>
+        <td><code>t1.start()</code></td>
+        <td>Starts a new thread.</td>
+    </tr>
+    <tr>
+        <td><code>Thread.sleep(2000)</code></td>
+        <td>Pauses the calling thread (main thread here).</td>
+    </tr>
+    <tr>
+        <td><code>volatile</code></td>
+        <td>Ensures visibility of the latest variable value across threads.</td>
+    </tr>
+    <tr>
+        <td><code>t1.join()</code></td>
+        <td>Makes the main thread wait until Thread-1 finishes.</td>
+    </tr>
+</table>
+
+<p><strong>Remember:</strong> <code>start()</code> does not mean the new thread executes immediately. It only makes the thread eligible for scheduling. The JVM thread scheduler decides when it actually runs.</p>
+
+<h3>3. Example using synchronized</h3>
+
+<p>Suppose two threads update the same counter.</p>
+
+<pre>
+public class SynchronizedDemo {
+
+    static int count = 0;
+
+    static synchronized void increment() {
+        count++;
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i &lt; 1000; i++) {
+                increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i &lt; 1000; i++) {
+                increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Count: " + count);
+    }
+}
+</pre>
+
+<strong>Output:</strong>
+
+<pre>
+Final Count: 2000
+</pre>
+
+<strong>Explanation:</strong>
+
+<ol>
+    <li>Thread-1 acquires the class monitor lock and executes <code>increment()</code>.</li>
+    <li>Thread-2 must wait until Thread-1 releases the lock.</li>
+    <li>Thread-2 then acquires the lock and executes <code>increment()</code>.</li>
+    <li>This prevents both threads from updating the counter simultaneously.</li>
+</ol>
+
+<h3>4. Can volatile prevent race conditions?</h3>
+
+<p>No, not for compound operations.</p>
+
+<p>Consider:</p>
+
+<pre>
+static volatile int count = 0;
+
+count++;
+</pre>
+
+<p>Even though <code>count</code> is volatile, <code>count++</code> is still not atomic.</p>
+
+<p>It involves:</p>
+
+<ol>
+    <li>Reading the value.</li>
+    <li>Incrementing the value.</li>
+    <li>Writing the updated value.</li>
+</ol>
+
+<p>Two threads can still interfere with each other's updates.</p>
+
+<p>For this situation, use <code>synchronized</code> or <code>AtomicInteger</code>.</p>
+
+<h3>5. Difference between volatile and synchronized</h3>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>volatile</th>
+        <th>synchronized</th>
+    </tr>
+    <tr>
+        <td>Purpose</td>
+        <td>Visibility</td>
+        <td>Visibility and mutual exclusion</td>
+    </tr>
+    <tr>
+        <td>Lock</td>
+        <td>Does not acquire a monitor lock</td>
+        <td>Acquires a monitor lock</td>
+    </tr>
+    <tr>
+        <td>Atomicity</td>
+        <td>Does not make compound operations atomic</td>
+        <td>Protects the synchronized critical section</td>
+    </tr>
+    <tr>
+        <td>Thread access</td>
+        <td>Multiple threads can read/write the variable</td>
+        <td>Only one thread at a time can hold the same monitor lock</td>
+    </tr>
+    <tr>
+        <td>Performance</td>
+        <td>Generally lightweight</td>
+        <td>Has locking overhead</td>
+    </tr>
+    <tr>
+        <td>Usage</td>
+        <td>Variables</td>
+        <td>Methods and blocks</td>
+    </tr>
+</table>
+
+<h3>6. When should we use volatile and synchronized?</h3>
+
+<table>
+    <tr>
+        <th>Scenario</th>
+        <th>Recommended</th>
+    </tr>
+    <tr>
+        <td>One thread updates a boolean flag and another reads it</td>
+        <td><code>volatile</code></td>
+    </tr>
+    <tr>
+        <td>Multiple threads increment a shared counter</td>
+        <td><code>synchronized</code> or <code>AtomicInteger</code></td>
+    </tr>
+    <tr>
+        <td>Multiple threads modify shared objects</td>
+        <td><code>synchronized</code> or appropriate locking</td>
+    </tr>
+    <tr>
+        <td>Need visibility without mutual exclusion</td>
+        <td><code>volatile</code></td>
+    </tr>
+    <tr>
+        <td>Need to protect a critical section</td>
+        <td><code>synchronized</code></td>
+    </tr>
+</table>
+
+<h3>7. Interview points to remember</h3>
+
+<ol>
+    <li><code>volatile</code> guarantees visibility of changes between threads.</li>
+    <li><code>volatile</code> does not provide mutual exclusion.</li>
+    <li><code>volatile</code> does not make <code>count++</code> atomic.</li>
+    <li><code>synchronized</code> provides mutual exclusion and memory visibility.</li>
+    <li>Only one thread at a time can hold the same object's monitor lock.</li>
+    <li>Use <code>volatile</code> for simple shared state flags.</li>
+    <li>Use <code>synchronized</code> when multiple threads need controlled access to shared mutable data.</li>
+</ol>
+
+<p><strong>Interview-ready answer:</strong></p>
+
+<p><code>volatile</code> ensures visibility of shared variable updates between threads but does not provide locking or atomicity for compound operations. <code>synchronized</code> provides both visibility and mutual exclusion by allowing only one thread at a time to execute code protected by the same monitor lock.</p>
+
+<p><strong>Remember:</strong> volatile = Visibility. synchronized = Visibility + Mutual Exclusion.</p>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -17428,7 +18409,802 @@ synchronized (lock) {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Explain Deadlock, Livelock and Starvation. How would you prevent deadlocks?</h2>
+
+<p>These are three important problems in Java multithreading. All three occur when multiple threads compete for resources, but their behavior is different.</p>
+
+<h3>1. Deadlock</h3>
+
+<p><strong>Deadlock</strong> occurs when two or more threads wait indefinitely for locks held by each other.</p>
+
+<p>Neither thread can proceed because each is waiting for the other to release its lock.</p>
+
+<h4>Example: Deadlock in Java</h4>
+
+<pre>
+public class DeadlockDemo {
+
+    static Object lock1 = new Object();
+    static Object lock2 = new Object();
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            synchronized (lock1) {
+                // Thread-1 acquires lock1
+                System.out.println("Thread-1 acquired lock1");
+
+                try {
+                    Thread.sleep(100);
+                    // Pause Thread-1 while it still holds lock1
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+
+                synchronized (lock2) {
+                    // Thread-1 now tries to acquire lock2
+                    System.out.println("Thread-1 acquired lock2");
+                }
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            synchronized (lock2) {
+                // Thread-2 acquires lock2
+                System.out.println("Thread-2 acquired lock2");
+
+                try {
+                    Thread.sleep(100);
+                    // Pause Thread-2 while it still holds lock2
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+
+                synchronized (lock1) {
+                    // Thread-2 now tries to acquire lock1
+                    System.out.println("Thread-2 acquired lock1");
+                }
+            }
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+</pre>
+
+<strong>Possible output:</strong>
+
+<pre>
+Thread-1 acquired lock1
+Thread-2 acquired lock2
+</pre>
+
+<p>The program may get stuck here.</p>
+
+<strong>Step-by-step execution:</strong>
+
+<ol>
+    <li>Thread-1 acquires <code>lock1</code>.</li>
+    <li>Thread-2 acquires <code>lock2</code>.</li>
+    <li>Thread-1 tries to acquire <code>lock2</code>, but Thread-2 owns it.</li>
+    <li>Thread-2 tries to acquire <code>lock1</code>, but Thread-1 owns it.</li>
+    <li>Both threads wait indefinitely.</li>
+</ol>
+
+<p><strong>Remember:</strong> Each thread holds one lock and waits for the lock held by the other thread.</p>
+
+<h3>2. Livelock</h3>
+
+<p><strong>Livelock</strong> occurs when two or more threads continuously respond to each other but cannot make actual progress.</p>
+
+<p>Unlike deadlock, threads are not blocked. They are actively executing but repeatedly changing their behavior.</p>
+
+<h4>Real-life example</h4>
+
+<p>Imagine two people walking towards each other in a narrow corridor.</p>
+
+<ul>
+    <li>Person A moves left.</li>
+    <li>Person B also moves left.</li>
+    <li>Both move right.</li>
+    <li>Both move left again.</li>
+</ul>
+
+<p>They keep reacting to each other but neither passes.</p>
+
+<h4>Java example: Livelock-like behavior</h4>
+
+<pre>
+public class LivelockDemo {
+
+    static class Worker {
+        boolean active = true;
+    }
+
+    public static void main(String[] args) {
+
+        Worker worker1 = new Worker();
+        Worker worker2 = new Worker();
+
+        Thread t1 = new Thread(() -> {
+
+            while (worker1.active) {
+                // Continue while worker1 is active
+
+                if (worker2.active) {
+                    // Check whether the other worker is active
+
+                    System.out.println(
+                        "Thread-1: Giving chance to Thread-2"
+                    );
+
+                    Thread.yield();
+                    // Suggest that the scheduler allow another thread to run
+                }
+            }
+
+            System.out.println("Thread-1 completed");
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            while (worker2.active) {
+                // Continue while worker2 is active
+
+                if (worker1.active) {
+                    // Check whether the other worker is active
+
+                    System.out.println(
+                        "Thread-2: Giving chance to Thread-1"
+                    );
+
+                    Thread.yield();
+                    // Suggest that the scheduler allow another thread to run
+                }
+            }
+
+            System.out.println("Thread-2 completed");
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+</pre>
+
+<p><strong>Explanation:</strong></p>
+
+<ul>
+    <li>Both threads continuously check the other worker's state.</li>
+    <li>Both keep yielding execution.</li>
+    <li>Neither worker becomes inactive.</li>
+    <li>The threads keep running without completing their task.</li>
+</ul>
+
+<p><strong>Important:</strong> This is an illustrative livelock-like example. <code>Thread.yield()</code> does not guarantee a particular scheduling order or a reproducible livelock.</p>
+
+<strong>How to prevent livelock?</strong>
+
+<ul>
+    <li>Introduce randomized backoff or different retry delays.</li>
+    <li>Avoid both threads following exactly the same retry strategy.</li>
+    <li>Use a clear priority or coordination mechanism.</li>
+</ul>
+
+<h3>3. Starvation</h3>
+
+<p><strong>Starvation</strong> occurs when a thread continuously waits for CPU time or access to a shared resource because other threads keep getting priority.</p>
+
+<p>The thread may wait for a very long time without getting an opportunity to execute.</p>
+
+<h4>Real-life example</h4>
+
+<p>Imagine a customer standing in a queue.</p>
+
+<ul>
+    <li>VIP customers continuously arrive.</li>
+    <li>Every VIP customer gets priority.</li>
+    <li>The normal customer keeps waiting.</li>
+    <li>The normal customer may never get service.</li>
+</ul>
+
+<h4>Java example using thread priorities</h4>
+
+<pre>
+public class StarvationDemo {
+
+    public static void main(String[] args) {
+
+        Thread highPriority = new Thread(() -> {
+
+            while (true) {
+                // Continuously execute work
+                System.out.println("High priority thread running");
+            }
+        });
+
+        Thread lowPriority = new Thread(() -> {
+
+            while (true) {
+                // Continuously execute work
+                System.out.println("Low priority thread running");
+            }
+        });
+
+        highPriority.setPriority(Thread.MAX_PRIORITY);
+        // Set the maximum Java thread priority
+
+        lowPriority.setPriority(Thread.MIN_PRIORITY);
+        // Set the minimum Java thread priority
+
+        highPriority.start();
+        lowPriority.start();
+    }
+}
+</pre>
+
+<p><strong>Explanation:</strong></p>
+
+<ul>
+    <li>Thread priorities are hints to the JVM and operating system scheduler.</li>
+    <li>A high-priority thread may receive more execution opportunities.</li>
+    <li>A low-priority thread could experience starvation on some systems.</li>
+</ul>
+
+<p><strong>Important:</strong> This example illustrates the concept, but does not guarantee starvation because Java thread scheduling is platform-dependent.</p>
+
+<strong>How to prevent starvation?</strong>
+
+<ul>
+    <li>Avoid unnecessary priority differences.</li>
+    <li>Use fair locks when fairness is required.</li>
+    <li>Ensure threads get reasonable opportunities to acquire resources.</li>
+    <li>Avoid holding locks for unnecessarily long periods.</li>
+</ul>
+
+<h3>4. Difference between deadlock, livelock and starvation</h3>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>Deadlock</th>
+        <th>Livelock</th>
+        <th>Starvation</th>
+    </tr>
+    <tr>
+        <td>Thread state</td>
+        <td>Blocked/waiting</td>
+        <td>Actively executing</td>
+        <td>Waiting for resources or CPU</td>
+    </tr>
+    <tr>
+        <td>Progress</td>
+        <td>No progress</td>
+        <td>No actual progress</td>
+        <td>Some other threads progress</td>
+    </tr>
+    <tr>
+        <td>Main reason</td>
+        <td>Circular lock dependency</td>
+        <td>Continuous reaction</td>
+        <td>Unfair resource allocation</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td>Two threads waiting for each other's locks</td>
+        <td>Two people repeatedly moving aside</td>
+        <td>Normal customer waiting behind VIPs</td>
+    </tr>
+</table>
+
+<h2>5. How would you prevent deadlocks?</h2>
+
+<p>There are several techniques to prevent deadlocks in Java.</p>
+
+<h3>A. Maintain a consistent lock ordering</h3>
+
+<p>Always acquire locks in the same order.</p>
+
+<p><strong>Problem:</strong> Thread-1 acquires <code>lock1</code> then <code>lock2</code>, while Thread-2 acquires <code>lock2</code> then <code>lock1</code>.</p>
+
+<p><strong>Solution:</strong> Both threads should acquire <code>lock1</code> first and then <code>lock2</code>.</p>
+
+<h4>Java example</h4>
+
+<pre>
+public class LockOrderingDemo {
+
+    static Object lock1 = new Object();
+    static Object lock2 = new Object();
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            synchronized (lock1) {
+                // First acquire lock1
+                System.out.println("Thread-1 acquired lock1");
+
+                synchronized (lock2) {
+                    // Then acquire lock2
+                    System.out.println("Thread-1 acquired lock2");
+                }
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            synchronized (lock1) {
+                // Thread-2 also acquires lock1 first
+                System.out.println("Thread-2 acquired lock1");
+
+                synchronized (lock2) {
+                    // Then acquire lock2
+                    System.out.println("Thread-2 acquired lock2");
+                }
+            }
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+</pre>
+
+<strong>Possible output:</strong>
+
+<pre>
+Thread-1 acquired lock1
+Thread-1 acquired lock2
+Thread-2 acquired lock1
+Thread-2 acquired lock2
+</pre>
+
+<p><strong>Why does this prevent deadlock?</strong></p>
+
+<ol>
+    <li>Both threads follow the same lock acquisition order.</li>
+    <li>Thread-2 cannot hold <code>lock2</code> while waiting for <code>lock1</code>.</li>
+    <li>The circular waiting situation is avoided.</li>
+</ol>
+
+<h3>B. Use tryLock() with ReentrantLock</h3>
+
+<p>Instead of waiting indefinitely for a lock, use <code>tryLock()</code> with a timeout.</p>
+
+<h4>Java example</h4>
+
+<pre>
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class TryLockDemo {
+
+    static ReentrantLock lock1 = new ReentrantLock();
+    static ReentrantLock lock2 = new ReentrantLock();
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() ->
+            performTask(lock1, lock2)
+        );
+
+        Thread t2 = new Thread(() ->
+            performTask(lock2, lock1)
+        );
+
+        t1.start();
+        t2.start();
+    }
+
+    static void performTask(
+            ReentrantLock first,
+            ReentrantLock second) {
+
+        try {
+
+            while (true) {
+                // Keep retrying until both locks are acquired
+                // or the thread is interrupted
+
+                if (first.tryLock(1, TimeUnit.SECONDS)) {
+                    // Try to acquire the first lock
+                    // Wait for at most 1 second
+
+                    try {
+
+                        if (second.tryLock(1, TimeUnit.SECONDS)) {
+                            // Try to acquire the second lock
+                            // Wait for at most 1 second
+
+                            try {
+                                System.out.println(
+                                    Thread.currentThread().getName()
+                                    + " completed task"
+                                );
+
+                                return;
+                                // Task completed; exit the method
+
+                            } finally {
+                                second.unlock();
+                                // Release the second lock
+                            }
+                        }
+
+                    } finally {
+                        first.unlock();
+                        // Always release the first lock
+                    }
+                }
+
+                System.out.println(
+                    Thread.currentThread().getName()
+                    + " retrying..."
+                );
+            }
+
+        } catch (InterruptedException e) {
+            // Handle interruption while waiting for a lock
+            Thread.currentThread().interrupt();
+        }
+    }
+}
+</pre>
+
+<strong>Explanation:</strong>
+
+<ol>
+    <li><code>tryLock()</code> attempts to acquire a lock.</li>
+    <li>It waits for at most the specified timeout.</li>
+    <li>If the second lock is unavailable, the thread releases the first lock.</li>
+    <li>It retries instead of holding one lock indefinitely while waiting for another.</li>
+</ol>
+
+<p>This reduces the risk of deadlock. However, an unlimited retry loop can cause excessive retries or livelock-like behavior.</p>
+
+<h3>C. Avoid unnecessary nested locks</h3>
+
+<p>Do not acquire multiple locks when they are not required.</p>
+
+<p>Keep synchronized blocks small and avoid calling external services or performing slow operations while holding locks.</p>
+
+<h4>Example: Avoid holding a lock during a slow operation</h4>
+
+<strong>Incorrect approach:</strong>
+
+<pre>
+synchronized (lock) {
+
+    updateDatabase();
+    // Slow database operation while holding the lock
+
+    updateSharedData();
+}
+</pre>
+
+<p>Other threads must wait for the entire database operation to finish before acquiring the lock.</p>
+
+<strong>Better approach:</strong>
+
+<pre>
+updateDatabase();
+// Perform the slow operation outside the lock
+
+synchronized (lock) {
+
+    updateSharedData();
+    // Keep only the required shared-data update protected
+}
+</pre>
+
+<p><strong>Important:</strong> This approach is appropriate only when the database operation does not need to be atomic with the shared-data update. If both operations must happen as one transaction, use an appropriate transaction and concurrency-control strategy.</p>
+
+<h3>D. Use interruptible locking</h3>
+
+<p><code>ReentrantLock.lockInterruptibly()</code> allows a thread waiting for a lock to respond to interruption, so it can abandon the attempt when cancellation is requested.</p>
+
+<h4>Java example</h4>
+
+<pre>
+import java.util.concurrent.locks.ReentrantLock;
+
+public class InterruptibleLockDemo {
+
+    static ReentrantLock lock = new ReentrantLock();
+
+    public static void main(String[] args) throws Exception {
+
+        // Main thread acquires the lock first
+        lock.lock();
+
+        Thread t1 = new Thread(() -> {
+
+            try {
+                System.out.println("Thread-1 waiting for lock");
+
+                // Wait for the lock, but allow interruption
+                lock.lockInterruptibly();
+
+                try {
+                    System.out.println("Thread-1 acquired lock");
+                } finally {
+                    lock.unlock();
+                    // Release lock if acquired
+                }
+
+            } catch (InterruptedException e) {
+
+                // Thread was interrupted while waiting
+                System.out.println("Thread-1 interrupted");
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        t1.start();
+
+        // Give Thread-1 time to start waiting for the lock
+        Thread.sleep(500);
+
+        // Interrupt Thread-1 while it is waiting
+        t1.interrupt();
+
+        // Release the lock held by main
+        lock.unlock();
+
+        t1.join();
+
+        System.out.println("Main thread completed");
+    }
+}
+</pre>
+
+<strong>Possible output:</strong>
+
+<pre>
+Thread-1 waiting for lock
+Thread-1 interrupted
+Main thread completed
+</pre>
+
+<p><strong>Explanation:</strong></p>
+
+<ol>
+    <li>Main thread acquires the lock.</li>
+    <li>Thread-1 calls <code>lockInterruptibly()</code>.</li>
+    <li>Thread-1 waits because the main thread owns the lock.</li>
+    <li>Main thread interrupts Thread-1.</li>
+    <li>Thread-1 receives <code>InterruptedException</code> and stops waiting.</li>
+    <li>Main thread releases the lock.</li>
+</ol>
+
+<p><strong>Important:</strong> Interruptible locking allows cancellation of a waiting thread. It does not automatically prevent every deadlock; the application must handle interruption correctly.</p>
+
+<h3>6. Bounded retry strategy and backoff</h3>
+
+<p>In the previous <code>TryLockDemo</code>, we used:</p>
+
+<pre>
+while (true) {
+    // Keep retrying until both locks are acquired
+}
+</pre>
+
+<p><strong>What does while(true) mean?</strong></p>
+
+<ul>
+    <li><code>true</code> is always true.</li>
+    <li>Therefore, the loop continues indefinitely unless a <code>break</code>, <code>return</code>, or exception ends it.</li>
+    <li>In our example, <code>return</code> exits when both locks are acquired and the task is completed.</li>
+    <li>If the locks are never acquired, the thread can keep retrying forever.</li>
+</ul>
+
+<p><strong>Problem:</strong> Unlimited retries can waste CPU time and repeatedly compete for locks.</p>
+
+<p><strong>Solution:</strong> Limit the number of retries and introduce a delay between attempts.</p>
+
+<h4>Improved Java example: Bounded retries with backoff</h4>
+
+<pre>
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class BoundedRetryDemo {
+
+    static ReentrantLock lock1 = new ReentrantLock();
+    static ReentrantLock lock2 = new ReentrantLock();
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() ->
+            performTask(lock1, lock2)
+        );
+
+        Thread t2 = new Thread(() ->
+            performTask(lock2, lock1)
+        );
+
+        t1.start();
+        t2.start();
+    }
+
+    static void performTask(
+            ReentrantLock first,
+            ReentrantLock second) {
+
+        int maxAttempts = 5;
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            // Retry at most 5 times
+
+            boolean firstAcquired = false;
+            boolean secondAcquired = false;
+
+            try {
+
+                // Try to acquire the first lock
+                firstAcquired = first.tryLock(
+                    500, TimeUnit.MILLISECONDS
+                );
+
+                if (firstAcquired) {
+
+                    try {
+
+                        // Try to acquire the second lock
+                        secondAcquired = second.tryLock(
+                            500, TimeUnit.MILLISECONDS
+                        );
+
+                        if (secondAcquired) {
+
+                            System.out.println(
+                                Thread.currentThread().getName()
+                                + " completed task"
+                            );
+
+                            return;
+                            // Both locks acquired; task completed
+                        }
+
+                    } finally {
+
+                        if (secondAcquired) {
+                            second.unlock();
+                            // Release second lock if acquired
+                        }
+                    }
+                }
+
+            } catch (InterruptedException e) {
+
+                // Stop retrying if interrupted
+                Thread.currentThread().interrupt();
+                return;
+
+            } finally {
+
+                if (firstAcquired) {
+                    first.unlock();
+                    // Release first lock if acquired
+                }
+            }
+
+            System.out.println(
+                Thread.currentThread().getName()
+                + " attempt " + attempt + " failed"
+            );
+
+            try {
+
+                // Backoff: wait before the next attempt
+                Thread.sleep(200 * attempt);
+
+            } catch (InterruptedException e) {
+
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+
+        System.out.println(
+            Thread.currentThread().getName()
+            + " could not acquire both locks after 5 attempts"
+        );
+    }
+}
+</pre>
+
+<strong>Step-by-step explanation:</strong>
+
+<ol>
+    <li><code>maxAttempts = 5</code> means the thread can try at most five times.</li>
+    <li><code>tryLock(500, TimeUnit.MILLISECONDS)</code> waits for at most 500 milliseconds to acquire a lock.</li>
+    <li>If both locks are acquired, the task is completed.</li>
+    <li>If the second lock cannot be acquired, the first lock is released.</li>
+    <li><code>Thread.sleep(200 * attempt)</code> introduces an increasing delay between attempts.</li>
+    <li>If all five attempts fail, the thread stops retrying.</li>
+</ol>
+
+<strong>Backoff delay example:</strong>
+
+<table>
+    <tr>
+        <th>Attempt</th>
+        <th>Backoff delay</th>
+    </tr>
+    <tr><td>1</td><td>200 milliseconds</td></tr>
+    <tr><td>2</td><td>400 milliseconds</td></tr>
+    <tr><td>3</td><td>600 milliseconds</td></tr>
+    <tr><td>4</td><td>800 milliseconds</td></tr>
+    <tr><td>5</td><td>1000 milliseconds</td></tr>
+</table>
+
+<p><strong>Why use backoff?</strong></p>
+
+<ul>
+    <li>Prevents continuous lock acquisition attempts.</li>
+    <li>Reduces unnecessary CPU usage.</li>
+    <li>Gives other threads an opportunity to acquire resources.</li>
+    <li>Reduces repeated competition between threads.</li>
+</ul>
+
+<p><strong>Production note:</strong> For production systems, consider randomized backoff, a sensible overall timeout, cancellation handling and logging. Bounded retries prevent infinite retries, but they do not guarantee that the task will succeed.</p>
+
+<h3>7. Comparison of deadlock prevention techniques</h3>
+
+<table>
+    <tr>
+        <th>Technique</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td>Consistent lock ordering</td>
+        <td>Prevents circular waiting.</td>
+    </tr>
+    <tr>
+        <td><code>tryLock()</code></td>
+        <td>Avoids waiting indefinitely for a lock.</td>
+    </tr>
+    <tr>
+        <td>Avoid nested locks</td>
+        <td>Reduces lock dependencies.</td>
+    </tr>
+    <tr>
+        <td><code>lockInterruptibly()</code></td>
+        <td>Allows cancellation while waiting for a lock.</td>
+    </tr>
+    <tr>
+        <td>Bounded retries and backoff</td>
+        <td>Prevents unlimited retries and reduces contention.</td>
+    </tr>
+</table>
+
+<h3>8. Interview points to remember</h3>
+
+<ol>
+    <li><strong>Deadlock:</strong> Threads wait indefinitely for locks held by each other.</li>
+    <li><strong>Livelock:</strong> Threads remain active but cannot make progress because they continuously react to each other.</li>
+    <li><strong>Starvation:</strong> A thread does not get sufficient access to CPU or shared resources.</li>
+    <li>Use consistent lock ordering to prevent circular waiting.</li>
+    <li>Use <code>tryLock()</code> with a timeout to avoid indefinite lock waiting.</li>
+    <li>Avoid unnecessary nested locks.</li>
+    <li>Keep critical sections small.</li>
+    <li>Use bounded retries and backoff when implementing retry mechanisms.</li>
+</ol>
+
+<p><strong>Interview-ready answer:</strong></p>
+
+<p>Deadlock occurs when threads wait indefinitely for locks held by each other. Livelock occurs when threads continuously respond to each other without making progress. Starvation occurs when a thread is repeatedly denied access to CPU or shared resources.</p>
+
+<p>We can prevent deadlocks by maintaining consistent lock ordering, avoiding unnecessary nested locks, using <code>tryLock()</code> with timeouts, supporting interruption, and keeping critical sections small.</p>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
