@@ -88,7 +88,7 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q71" class="completed"><span class="number">71.</span>What is a race condition, and how can you prevent it?</a>
 <a href="#q72" class="completed"><span class="number">72.</span>What is the difference between `volatile` and `synchronized`?</a>
 <a href="#q73" class="completed"><span class="number">73.</span>Explain deadlock, livelock and starvation. How would you prevent deadlocks?</a>
-<a href="#q74"><span class="number">74.</span>Compare `synchronized` and `ReentrantLock`.</a>
+<a href="#q74" class="completed"><span class="number">74.</span>Compare `synchronized` and `ReentrantLock`.</a>
 <a href="#q75"><span class="number">75.</span>What is the Java Memory Model? Explain happens-before.</a>
 <a href="#q76"><span class="number">76.</span>What are atomic classes and compare-and-set operations?</a>
 <a href="#q77"><span class="number">77.</span>Explain `ExecutorService`, thread pools and task submission.</a>
@@ -19607,7 +19607,493 @@ public class BoundedRetryDemo {
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Compare synchronized and ReentrantLock</h2>
+
+
+<p>
+    <b>Both <code>synchronized</code> and <code>ReentrantLock</code>
+    make sure that only one thread at a time can use a shared resource.</b>
+</p>
+
+<p>Think of a <b>bathroom with one key</b>.</p>
+
+<ul>
+    <li>If Thread-1 enters the bathroom, Thread-2 must wait.</li>
+    <li>When Thread-1 leaves and releases the key, Thread-2 can enter.</li>
+    <li>This prevents both threads from using the same resource at the same time.</li>
+</ul>
+
+<p><b>In Java:</b></p>
+
+<ul>
+    <li>
+        <code>synchronized</code>: Java automatically manages the lock.
+        When the thread exits the synchronized block or method, the lock
+        is released.
+    </li>
+    <li>
+        <code>ReentrantLock</code>: We manually acquire the lock using
+        <code>lock()</code> and release it using <code>unlock()</code>.
+    </li>
+</ul>
+
+<p><b>What is mutual exclusion?</b></p>
+
+<p>
+    It simply means: <i>Only one thread is allowed to access a protected
+    section of code at a time.</i>
+</p>
+
+<blockquote>
+    <code>synchronized</code> and <code>ReentrantLock</code> prevent
+    multiple threads from accessing the same shared resource
+    simultaneously. They allow one thread to work with the resource
+    while other threads wait.
+</blockquote>
+
+
+<h3>1. Key Differences</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Feature</th>
+        <th>synchronized</th>
+        <th>ReentrantLock</th>
+    </tr>
+    <tr>
+        <td>Type</td>
+        <td>Java keyword</td>
+        <td>Class from java.util.concurrent.locks</td>
+    </tr>
+    <tr>
+        <td>Lock management</td>
+        <td>Automatic</td>
+        <td>Manual (lock() / unlock())</td>
+    </tr>
+    <tr>
+        <td>Lock release</td>
+        <td>Automatically released when block or method exits</td>
+        <td>Must release explicitly, usually in finally</td>
+    </tr>
+    <tr>
+        <td>Try to acquire lock</td>
+        <td>Not directly supported</td>
+        <td>tryLock()</td>
+    </tr>
+    <tr>
+        <td>Timeout</td>
+        <td>Not directly supported</td>
+        <td>tryLock(timeout, unit)</td>
+    </tr>
+    <tr>
+        <td>Interruptible waiting</td>
+        <td>No direct interruptible lock acquisition</td>
+        <td>lockInterruptibly()</td>
+    </tr>
+    <tr>
+        <td>Fairness</td>
+        <td>No fairness guarantee</td>
+        <td>Optional fair lock</td>
+    </tr>
+    <tr>
+        <td>Multiple conditions</td>
+        <td>wait(), notify(), notifyAll()</td>
+        <td>Multiple Condition objects</td>
+    </tr>
+    <tr>
+        <td>Reentrant</td>
+        <td>Yes</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Complexity</td>
+        <td>Simple</td>
+        <td>More flexible</td>
+    </tr>
+</table>
+
+<h3>2. Example using synchronized</h3>
+
+<pre>
+public class SynchronizedDemo {
+
+    private int count = 0;
+
+    // Only one thread can execute this method
+    // on the same object at a time.
+    public synchronized void increment() {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        SynchronizedDemo demo = new SynchronizedDemo();
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                demo.increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                demo.increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        // Wait for both threads to finish
+        t1.join();
+        t2.join();
+
+        System.out.println("Count: " + demo.getCount());
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+<pre>
+Count: 2000
+</pre>
+
+<h3>3. Example using ReentrantLock</h3>
+
+<pre>
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ReentrantLockDemo {
+
+    private int count = 0;
+
+    private final ReentrantLock lock = new ReentrantLock();
+
+    public void increment() {
+
+        // Acquire the lock
+        lock.lock();
+
+        try {
+            // Only one thread can execute this section
+            count++;
+        } finally {
+            // Always release the lock
+            lock.unlock();
+        }
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        ReentrantLockDemo demo = new ReentrantLockDemo();
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                demo.increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                demo.increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        // Wait for both threads to finish
+        t1.join();
+        t2.join();
+
+        System.out.println("Count: " + demo.getCount());
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+<pre>
+Count: 2000
+</pre>
+
+<h3>4. Special Features of ReentrantLock</h3>
+
+
+<h4>A. tryLock() – Don't wait indefinitely</h4>
+
+<p>
+    Normally, when a thread calls <code>lock()</code>, it waits until
+    the lock becomes available.
+</p>
+
+<p>
+    But <code>tryLock()</code> behaves differently:
+</p>
+
+<ul>
+    <li>If the lock is available, it acquires the lock immediately.</li>
+    <li>If another thread holds the lock, it returns <code>false</code> immediately.</li>
+    <li>The thread does not wait for the lock.</li>
+</ul>
+
+<h4>Complete Java Example</h4>
+
+<pre>
+import java.util.concurrent.locks.ReentrantLock;
+
+public class TryLockDemo {
+
+    static ReentrantLock lock = new ReentrantLock();
+
+    public static void main(String[] args) {
+
+        // Thread-1 acquires the lock first
+        Thread t1 = new Thread(() -> {
+
+            lock.lock();
+
+            try {
+                System.out.println("Thread-1 acquired the lock");
+
+                // Hold the lock for 3 seconds
+                Thread.sleep(3000);
+
+                System.out.println("Thread-1 releasing the lock");
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+
+            } finally {
+                // Release the lock
+                lock.unlock();
+            }
+
+        }, "Thread-1");
+
+
+        // Thread-2 tries to acquire the same lock
+        Thread t2 = new Thread(() -> {
+
+            System.out.println(
+                "Thread-2 trying to acquire the lock"
+            );
+
+            // Try to acquire the lock without waiting
+            if (lock.tryLock()) {
+
+                try {
+                    System.out.println(
+                        "Thread-2 acquired the lock"
+                    );
+
+                } finally {
+                    lock.unlock();
+                }
+
+            } else {
+                // Lock is already held by Thread-1
+                System.out.println(
+                    "Thread-2 could not acquire the lock"
+                );
+            }
+
+        }, "Thread-2");
+
+
+        // Start Thread-1
+        t1.start();
+
+        try {
+            // Give Thread-1 time to acquire the lock
+            Thread.sleep(500);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Start Thread-2
+        t2.start();
+    }
+}
+</pre>
+
+<h4>Expected Output</h4>
+
+<pre>
+Thread-1 acquired the lock
+Thread-2 trying to acquire the lock
+Thread-2 could not acquire the lock
+Thread-1 releasing the lock
+</pre>
+
+<h4>Step-by-Step Execution</h4>
+
+<ol>
+    <li>
+        <b>Thread-1 starts:</b>
+        <p>It calls <code>lock.lock()</code> and acquires the lock.</p>
+    </li>
+    <li>
+        <b>Thread-1 sleeps for 3 seconds:</b>
+        <p>
+            It sleeps but continues holding the lock. Remember,
+            <code>Thread.sleep()</code> does not release a lock.
+        </p>
+    </li>
+    <li>
+        <b>Thread-2 starts:</b>
+        <p>
+            It calls <code>lock.tryLock()</code> to check whether
+            the lock is available.
+        </p>
+    </li>
+    <li>
+        <b>Lock is unavailable:</b>
+        <p>
+            Thread-1 still owns the lock, so <code>tryLock()</code>
+            returns <code>false</code> immediately. Thread-2 does not wait.
+        </p>
+    </li>
+    <li>
+        <b>Thread-1 releases the lock:</b>
+        <p>
+            After 3 seconds, Thread-1 executes <code>lock.unlock()</code>.
+        </p>
+    </li>
+</ol>
+
+<h4>Difference Between lock() and tryLock()</h4>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>lock()</th>
+        <th>tryLock()</th>
+    </tr>
+    <tr>
+        <td>Waits until the lock is available.</td>
+        <td>Does not wait if the lock is unavailable.</td>
+    </tr>
+    <tr>
+        <td>Acquires the lock when available.</td>
+        <td>Returns true or false.</td>
+    </tr>
+    <tr>
+        <td>No immediate failure result.</td>
+        <td>Can continue if the lock is unavailable.</td>
+    </tr>
+</table>
+
+<h4>Remember for Interviews</h4>
+
+<p>
+    <code>tryLock()</code> allows a thread to attempt acquiring a lock
+    without waiting. If the lock is unavailable, the thread can perform
+    another task, retry later, or exit.
+</p>
+
+
+<h4>B. lockInterruptibly() – Allow interruption while waiting</h4>
+
+<p>
+    A thread waiting to acquire the lock can be interrupted.
+</p>
+
+<pre>
+try {
+    lock.lockInterruptibly();
+
+    try {
+        System.out.println("Lock acquired");
+    } finally {
+        lock.unlock();
+    }
+
+} catch (InterruptedException e) {
+    System.out.println("Thread interrupted while waiting");
+
+    // Restore the interrupted status
+    Thread.currentThread().interrupt();
+}
+</pre>
+
+<h4>C. Fair Lock – Give waiting threads a fair opportunity</h4>
+
+<pre>
+// true enables fair lock ordering
+ReentrantLock lock = new ReentrantLock(true);
+</pre>
+
+<h3>5. When Should You Use Which?</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Scenario</th>
+        <th>Recommended</th>
+    </tr>
+    <tr>
+        <td>Simple critical section</td>
+        <td>synchronized</td>
+    </tr>
+    <tr>
+        <td>Simple shared counter</td>
+        <td>synchronized</td>
+    </tr>
+    <tr>
+        <td>Need timeout while acquiring lock</td>
+        <td>ReentrantLock</td>
+    </tr>
+    <tr>
+        <td>Need interruptible lock acquisition</td>
+        <td>ReentrantLock</td>
+    </tr>
+    <tr>
+        <td>Need fair lock</td>
+        <td>ReentrantLock</td>
+    </tr>
+    <tr>
+        <td>Need multiple condition queues</td>
+        <td>ReentrantLock</td>
+    </tr>
+</table>
+
+<h3>6. Interview Answer</h3>
+
+<p>
+    <b>Question: What is the difference between synchronized and ReentrantLock?</b>
+</p>
+
+<p>
+    synchronized is a Java keyword that provides automatic lock
+    management and mutual exclusion. ReentrantLock is a class that
+    provides explicit lock management with additional features such
+    as tryLock(), timed locking, interruptible locking, fairness and
+    multiple condition variables.
+</p>
+
+<p>
+    For simple synchronization, I prefer synchronized. When advanced
+    locking features are required, I use ReentrantLock.
+</p>
+
+<h3>Remember</h3>
+
+<p>
+    Both are reentrant. A thread that already owns the same lock can
+    acquire it again without blocking itself. The thread must release
+    each acquisition before another thread can acquire the lock.
+</p>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
