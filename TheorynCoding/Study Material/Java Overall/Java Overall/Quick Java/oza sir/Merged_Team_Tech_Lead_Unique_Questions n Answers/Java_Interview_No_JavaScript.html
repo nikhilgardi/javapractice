@@ -18591,11 +18591,229 @@ public class LivelockDemo {
 
 <strong>How to prevent livelock?</strong>
 
+
+<h3>How to prevent livelock?</h3>
+
 <ul>
-    <li>Introduce randomized backoff or different retry delays.</li>
-    <li>Avoid both threads following exactly the same retry strategy.</li>
-    <li>Use a clear priority or coordination mechanism.</li>
+    <li>
+        <strong>1. Introduce randomized backoff or different retry delays.</strong>
+
+        <p>Instead of retrying immediately, make each thread wait for a random amount of time before trying again.</p>
+
+        <strong>Java example:</strong>
+
+        <pre>
+import java.util.concurrent.ThreadLocalRandom;
+
+public class RandomBackoffDemo {
+
+    public static void main(String[] args) throws InterruptedException {
+
+        // Thread-1 waits for a random time
+        Thread t1 = new Thread(() -> {
+            try {
+                int delay = ThreadLocalRandom.current()
+                        .nextInt(200, 501);
+
+                System.out.println("Thread-1 waiting: " + delay + " ms");
+
+                Thread.sleep(delay);
+
+                System.out.println("Thread-1 retrying...");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        // Thread-2 waits for a different random time
+        Thread t2 = new Thread(() -> {
+            try {
+                int delay = ThreadLocalRandom.current()
+                        .nextInt(200, 501);
+
+                System.out.println("Thread-2 waiting: " + delay + " ms");
+
+                Thread.sleep(delay);
+
+                System.out.println("Thread-2 retrying...");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+        </pre>
+
+        <p><strong>Explanation:</strong></p>
+        <ul>
+            <li><code>nextInt(200, 501)</code> generates a random delay between 200 and 500 milliseconds.</li>
+            <li><code>Thread.sleep(delay)</code> pauses the current thread.</li>
+            <li>Both threads are less likely to retry at exactly the same time.</li>
+        </ul>
+    </li>
+
+    <li>
+        <strong>2. Avoid both threads following exactly the same retry strategy.</strong>
+
+        <p>Give different retry delays to different threads.</p>
+
+        <strong>Java example:</strong>
+
+        <pre>
+public class DifferentRetryDemo {
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> retryTask(200));
+
+        Thread t2 = new Thread(() -> retryTask(700));
+
+        t1.start();
+        t2.start();
+    }
+
+    static void retryTask(int delay) {
+
+        for (int attempt = 1; attempt <= 3; attempt++) {
+
+            try {
+                System.out.println(
+                    Thread.currentThread().getName()
+                    + " waiting for " + delay + " ms"
+                );
+
+                Thread.sleep(delay);
+
+                System.out.println(
+                    Thread.currentThread().getName()
+                    + " retrying: Attempt " + attempt
+                );
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
+}
+        </pre>
+
+        <p><strong>Explanation:</strong></p>
+        <ul>
+            <li>Thread-1 waits for 200 milliseconds.</li>
+            <li>Thread-2 waits for 700 milliseconds.</li>
+            <li>Both threads do not follow the same retry timing.</li>
+            <li>This reduces repeated simultaneous retries.</li>
+        </ul>
+    </li>
+
+    <li>
+        <strong>3. Use a clear priority or coordination mechanism.</strong>
+
+        <p>Instead of allowing both threads to repeatedly give way to each other, coordinate which thread should execute first.</p>
+
+        <strong>Java example:</strong>
+
+        <pre>
+public class ThreadCoordinationDemo {
+
+    static Object lock = new Object();
+
+    static boolean thread1Completed = false;
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            synchronized (lock) {
+
+                System.out.println("Thread-1 executing task");
+
+                // Thread-1 completes its work
+                thread1Completed = true;
+
+                // Inform the waiting thread
+                lock.notifyAll();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            synchronized (lock) {
+
+                // Wait until Thread-1 completes
+                while (!thread1Completed) {
+
+                    try {
+                        System.out.println(
+                            "Thread-2 waiting for Thread-1"
+                        );
+
+                        lock.wait();
+
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+
+                System.out.println("Thread-2 executing task");
+            }
+        });
+
+        // Start Thread-2 first to demonstrate waiting
+        t2.start();
+
+        // Then start Thread-1
+        t1.start();
+    }
+}
+        </pre>
+
+        <p><strong>Possible output:</strong></p>
+
+        <pre>
+Thread-2 waiting for Thread-1
+Thread-1 executing task
+Thread-2 executing task
+        </pre>
+
+        <p><strong>Explanation:</strong></p>
+        <ul>
+            <li>Thread-2 waits until Thread-1 completes its task.</li>
+            <li>Thread-1 sets <code>thread1Completed = true</code>.</li>
+            <li><code>notifyAll()</code> wakes the waiting thread.</li>
+            <li>Thread-2 checks the condition again and proceeds.</li>
+        </ul>
+    </li>
 </ul>
+
+<h3>Remember</h3>
+
+<table>
+    <tr>
+        <th>Technique</th>
+        <th>Approach</th>
+    </tr>
+    <tr>
+        <td>Randomized backoff</td>
+        <td>Wait for a random duration before retrying.</td>
+    </tr>
+    <tr>
+        <td>Different retry strategy</td>
+        <td>Give threads different retry timings.</td>
+    </tr>
+    <tr>
+        <td>Coordination</td>
+        <td>Control which thread executes first.</td>
+    </tr>
+</table>
+
+<p><strong>Interview point:</strong> Livelock can be reduced by introducing randomized backoff, different retry strategies, and proper thread coordination so that threads do not continuously react to each other without making progress.</p>
+
 
 <h3>3. Starvation</h3>
 
@@ -18661,12 +18879,188 @@ public class StarvationDemo {
 
 <strong>How to prevent starvation?</strong>
 
+
+<h3>How to Prevent Starvation</h3>
+
 <ul>
     <li>Avoid unnecessary priority differences.</li>
     <li>Use fair locks when fairness is required.</li>
     <li>Ensure threads get reasonable opportunities to acquire resources.</li>
     <li>Avoid holding locks for unnecessarily long periods.</li>
 </ul>
+
+<h4>1. Avoid Unnecessary Priority Differences</h4>
+
+<p>
+    Give threads the same priority when there is no genuine reason
+    to favor one thread over another.
+</p>
+
+<pre>
+public class EqualPriorityDemo {
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+            while (true) {
+                System.out.println("Thread-1 running");
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            while (true) {
+                System.out.println("Thread-2 running");
+            }
+        });
+
+        // Assign equal priority to both threads
+        t1.setPriority(Thread.NORM_PRIORITY);
+        t2.setPriority(Thread.NORM_PRIORITY);
+
+        t1.start();
+        t2.start();
+    }
+}
+</pre>
+
+<h4>2. Use Fair Locks</h4>
+
+<p>
+    A fair ReentrantLock gives waiting threads an opportunity to
+    acquire the lock in approximately the order they requested it.
+</p>
+
+<pre>
+import java.util.concurrent.locks.ReentrantLock;
+
+public class FairLockDemo {
+
+    // true enables fair lock ordering
+    static ReentrantLock lock = new ReentrantLock(true);
+
+    public static void main(String[] args) {
+
+        Runnable task = () -> {
+
+            lock.lock();
+
+            try {
+                System.out.println(
+                    Thread.currentThread().getName()
+                    + " acquired the lock"
+                );
+            } finally {
+                lock.unlock();
+            }
+        };
+
+        new Thread(task, "Thread-1").start();
+        new Thread(task, "Thread-2").start();
+        new Thread(task, "Thread-3").start();
+    }
+}
+</pre>
+
+<h4>3. Ensure Threads Get Opportunities to Acquire Resources</h4>
+
+<p>
+    Use a fair lock so that threads waiting for a shared resource
+    get a reasonable opportunity to acquire it.
+</p>
+
+<pre>
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ResourceAccessDemo {
+
+    static ReentrantLock lock = new ReentrantLock(true);
+
+    public static void main(String[] args) {
+
+        Runnable task = () -> {
+
+            lock.lock();
+
+            try {
+                System.out.println(
+                    Thread.currentThread().getName()
+                    + " using resource"
+                );
+            } finally {
+                lock.unlock();
+            }
+        };
+
+        for (int i = 1; i <= 3; i++) {
+            new Thread(task, "Thread-" + i).start();
+        }
+    }
+}
+</pre>
+
+<h4>4. Avoid Holding Locks for Unnecessarily Long Periods</h4>
+
+<p>
+    Keep the critical section short. Perform operations that do not
+    require the lock outside the synchronized block.
+</p>
+
+<pre>
+public class ShortLockDemo {
+
+    static Object lock = new Object();
+
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread(() -> {
+
+            // Work that does not require the lock
+            System.out.println("Thread-1 doing independent work");
+
+            synchronized (lock) {
+                // Keep the critical section short
+                System.out.println("Thread-1 using shared resource");
+            }
+
+            // Continue independent work outside the lock
+            System.out.println("Thread-1 completed");
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            System.out.println("Thread-2 doing independent work");
+
+            synchronized (lock) {
+                System.out.println("Thread-2 using shared resource");
+            }
+
+            System.out.println("Thread-2 completed");
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+</pre>
+
+<h4>Important Notes</h4>
+
+<ul>
+    <li>Equal thread priorities do not guarantee equal CPU time.</li>
+    <li>Java thread priorities are scheduling hints, not guarantees.</li>
+    <li>A fair lock improves lock-acquisition fairness, but does not guarantee CPU scheduling fairness.</li>
+    <li>Keeping critical sections short reduces the time other threads must wait.</li>
+</ul>
+
+<h4>Interview Answer</h4>
+
+<p>
+    Starvation can be reduced by avoiding unnecessary thread priority
+    differences, using fair locks, ensuring reasonable resource access,
+    and keeping critical sections short. Fair locks help prevent a thread
+    from being repeatedly bypassed by other lock contenders.
+</p>
+
 
 <h3>4. Difference between deadlock, livelock and starvation</h3>
 
