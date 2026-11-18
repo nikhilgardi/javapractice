@@ -89,7 +89,7 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q72" class="completed"><span class="number">72.</span>What is the difference between `volatile` and `synchronized`?</a>
 <a href="#q73" class="completed"><span class="number">73.</span>Explain deadlock, livelock and starvation. How would you prevent deadlocks?</a>
 <a href="#q74" class="completed"><span class="number">74.</span>Compare `synchronized` and `ReentrantLock`.</a>
-<a href="#q75"><span class="number">75.</span>What is the Java Memory Model? Explain happens-before.</a>
+<a href="#q75" class="completed"><span class="number">75.</span>What is the Java Memory Model? Explain happens-before.</a>
 <a href="#q76"><span class="number">76.</span>What are atomic classes and compare-and-set operations?</a>
 <a href="#q77"><span class="number">77.</span>Explain `ExecutorService`, thread pools and task submission.</a>
 <a href="#q78"><span class="number">78.</span>Compare `Future` and `CompletableFuture`.</a>
@@ -20003,29 +20003,192 @@ Thread-1 releasing the lock
 </p>
 
 
+
 <h4>B. lockInterruptibly() – Allow interruption while waiting</h4>
 
 <p>
-    A thread waiting to acquire the lock can be interrupted.
+    Normally, when a thread calls <code>lock()</code>, it waits until
+    the lock becomes available.
 </p>
 
+<p>
+    With <code>lockInterruptibly()</code>, another thread can interrupt
+    the waiting thread. The waiting thread then stops waiting and
+    receives an <code>InterruptedException</code>.
+</p>
+
+<h4>Complete Java Example</h4>
+
 <pre>
-try {
-    lock.lockInterruptibly();
+import java.util.concurrent.locks.ReentrantLock;
 
-    try {
-        System.out.println("Lock acquired");
-    } finally {
-        lock.unlock();
+public class LockInterruptiblyDemo {
+
+    static ReentrantLock lock = new ReentrantLock();
+
+    public static void main(String[] args) {
+
+        // Thread-1 acquires the lock first
+        Thread t1 = new Thread(() -> {
+
+            lock.lock();
+
+            try {
+                System.out.println("Thread-1 acquired the lock");
+
+                // Hold the lock for 5 seconds
+                Thread.sleep(5000);
+
+                System.out.println("Thread-1 releasing the lock");
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+
+            } finally {
+                lock.unlock();
+            }
+
+        }, "Thread-1");
+
+
+        // Thread-2 tries to acquire the same lock
+        Thread t2 = new Thread(() -> {
+
+            try {
+                System.out.println(
+                    "Thread-2 waiting for the lock"
+                );
+
+                // Wait for the lock, but allow interruption
+                lock.lockInterruptibly();
+
+                try {
+                    System.out.println(
+                        "Thread-2 acquired the lock"
+                    );
+
+                } finally {
+                    lock.unlock();
+                }
+
+            } catch (InterruptedException e) {
+
+                System.out.println(
+                    "Thread-2 interrupted while waiting"
+                );
+
+                // Restore the interrupted status
+                Thread.currentThread().interrupt();
+            }
+
+        }, "Thread-2");
+
+
+        // Start Thread-1
+        t1.start();
+
+        try {
+            // Give Thread-1 time to acquire the lock
+            Thread.sleep(500);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Start Thread-2
+        t2.start();
+
+        try {
+            // Give Thread-2 time to start waiting
+            Thread.sleep(1000);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Interrupt Thread-2 while it is waiting
+        t2.interrupt();
     }
-
-} catch (InterruptedException e) {
-    System.out.println("Thread interrupted while waiting");
-
-    // Restore the interrupted status
-    Thread.currentThread().interrupt();
 }
 </pre>
+
+<h4>Expected Output</h4>
+
+<pre>
+Thread-1 acquired the lock
+Thread-2 waiting for the lock
+Thread-2 interrupted while waiting
+Thread-1 releasing the lock
+</pre>
+
+<h4>Step-by-Step Execution</h4>
+
+<ol>
+    <li>
+        <b>Thread-1 starts:</b>
+        <p>It calls <code>lock.lock()</code> and acquires the lock.</p>
+    </li>
+    <li>
+        <b>Thread-1 sleeps for 5 seconds:</b>
+        <p>It continues holding the lock while sleeping.</p>
+    </li>
+    <li>
+        <b>Thread-2 starts:</b>
+        <p>It calls <code>lock.lockInterruptibly()</code> and waits for the lock.</p>
+    </li>
+    <li>
+        <b>Main thread interrupts Thread-2:</b>
+        <p>
+            The main thread calls <code>t2.interrupt()</code>.
+            Thread-2 stops waiting and receives
+            <code>InterruptedException</code>.
+        </p>
+    </li>
+    <li>
+        <b>Thread-2 handles the interruption:</b>
+        <p>
+            It executes the catch block and does not acquire the lock.
+        </p>
+    </li>
+    <li>
+        <b>Thread-1 releases the lock:</b>
+        <p>After 5 seconds, Thread-1 executes <code>lock.unlock()</code>.</p>
+    </li>
+</ol>
+
+<h4>Important Methods</h4>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td><code>lock()</code></td>
+        <td>Waits until the lock becomes available.</td>
+    </tr>
+    <tr>
+        <td><code>lockInterruptibly()</code></td>
+        <td>Waits for the lock but allows interruption.</td>
+    </tr>
+    <tr>
+        <td><code>interrupt()</code></td>
+        <td>Requests interruption of a thread.</td>
+    </tr>
+    <tr>
+        <td><code>unlock()</code></td>
+        <td>Releases the lock.</td>
+    </tr>
+</table>
+
+<h4>Remember for Interviews</h4>
+
+<p>
+    <code>lockInterruptibly()</code> allows a thread waiting to acquire
+    a ReentrantLock to be interrupted. If interrupted, it throws
+    <code>InterruptedException</code> instead of continuing to wait.
+</p>
+
 
 <h4>C. Fair Lock – Give waiting threads a fair opportunity</h4>
 
@@ -20092,6 +20255,167 @@ ReentrantLock lock = new ReentrantLock(true);
     Both are reentrant. A thread that already owns the same lock can
     acquire it again without blocking itself. The thread must release
     each acquisition before another thread can acquire the lock.
+	
+	
+<h3>Reentrancy in synchronized and ReentrantLock</h3>
+
+<p>
+    Both <code>synchronized</code> and <code>ReentrantLock</code>
+    support reentrancy.
+</p>
+
+<p>
+    It means a thread that already owns a lock can acquire the same
+    lock again without blocking itself.
+</p>
+
+<h4>1. Example using synchronized</h4>
+
+<pre>
+public class SynchronizedReentrantDemo {
+
+    public synchronized void method1() {
+
+        System.out.println("Inside method1");
+
+        // Calling another synchronized method
+        method2();
+    }
+
+    public synchronized void method2() {
+
+        System.out.println("Inside method2");
+    }
+
+    public static void main(String[] args) {
+
+        SynchronizedReentrantDemo obj =
+                new SynchronizedReentrantDemo();
+
+        obj.method1();
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Inside method1
+Inside method2
+</pre>
+
+<p><b>How does it work?</b></p>
+
+<ol>
+    <li>Thread-1 calls <code>method1()</code> and acquires the object's lock.</li>
+    <li><code>method1()</code> calls <code>method2()</code>.</li>
+    <li><code>method2()</code> also requires the same object's lock.</li>
+    <li>Thread-1 already owns that lock, so it can enter <code>method2()</code> without blocking itself.</li>
+</ol>
+
+<h4>2. Example using ReentrantLock</h4>
+
+<pre>
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ReentrantLockDemo {
+
+    static ReentrantLock lock = new ReentrantLock();
+
+    public static void main(String[] args) {
+
+        // First lock acquisition
+        lock.lock();
+
+        try {
+            System.out.println("First lock acquired");
+
+            // Second lock acquisition by the same thread
+            lock.lock();
+
+            try {
+                System.out.println("Second lock acquired");
+
+            } finally {
+                // Release the second acquisition
+                lock.unlock();
+
+                System.out.println("Second lock released");
+            }
+
+        } finally {
+            // Release the first acquisition
+            lock.unlock();
+
+            System.out.println("First lock released");
+        }
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+First lock acquired
+Second lock acquired
+Second lock released
+First lock released
+</pre>
+
+<h4>How does ReentrantLock work?</h4>
+
+<ol>
+    <li>Thread-1 calls <code>lock.lock()</code> for the first time and acquires the lock.</li>
+    <li>The same thread calls <code>lock.lock()</code> again and acquires the same lock a second time.</li>
+    <li>Thread-1 calls <code>unlock()</code> once. The lock is still held by Thread-1.</li>
+    <li>Thread-1 calls <code>unlock()</code> again. Now the lock is fully released.</li>
+    <li>Another thread can acquire the lock after it is fully released.</li>
+</ol>
+
+<h4>Important: Lock Count</h4>
+
+<p>
+    ReentrantLock maintains a hold count for the owning thread.
+    Each successful <code>lock()</code> increases the count by one,
+    and each <code>unlock()</code> decreases it by one.
+</p>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Operation</th>
+        <th>Hold Count</th>
+    </tr>
+    <tr>
+        <td>First lock()</td>
+        <td>1</td>
+    </tr>
+    <tr>
+        <td>Second lock()</td>
+        <td>2</td>
+    </tr>
+    <tr>
+        <td>First unlock()</td>
+        <td>1</td>
+    </tr>
+    <tr>
+        <td>Second unlock()</td>
+        <td>0 – Lock released</td>
+    </tr>
+</table>
+
+<h4>Remember</h4>
+
+<p>
+    The owning thread can call <code>lock()</code> again on the same
+    <code>ReentrantLock</code>. It must call <code>unlock()</code>
+    the same number of times before another thread can acquire the lock.
+</p>
+
+<p>
+    <b>In short:</b> One thread can acquire the same lock multiple times,
+    but it must release every acquisition.
+</p>
+
 </p>
 </p>
 </div>
@@ -20102,7 +20426,293 @@ ReentrantLock lock = new ReentrantLock(true);
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>What is Java Memory Model (JMM)?</h2>
+
+<p>
+    The <b>Java Memory Model (JMM)</b> defines how threads interact
+    with shared memory in Java.
+</p>
+
+<p>In simple words, it explains:</p>
+
+<ul>
+    <li>How changes made by one thread become visible to other threads.</li>
+    <li>When one thread can see another thread's updated values.</li>
+    <li>How Java controls the ordering of operations between threads.</li>
+</ul>
+
+<h3>1. Why Do We Need JMM?</h3>
+
+<p>
+    Imagine two threads sharing a variable.
+</p>
+
+<pre>
+public class MemoryModelDemo {
+
+    static boolean running = true;
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+
+            while (running) {
+                // Keep running while running is true
+            }
+
+            System.out.println("Thread stopped");
+        });
+
+        t1.start();
+
+        Thread.sleep(1000);
+
+        // Main thread changes the shared variable
+        running = false;
+
+        System.out.println("Main thread changed running to false");
+    }
+}
+</pre>
+
+<p><b>What is the problem?</b></p>
+
+<ul>
+    <li>Main thread changes <code>running</code> to <code>false</code>.</li>
+    <li>Thread-1 may not see this updated value.</li>
+    <li>Thread-1 might continue running.</li>
+</ul>
+
+<p>
+    This happens because there is no guarantee that the variable update
+    made by one thread will become visible to another thread.
+</p>
+
+<p>
+    <b>Solution:</b> Use <code>volatile</code>, <code>synchronized</code>,
+    or other proper synchronization mechanisms.
+</p>
+
+<h3>2. What is happens-before?</h3>
+
+<p>
+    The <b>happens-before relationship</b> is a rule in Java that
+    guarantees visibility and ordering of operations between threads.
+</p>
+
+<p>
+    In simple words: If operation A happens-before operation B,
+    then the changes made by A are guaranteed to be visible to B.
+</p>
+
+<h4>Example 1: Using volatile</h4>
+
+<pre>
+public class VolatileHappensBeforeDemo {
+
+    static volatile boolean running = true;
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+
+            while (running) {
+                // Continue while running is true
+            }
+
+            System.out.println("Thread stopped");
+        });
+
+        t1.start();
+
+        Thread.sleep(1000);
+
+        // Write to volatile variable
+        running = false;
+
+        System.out.println("Main thread changed running to false");
+    }
+}
+</pre>
+
+<p><b>How does happens-before work here?</b></p>
+
+<ol>
+    <li>Main thread writes <code>false</code> to the volatile variable.</li>
+    <li>Thread-1 reads the updated volatile value.</li>
+    <li>The volatile write happens-before a subsequent read of the same variable that observes that write.</li>
+    <li>Thread-1 exits the loop.</li>
+</ol>
+
+<p><b>Result:</b> The volatile variable guarantees visibility of the update.</p>
+
+<h3>3. Important happens-before Rules</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Rule</th>
+        <th>Meaning</th>
+    </tr>
+    <tr>
+        <td>Program Order Rule</td>
+        <td>Operations within one thread follow their program order.</td>
+    </tr>
+    <tr>
+        <td>Monitor Lock Rule</td>
+        <td>Unlocking a synchronized lock happens-before another thread subsequently locks the same monitor.</td>
+    </tr>
+    <tr>
+        <td>Volatile Rule</td>
+        <td>A volatile write happens-before a subsequent read of the same variable that observes that write.</td>
+    </tr>
+    <tr>
+        <td>Thread Start Rule</td>
+        <td>Calling start() happens-before actions inside the started thread.</td>
+    </tr>
+    <tr>
+        <td>Thread Join Rule</td>
+        <td>All actions in a thread happen-before another thread successfully returns from join() on it.</td>
+    </tr>
+    <tr>
+        <td>Transitivity Rule</td>
+        <td>If A happens-before B, and B happens-before C, then A happens-before C.</td>
+    </tr>
+</table>
+
+<h4>Example 2: Using synchronized</h4>
+
+<pre>
+public class SynchronizedHappensBeforeDemo {
+
+    static int number = 0;
+    static boolean ready = false;
+
+    public static void main(String[] args) throws Exception {
+
+        Thread t1 = new Thread(() -> {
+
+            synchronized (SynchronizedHappensBeforeDemo.class) {
+
+                number = 100;
+                ready = true;
+
+            } // Lock released here
+        });
+
+        Thread t2 = new Thread(() -> {
+
+            synchronized (SynchronizedHappensBeforeDemo.class) {
+
+                if (ready) {
+                    System.out.println("Number: " + number);
+                }
+
+            } // Lock released here
+        });
+
+        t1.start();
+        t1.join();
+
+        t2.start();
+        t2.join();
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Number: 100
+</pre>
+
+<p><b>Explanation:</b></p>
+
+<ol>
+    <li>Thread-1 updates <code>number</code> to <code>100</code>.</li>
+    <li>Thread-1 updates <code>ready</code> to <code>true</code>.</li>
+    <li>Thread-1 releases the synchronized lock.</li>
+    <li>Thread-2 acquires the same lock.</li>
+    <li>Thread-2 can see the updates made by Thread-1.</li>
+</ol>
+
+<p>
+    The unlock by Thread-1 happens-before the subsequent lock by Thread-2.
+</p>
+
+<h3>4. Happens-before Relationship Diagram</h3>
+
+<pre>
+       THREAD-1
+  --------------------
+    number = 100;
+    ready = true;
+  --------------------
+          |
+          |
+     Unlock lock
+          |
+          | Happens-before
+          |
+      Lock acquired
+          |
+          v
+       THREAD-2
+  --------------------
+    Read ready
+    Read number
+  --------------------
+</pre>
+
+<h3>5. Difference Between JMM and happens-before</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Java Memory Model</th>
+        <th>Happens-before</th>
+    </tr>
+    <tr>
+        <td>Defines memory visibility and ordering rules for threads.</td>
+        <td>Defines the relationship between operations in different threads.</td>
+    </tr>
+    <tr>
+        <td>It is the overall memory model.</td>
+        <td>It is one of the key concepts within JMM.</td>
+    </tr>
+</table>
+
+<h3>6. Interview Answer</h3>
+
+<p>
+    <b>Q: What is Java Memory Model and happens-before?</b>
+</p>
+
+<p>
+    The Java Memory Model defines how threads interact with shared
+    variables and ensures memory visibility and operation ordering.
+</p>
+
+<p>
+    Happens-before is a rule that guarantees that changes made by one
+    thread are visible to another thread when a defined ordering
+    relationship exists between their operations.
+</p>
+
+<p>
+    For example, a volatile write happens-before a subsequent read
+    that observes that write, and releasing a synchronized lock
+    happens-before another thread subsequently acquires the same lock.
+</p>
+
+<h3>Remember</h3>
+
+<ul>
+    <li><b>JMM:</b> Rules for memory visibility and ordering.</li>
+    <li><b>Happens-before:</b> Guarantee of visibility and ordering between operations.</li>
+    <li><b>volatile:</b> Visibility and ordering, but not atomicity for compound operations.</li>
+    <li><b>synchronized:</b> Mutual exclusion and visibility.</li>
+</ul>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
