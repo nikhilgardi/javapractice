@@ -90,10 +90,10 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q73" class="completed"><span class="number">73.</span>Explain deadlock, livelock and starvation. How would you prevent deadlocks?</a>
 <a href="#q74" class="completed"><span class="number">74.</span>Compare `synchronized` and `ReentrantLock`.</a>
 <a href="#q75" class="completed"><span class="number">75.</span>What is the Java Memory Model? Explain happens-before.</a>
-<a href="#q76"><span class="number">76.</span>What are atomic classes and compare-and-set operations?</a>
-<a href="#q77"><span class="number">77.</span>Explain `ExecutorService`, thread pools and task submission.</a>
-<a href="#q78"><span class="number">78.</span>Compare `Future` and `CompletableFuture`.</a>
-<a href="#q79"><span class="number">79.</span>How does `ConcurrentHashMap` support concurrent access?</a>
+<a href="#q76" class="completed"><span class="number">76.</span>What are atomic classes and compare-and-set operations?</a>
+<a href="#q77" class="completed"><span class="number">77.</span>Explain `ExecutorService`, thread pools and task submission.</a>
+<a href="#q78" class="completed"><span class="number">78.</span>Compare `Future` and `CompletableFuture`.</a>
+<a href="#q79" class="completed"><span class="number">79.</span>How does `ConcurrentHashMap` support concurrent access?</a>
 <a href="#q80"><span class="number">80.</span>What are virtual threads, and when would you choose them over platform threads?</a>
 <div class="topic">Java 8–26 features — 20 questions</div>
 <a href="#q81"><span class="number">81.</span>What are lambda expressions, and how do they differ from anonymous inner classes?</a>
@@ -20721,7 +20721,337 @@ Number: 100
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>What are Atomic Classes and Compare-and-Set (CAS) Operations?</h2>
+
+<h3>1. What are Atomic Classes?</h3>
+
+<p>
+    <b>Atomic classes</b> are classes provided by Java in the
+    <code>java.util.concurrent.atomic</code> package. They allow multiple
+    threads to safely update shared variables without using
+    <code>synchronized</code> or explicit locks.
+</p>
+
+<p>
+    In simple words, atomic classes make operations such as incrementing
+    and updating a shared variable thread-safe.
+</p>
+
+<p><b>Common Atomic Classes:</b></p>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Class</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td><code>AtomicInteger</code></td>
+        <td>Thread-safe operations on integer values.</td>
+    </tr>
+    <tr>
+        <td><code>AtomicLong</code></td>
+        <td>Thread-safe operations on long values.</td>
+    </tr>
+    <tr>
+        <td><code>AtomicBoolean</code></td>
+        <td>Thread-safe operations on boolean values.</td>
+    </tr>
+    <tr>
+        <td><code>AtomicReference</code></td>
+        <td>Thread-safe updates of object references.</td>
+    </tr>
+    <tr>
+        <td><code>AtomicIntegerArray</code></td>
+        <td>Thread-safe operations on integer array elements.</td>
+    </tr>
+</table>
+
+<h3>2. Why Do We Need Atomic Classes?</h3>
+
+<p>
+    Consider a shared counter accessed by two threads.
+</p>
+
+<h4>Example without AtomicInteger</h4>
+
+<pre>
+public class CounterDemo {
+
+    static int count = 0;
+
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count++;
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count++;
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Count: " + count);
+    }
+}
+</pre>
+
+<p><b>Expected Output:</b></p>
+
+<pre>
+Count: 2000
+</pre>
+
+<p>
+    <b>Problem:</b> The <code>count++</code> operation is not atomic.
+    Both threads can read and update the counter at the same time,
+    causing a race condition. Therefore, the actual result may be
+    less than 2000.
+</p>
+
+<h3>3. Example Using AtomicInteger</h3>
+
+<pre>
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class AtomicCounterDemo {
+
+    static AtomicInteger count = new AtomicInteger(0);
+
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count.incrementAndGet();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                count.incrementAndGet();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Count: " + count.get());
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Count: 2000
+</pre>
+
+<p><b>Explanation:</b></p>
+
+<ul>
+    <li><code>AtomicInteger(0)</code> creates an atomic integer with an initial value of 0.</li>
+    <li><code>incrementAndGet()</code> atomically increments the value by 1 and returns the updated value.</li>
+    <li><code>get()</code> returns the current value.</li>
+    <li>Both threads can safely update the counter without losing increments.</li>
+</ul>
+
+<h3>4. What is Compare-and-Set (CAS)?</h3>
+
+<p>
+    <b>Compare-and-Set (CAS)</b> is an atomic operation that compares
+    the current value with an expected value. If both values match,
+    it updates the current value with a new value.
+</p>
+
+<p><b>In simple words:</b></p>
+
+<ul>
+    <li>Check whether the current value matches the expected value.</li>
+    <li>If they match, update it with the new value.</li>
+    <li>If they do not match, do not update the value.</li>
+</ul>
+
+<h4>CAS Syntax</h4>
+
+<pre>
+atomicInteger.compareAndSet(expectedValue, newValue);
+</pre>
+
+<ul>
+    <li><code>expectedValue</code>: The value we expect the variable to contain.</li>
+    <li><code>newValue</code>: The value we want to set if the comparison succeeds.</li>
+    <li>Returns <code>true</code> if the update succeeds; otherwise, returns <code>false</code>.</li>
+</ul>
+
+<h3>5. Complete CAS Example</h3>
+
+<pre>
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class CASDemo {
+
+    public static void main(String[] args) {
+
+        AtomicInteger count = new AtomicInteger(10);
+
+        System.out.println("Initial value: " + count.get());
+
+        // Expected value = 10, New value = 20
+        boolean result = count.compareAndSet(10, 20);
+
+        System.out.println("Update successful: " + result);
+        System.out.println("Current value: " + count.get());
+
+        // Expected value = 10, New value = 30
+        result = count.compareAndSet(10, 30);
+
+        System.out.println("Update successful: " + result);
+        System.out.println("Current value: " + count.get());
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Initial value: 10
+Update successful: true
+Current value: 20
+Update successful: false
+Current value: 20
+</pre>
+
+<h3>6. Step-by-Step CAS Execution</h3>
+
+<p><b>First CAS operation:</b></p>
+
+<pre>
+count.compareAndSet(10, 20);
+</pre>
+
+<ol>
+    <li>Current value is 10.</li>
+    <li>Expected value is 10.</li>
+    <li>Both values match.</li>
+    <li>Current value is updated to 20.</li>
+    <li>Returns <code>true</code>.</li>
+</ol>
+
+<p><b>Second CAS operation:</b></p>
+
+<pre>
+count.compareAndSet(10, 30);
+</pre>
+
+<ol>
+    <li>Current value is now 20.</li>
+    <li>Expected value is 10.</li>
+    <li>Both values do not match.</li>
+    <li>No update happens.</li>
+    <li>Returns <code>false</code>.</li>
+</ol>
+
+<h3>7. How Does CAS Work with Multiple Threads?</h3>
+
+<p>Imagine two threads trying to update the same counter.</p>
+
+<pre>
+Initial count = 10
+
+Thread-1 reads count = 10
+Thread-2 reads count = 10
+
+Thread-1: CAS(10, 20) -> SUCCESS
+Thread-2: CAS(10, 30) -> FAILURE
+
+Final count = 20
+</pre>
+
+<p>
+    Thread-1 updates the value first. When Thread-2 attempts its update,
+    the current value is already 20 instead of 10. Therefore, its CAS
+    operation fails.
+</p>
+
+<p>
+    Thread-2 can read the latest value and retry if its task requires
+    another update.
+</p>
+
+<h3>8. Difference Between AtomicInteger and synchronized</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>AtomicInteger</th>
+        <th>synchronized</th>
+    </tr>
+    <tr>
+        <td>Uses atomic operations such as CAS.</td>
+        <td>Uses locking to provide mutual exclusion.</td>
+    </tr>
+    <tr>
+        <td>Does not require explicit locking.</td>
+        <td>Acquires and releases a monitor lock.</td>
+    </tr>
+    <tr>
+        <td>Useful for simple atomic updates.</td>
+        <td>Useful for protecting multiple related operations.</td>
+    </tr>
+    <tr>
+        <td>Generally uses non-blocking algorithms.</td>
+        <td>Other threads may need to wait for the lock.</td>
+    </tr>
+</table>
+
+<h3>9. Interview Answer</h3>
+
+<p>
+    <b>Q: What are atomic classes and CAS operations in Java?</b>
+</p>
+
+<p>
+    Atomic classes are provided by the
+    <code>java.util.concurrent.atomic</code> package. They allow
+    thread-safe operations on shared variables without requiring
+    explicit synchronization.
+</p>
+
+<p>
+    CAS (Compare-and-Set) is an atomic operation that compares the
+    current value with an expected value. If both match, it updates
+    the value; otherwise, the update fails.
+</p>
+
+<p>
+    For example, <code>AtomicInteger</code> provides methods such as
+    <code>incrementAndGet()</code> and <code>compareAndSet()</code>
+    to perform thread-safe updates.
+</p>
+
+<h3>Remember</h3>
+
+<ul>
+    <li><b>Atomic Classes:</b> Provide thread-safe operations on shared variables.</li>
+    <li><b>CAS:</b> Compare the current value with an expected value and update it if they match.</li>
+    <li><b>AtomicInteger:</b> Provides thread-safe integer operations.</li>
+    <li><b>incrementAndGet():</b> Atomically increments and returns the updated value.</li>
+    <li><b>compareAndSet():</b> Updates the value only when the expected value matches.</li>
+</ul>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -20730,7 +21060,560 @@ Number: 100
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Explain ExecutorService, Thread Pools and Task Submission</h2>
+
+<h3>1. What is ExecutorService?</h3>
+
+<p>
+    <b>ExecutorService</b> is an interface provided by Java in the
+    <code>java.util.concurrent</code> package. It is used to manage
+    threads and execute tasks without creating and managing threads
+    manually.
+</p>
+
+<p>
+    In simple words, instead of creating a new thread every time,
+    we submit tasks to <code>ExecutorService</code>, and it manages
+    the execution of those tasks using available threads.
+</p>
+
+<h3>2. What is a Thread Pool?</h3>
+
+<p>
+    A <b>Thread Pool</b> is a collection of reusable worker threads
+    that are created and managed to execute multiple tasks.
+</p>
+
+<p><b>Example:</b></p>
+
+<p>
+    Imagine we have 10 tasks but only 3 worker threads.
+    Instead of creating 10 threads, we create a pool of 3 threads.
+    These 3 threads execute the 10 tasks one by one as they become
+    available.
+</p>
+
+<h4>Thread Pool Diagram</h4>
+
+<pre>
+          TASKS
+    -------------------
+      Task-1
+      Task-2
+      Task-3
+      Task-4
+      Task-5
+      Task-6
+    -------------------
+             |
+             v
+      EXECUTOR SERVICE
+             |
+             v
+       THREAD POOL
+    -------------------
+      Thread-1
+      Thread-2
+      Thread-3
+    -------------------
+             |
+             v
+       TASK EXECUTION
+</pre>
+
+<h3>3. Why Do We Need ExecutorService?</h3>
+
+<p>Without ExecutorService, we create threads manually.</p>
+
+<h4>Without ExecutorService</h4>
+
+<pre>
+public class ThreadDemo {
+
+    public static void main(String[] args) {
+
+        // Create and start threads manually
+        Thread t1 = new Thread(() -> {
+            System.out.println("Task-1 executed");
+        });
+
+        Thread t2 = new Thread(() -> {
+            System.out.println("Task-2 executed");
+        });
+
+        Thread t3 = new Thread(() -> {
+            System.out.println("Task-3 executed");
+        });
+
+        t1.start();
+        t2.start();
+        t3.start();
+    }
+}
+</pre>
+
+<p>
+    <b>Problem:</b> We need to create, start and manage threads manually.
+    If we have many tasks, managing individual threads becomes difficult.
+</p>
+
+<h4>Using ExecutorService</h4>
+
+<pre>
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class ExecutorDemo {
+
+    public static void main(String[] args) {
+
+        // Create a thread pool with 3 worker threads
+        ExecutorService executor =
+                Executors.newFixedThreadPool(3);
+
+        // Submit tasks to the executor
+        executor.execute(() -> {
+            System.out.println("Task-1 executed");
+        });
+
+        executor.execute(() -> {
+            System.out.println("Task-2 executed");
+        });
+
+        executor.execute(() -> {
+            System.out.println("Task-3 executed");
+        });
+
+        // Stop accepting new tasks and finish submitted tasks
+        executor.shutdown();
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Task-1 executed
+Task-2 executed
+Task-3 executed
+</pre>
+
+<p>
+    The execution order is not guaranteed because multiple threads
+    execute tasks independently.
+</p>
+
+<h3>4. How Does ExecutorService Work?</h3>
+
+<ol>
+    <li>
+        <b>Create ExecutorService:</b>
+        <p>Create a thread pool with a specified number of worker threads.</p>
+    </li>
+    <li>
+        <b>Submit Tasks:</b>
+        <p>Submit tasks using <code>execute()</code> or <code>submit()</code>.</p>
+    </li>
+    <li>
+        <b>Task Assignment:</b>
+        <p>The executor assigns submitted tasks to available worker threads.</p>
+    </li>
+    <li>
+        <b>Task Execution:</b>
+        <p>Worker threads execute the assigned tasks.</p>
+    </li>
+    <li>
+        <b>Thread Reuse:</b>
+        <p>After completing a task, a worker thread becomes available to execute another task.</p>
+    </li>
+    <li>
+        <b>Shutdown:</b>
+        <p>Call <code>shutdown()</code> when no more tasks need to be submitted.</p>
+    </li>
+</ol>
+
+<h3>5. Types of Thread Pools</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Thread Pool</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><code>newFixedThreadPool(n)</code></td>
+        <td>Creates a pool with a fixed number of worker threads.</td>
+    </tr>
+    <tr>
+        <td><code>newCachedThreadPool()</code></td>
+        <td>Creates and reuses threads as needed. Threads that remain idle for a period can be removed.</td>
+    </tr>
+    <tr>
+        <td><code>newSingleThreadExecutor()</code></td>
+        <td>Uses one worker thread to execute tasks sequentially.</td>
+    </tr>
+    <tr>
+        <td><code>newScheduledThreadPool(n)</code></td>
+        <td>Executes tasks after a delay or periodically.</td>
+    </tr>
+</table>
+
+<h4>Example: Fixed Thread Pool</h4>
+
+<pre>
+ExecutorService executor =
+        Executors.newFixedThreadPool(3);
+</pre>
+
+<p>
+    Creates a pool with 3 worker threads. At most 3 tasks can execute
+    simultaneously. Additional tasks wait in the task queue until a
+    worker becomes available.
+</p>
+
+<h3>6. What is Task Submission?</h3>
+
+<p>
+    <b>Task submission</b> means sending a task to ExecutorService
+    for execution.
+</p>
+
+<p>Java provides two commonly used methods:</p>
+
+<ul>
+    <li><code>execute()</code></li>
+    <li><code>submit()</code></li>
+</ul>
+
+<h4>A. execute() Method</h4>
+
+<p>
+    The <code>execute()</code> method submits a Runnable task for
+    execution. It does not return a result.
+</p>
+
+<pre>
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class ExecuteDemo {
+
+    public static void main(String[] args) {
+
+        ExecutorService executor =
+                Executors.newFixedThreadPool(2);
+
+        executor.execute(() -> {
+            System.out.println("Task executed");
+        });
+
+        executor.shutdown();
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Task executed
+</pre>
+
+<h4>B. submit() Method</h4>
+
+<p>
+    The <code>submit()</code> method submits a task and returns a
+    <code>Future</code> object. We can use Future to retrieve the
+    result of a task or check its execution status.
+</p>
+
+<pre>
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+public class SubmitDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        ExecutorService executor =
+                Executors.newFixedThreadPool(2);
+
+        // Submit a task that returns a result
+        Future&lt;Integer&gt; future = executor.submit(() -> {
+
+            System.out.println("Task is executing");
+
+            return 100;
+        });
+
+        // Get the result of the task
+        Integer result = future.get();
+
+        System.out.println("Result: " + result);
+
+        executor.shutdown();
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Task is executing
+Result: 100
+</pre>
+
+<p>
+    <b>Important:</b> The <code>future.get()</code> method waits
+    until the task completes and returns its result.
+</p>
+
+<h3>7. Difference Between execute() and submit()</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>execute()</th>
+        <th>submit()</th>
+    </tr>
+    <tr>
+        <td>Accepts Runnable.</td>
+        <td>Accepts Runnable and Callable.</td>
+    </tr>
+    <tr>
+        <td>Does not return anything.</td>
+        <td>Returns a Future object.</td>
+    </tr>
+    <tr>
+        <td>Cannot directly retrieve a task result.</td>
+        <td>Can retrieve a task result using Future.get().</td>
+    </tr>
+    <tr>
+        <td>Exceptions from the task are not returned through a Future.</td>
+        <td>Task exceptions are captured and reported through Future.get() as ExecutionException.</td>
+    </tr>
+</table>
+
+<h3>8. What is Callable?</h3>
+
+<p>
+    <b>Callable</b> is an interface similar to Runnable, but it can
+    return a result and throw checked exceptions.
+</p>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Runnable</th>
+        <th>Callable</th>
+    </tr>
+    <tr>
+        <td>Does not return a result.</td>
+        <td>Can return a result.</td>
+    </tr>
+    <tr>
+        <td>Uses <code>run()</code>.</td>
+        <td>Uses <code>call()</code>.</td>
+    </tr>
+    <tr>
+        <td>Cannot declare checked exceptions in its method signature.</td>
+        <td>Can declare checked exceptions.</td>
+    </tr>
+</table>
+
+<h4>Example: Callable with ExecutorService</h4>
+
+<pre>
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+public class CallableDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        ExecutorService executor =
+                Executors.newFixedThreadPool(2);
+
+        Callable&lt;Integer&gt; task = () -> {
+
+            System.out.println("Calculating result");
+
+            return 50 + 50;
+        };
+
+        // Submit Callable task
+        Future&lt;Integer&gt; future = executor.submit(task);
+
+        // Retrieve the result
+        Integer result = future.get();
+
+        System.out.println("Result: " + result);
+
+        executor.shutdown();
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Calculating result
+Result: 100
+</pre>
+
+<h3>9. Important ExecutorService Methods</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td><code>execute()</code></td>
+        <td>Submits a Runnable task.</td>
+    </tr>
+    <tr>
+        <td><code>submit()</code></td>
+        <td>Submits a task and returns a Future.</td>
+    </tr>
+    <tr>
+        <td><code>shutdown()</code></td>
+        <td>Stops accepting new tasks but allows submitted tasks to finish.</td>
+    </tr>
+    <tr>
+        <td><code>shutdownNow()</code></td>
+        <td>Attempts to stop running tasks and returns tasks that have not started.</td>
+    </tr>
+    <tr>
+        <td><code>isShutdown()</code></td>
+        <td>Checks whether shutdown has been initiated.</td>
+    </tr>
+    <tr>
+        <td><code>isTerminated()</code></td>
+        <td>Checks whether all tasks have completed after shutdown.</td>
+    </tr>
+    <tr>
+        <td><code>awaitTermination()</code></td>
+        <td>Waits for termination up to the specified time.</td>
+    </tr>
+</table>
+
+<h3>10. Complete Example: ExecutorService with Multiple Tasks</h3>
+
+<pre>
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class ThreadPoolDemo {
+
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        // Create a pool of 3 worker threads
+        ExecutorService executor =
+                Executors.newFixedThreadPool(3);
+
+        // Submit 6 tasks
+        for (int i = 1; i &lt;= 6; i++) {
+
+            final int taskId = i;
+
+            executor.execute(() -> {
+
+                System.out.println(
+                    Thread.currentThread().getName()
+                    + " executing Task-" + taskId
+                );
+
+            });
+        }
+
+        // Stop accepting new tasks
+        executor.shutdown();
+
+        // Wait until all submitted tasks finish
+        executor.awaitTermination(1, TimeUnit.MINUTES);
+
+        System.out.println("All tasks completed");
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+pool-1-thread-1 executing Task-1
+pool-1-thread-2 executing Task-2
+pool-1-thread-3 executing Task-3
+pool-1-thread-1 executing Task-4
+pool-1-thread-2 executing Task-5
+pool-1-thread-3 executing Task-6
+All tasks completed
+</pre>
+
+<p>
+    The exact execution order may vary depending on thread scheduling.
+</p>
+
+<h3>11. Difference Between Thread and ExecutorService</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Thread</th>
+        <th>ExecutorService</th>
+    </tr>
+    <tr>
+        <td>We create and manage threads manually.</td>
+        <td>Manages a pool of worker threads.</td>
+    </tr>
+    <tr>
+        <td>Creating many threads can consume more resources.</td>
+        <td>Reuses worker threads to execute multiple tasks.</td>
+    </tr>
+    <tr>
+        <td>Task result handling requires additional mechanisms.</td>
+        <td>Provides Future for retrieving task results.</td>
+    </tr>
+    <tr>
+        <td>Thread lifecycle is managed manually.</td>
+        <td>Provides lifecycle management methods.</td>
+    </tr>
+</table>
+
+<h3>12. Interview Answer</h3>
+
+<p>
+    <b>Q: What is ExecutorService in Java?</b>
+</p>
+
+<p>
+    ExecutorService is an interface from the
+    <code>java.util.concurrent</code> package. It manages thread pools
+    and executes submitted tasks without requiring us to create and
+    manage individual threads manually.
+</p>
+
+<p>
+    We can submit tasks using <code>execute()</code> or
+    <code>submit()</code>. The execute method does not return a result,
+    whereas submit returns a Future object that can be used to retrieve
+    the task result.
+</p>
+
+<h3>Remember</h3>
+
+<ul>
+    <li><b>ExecutorService:</b> Manages task execution using worker threads.</li>
+    <li><b>Thread Pool:</b> A collection of reusable worker threads.</li>
+    <li><b>Task Submission:</b> Sending tasks to ExecutorService for execution.</li>
+    <li><b>execute():</b> Submits a Runnable task without returning a result.</li>
+    <li><b>submit():</b> Submits a task and returns a Future.</li>
+    <li><b>Callable:</b> A task that can return a result.</li>
+    <li><b>Future:</b> Represents the result of an asynchronous task.</li>
+    <li><b>shutdown():</b> Stops accepting new tasks and allows submitted tasks to finish.</li>
+</ul>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -20739,7 +21622,417 @@ Number: 100
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>Compare Future and CompletableFuture</h2>
+
+<h3>1. What is Future?</h3>
+
+<p>
+    <b>Future</b> is an interface provided by Java in the
+    <code>java.util.concurrent</code> package. It represents the result
+    of an asynchronous task that may be available in the future.
+</p>
+
+<p>
+    In simple words, when we submit a task to <code>ExecutorService</code>,
+    it can return a <code>Future</code> object. We can use this object
+    to check whether the task is completed and retrieve its result.
+</p>
+
+<h4>Example using Future</h4>
+
+<pre>
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+public class FutureDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        ExecutorService executor =
+                Executors.newSingleThreadExecutor();
+
+        // Submit a task
+        Future&lt;Integer&gt; future = executor.submit(() -> {
+
+            System.out.println("Task is executing");
+
+            Thread.sleep(2000);
+
+            return 100;
+        });
+
+        System.out.println("Main thread is working");
+
+        // Wait for the task to complete and get the result
+        Integer result = future.get();
+
+        System.out.println("Result: " + result);
+
+        executor.shutdown();
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Main thread is working
+Task is executing
+Result: 100
+</pre>
+
+<p>
+    <b>Important:</b> The <code>future.get()</code> method blocks
+    the calling thread until the task completes and its result is available.
+</p>
+
+<h3>2. What is CompletableFuture?</h3>
+
+<p>
+    <b>CompletableFuture</b> is a class introduced in Java 8.
+    It implements the <code>Future</code> interface and also provides
+    additional methods to perform asynchronous(Asynchronously means executing a task in the background without making the main thread wait for it to finish.) operations and combine
+    multiple tasks.
+</p>
+
+<p>
+    In simple words, <code>CompletableFuture</code> allows us to execute
+    tasks asynchronously, process their results, and execute another
+    task when the previous task completes without blocking the main thread.
+</p>
+
+<h4>Example using CompletableFuture</h4>
+
+<pre>
+import java.util.concurrent.CompletableFuture;
+
+public class CompletableFutureDemo {
+
+    public static void main(String[] args) {
+
+        // Execute a task asynchronously
+        CompletableFuture&lt;Integer&gt; future =
+                CompletableFuture.supplyAsync(() -> {
+
+                    System.out.println("Task is executing");
+
+                    return 100;
+                });
+
+        // Process the result after the task completes
+        future.thenApply(result -> result * 2)
+
+              // Print the final result
+              .thenAccept(result ->
+                  System.out.println("Result: " + result)
+              );
+
+        System.out.println("Main thread is working");
+
+        // Wait for the asynchronous task chain to finish
+        future.join();
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Task is executing
+Main thread is working
+Result: 200
+</pre>
+
+<p>
+    The exact order of the first two messages may vary because the
+    asynchronous task and main thread execute independently.
+</p>
+
+<h3>3. Difference Between Future and CompletableFuture</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Future</th>
+        <th>CompletableFuture</th>
+    </tr>
+    <tr>
+        <td>Introduced in Java 5.</td>
+        <td>Introduced in Java 8.</td>
+    </tr>
+    <tr>
+        <td>Interface.</td>
+        <td>Class that implements Future and CompletionStage.</td>
+    </tr>
+    <tr>
+        <td>Used to retrieve the result of an asynchronous task.</td>
+        <td>Used to execute, process and combine asynchronous tasks.</td>
+    </tr>
+    <tr>
+        <td><code>get()</code> blocks until the result is available.</td>
+        <td>Provides non-blocking callback methods such as thenApply() and thenAccept().</td>
+    </tr>
+    <tr>
+        <td>Does not directly support task chaining.</td>
+        <td>Supports task chaining.</td>
+    </tr>
+    <tr>
+        <td>Does not directly support combining multiple futures.</td>
+        <td>Supports combining tasks using thenCombine(), allOf() and anyOf().</td>
+    </tr>
+    <tr>
+        <td>Limited exception handling methods.</td>
+        <td>Provides exceptionally(), handle() and whenComplete().</td>
+    </tr>
+    <tr>
+        <td>Does not directly support manually completing a result.</td>
+        <td>Supports complete() and completeExceptionally().</td>
+    </tr>
+</table>
+
+<h3>4. Important CompletableFuture Methods</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td><code>supplyAsync()</code></td>
+        <td>Executes an asynchronous task that returns a result.</td>
+    </tr>
+    <tr>
+        <td><code>runAsync()</code></td>
+        <td>Executes an asynchronous task without returning a result.</td>
+    </tr>
+    <tr>
+        <td><code>thenApply()</code></td>
+        <td>Transforms the result of a completed task.</td>
+    </tr>
+    <tr>
+        <td><code>thenAccept()</code></td>
+        <td>Consumes the result without returning another result.</td>
+    </tr>
+    <tr>
+        <td><code>thenRun()</code></td>
+        <td>Executes another task after completion without receiving the previous result.</td>
+    </tr>
+    <tr>
+        <td><code>thenCombine()</code></td>
+        <td>Combines the results of two independent tasks.</td>
+    </tr>
+    <tr>
+        <td><code>allOf()</code></td>
+        <td>Creates a future that completes when all supplied futures complete.</td>
+    </tr>
+    <tr>
+        <td><code>anyOf()</code></td>
+        <td>Creates a future that completes when any supplied future completes.</td>
+    </tr>
+    <tr>
+        <td><code>exceptionally()</code></td>
+        <td>Handles an exception and can provide a fallback result.</td>
+    </tr>
+    <tr>
+        <td><code>join()</code></td>
+        <td>Waits for completion and retrieves the result without declaring a checked exception.</td>
+    </tr>
+</table>
+
+<h3>5. Understanding thenApply(), thenAccept() and thenRun()</h3>
+
+<h4>A. thenApply() – Transform the result</h4>
+
+<pre>
+CompletableFuture&lt;Integer&gt; future =
+        CompletableFuture.supplyAsync(() -> 10);
+
+CompletableFuture&lt;Integer&gt; result =
+        future.thenApply(value -> value * 2);
+
+System.out.println(result.join());
+</pre>
+
+<p><b>Output:</b></p>
+<pre>20</pre>
+
+<h4>B. thenAccept() – Consume the result</h4>
+
+<pre>
+CompletableFuture&lt;Integer&gt; future =
+        CompletableFuture.supplyAsync(() -> 100);
+
+future.thenAccept(value ->
+    System.out.println("Result: " + value)
+).join();
+</pre>
+
+<p><b>Output:</b></p>
+<pre>Result: 100</pre>
+
+<h4>C. thenRun() – Execute another task</h4>
+
+<pre>
+CompletableFuture&lt;Integer&gt; future =
+        CompletableFuture.supplyAsync(() -> 100);
+
+future.thenRun(() ->
+    System.out.println("Task completed")
+).join();
+</pre>
+
+<p><b>Output:</b></p>
+<pre>Task completed</pre>
+
+<h3>6. Combining Two CompletableFuture Tasks</h3>
+
+<p>
+    Suppose we need to fetch employee details and salary information
+    independently and then combine both results.
+</p>
+
+<pre>
+import java.util.concurrent.CompletableFuture;
+
+public class CombineFutureDemo {
+
+    public static void main(String[] args) {
+
+        CompletableFuture&lt;String&gt; employeeFuture =
+                CompletableFuture.supplyAsync(() -> {
+                    return "Nikhil";
+                });
+
+        CompletableFuture&lt;Integer&gt; salaryFuture =
+                CompletableFuture.supplyAsync(() -> {
+                    return 50000;
+                });
+
+        // Combine results of both tasks
+        CompletableFuture&lt;String&gt; result =
+                employeeFuture.thenCombine(
+                    salaryFuture,
+                    (employee, salary) ->
+                        employee + " - Salary: " + salary
+                );
+
+        System.out.println(result.join());
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Nikhil - Salary: 50000
+</pre>
+
+<h3>7. Exception Handling in CompletableFuture</h3>
+
+<pre>
+import java.util.concurrent.CompletableFuture;
+
+public class CompletableExceptionDemo {
+
+    public static void main(String[] args) {
+
+        CompletableFuture&lt;Integer&gt; future =
+                CompletableFuture.supplyAsync(() -> {
+
+                    int result = 10 / 0;
+
+                    return result;
+                });
+
+        // Handle exception and provide a fallback result
+        Integer result = future
+                .exceptionally(ex -> {
+                    System.out.println("Exception occurred");
+                    return 0;
+                })
+                .join();
+
+        System.out.println("Result: " + result);
+    }
+}
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+Exception occurred
+Result: 0
+</pre>
+
+<h3>8. When Should You Use Which?</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Scenario</th>
+        <th>Recommended</th>
+    </tr>
+    <tr>
+        <td>Simple asynchronous task with result retrieval</td>
+        <td>Future</td>
+    </tr>
+    <tr>
+        <td>Need to process a result after task completion</td>
+        <td>CompletableFuture</td>
+    </tr>
+    <tr>
+        <td>Need to execute dependent asynchronous tasks</td>
+        <td>CompletableFuture</td>
+    </tr>
+    <tr>
+        <td>Need to combine multiple asynchronous tasks</td>
+        <td>CompletableFuture</td>
+    </tr>
+    <tr>
+        <td>Need asynchronous exception handling</td>
+        <td>CompletableFuture</td>
+    </tr>
+</table>
+
+<h3>9. Interview Answer</h3>
+
+<p>
+    <b>Q: What is the difference between Future and CompletableFuture?</b>
+</p>
+
+<p>
+    Future represents the result of an asynchronous task and allows
+    us to retrieve the result using <code>get()</code>. However,
+    <code>get()</code> blocks until the result is available.
+</p>
+
+<p>
+    CompletableFuture was introduced in Java 8. It implements Future
+    and provides additional features such as task chaining, combining
+    multiple asynchronous tasks and exception handling using methods
+    like <code>thenApply()</code>, <code>thenCombine()</code> and
+    <code>exceptionally()</code>.
+</p>
+
+<p>
+    Future is suitable for simple asynchronous result retrieval,
+    whereas CompletableFuture is more suitable for complex asynchronous
+    workflows.
+</p>
+
+<h3>Remember</h3>
+
+<ul>
+    <li><b>Future:</b> Represents the result of an asynchronous task.</li>
+    <li><b>CompletableFuture:</b> Supports asynchronous task execution and composition.</li>
+    <li><b>get():</b> Waits for the result and can throw checked exceptions.</li>
+    <li><b>join():</b> Waits for the result and throws unchecked CompletionException for exceptional completion.</li>
+    <li><b>thenApply():</b> Transforms a result.</li>
+    <li><b>thenAccept():</b> Consumes a result.</li>
+    <li><b>thenRun():</b> Executes another task without using the previous result.</li>
+    <li><b>thenCombine():</b> Combines results from two futures.</li>
+</ul>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
@@ -20748,7 +22041,325 @@ Number: 100
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>How does ConcurrentHashMap support concurrent access?</h2>
+
+<h3>1. What is ConcurrentHashMap?</h3>
+
+<p>
+    <b>ConcurrentHashMap</b> is a class provided by Java in the
+    <code>java.util.concurrent</code> package. It allows multiple
+    threads to access and update a map safely at the same time.
+</p>
+
+<p>
+    In simple words, multiple threads can work with the same
+    <code>ConcurrentHashMap</code> without causing data corruption.
+</p>
+
+<h3>2. Why do we need ConcurrentHashMap?</h3>
+
+<p>
+    Consider a normal <code>HashMap</code> shared by multiple threads.
+    If multiple threads update it simultaneously, it is not thread-safe.
+    This can lead to inconsistent results.
+</p>
+
+<p>
+    <b>Solution:</b> Use <code>ConcurrentHashMap</code> when multiple
+    threads need to access and modify the same map.
+</p>
+
+<h3>3. How does ConcurrentHashMap work?</h3>
+
+<p>
+    In Java 8 and later, <code>ConcurrentHashMap</code> uses a combination
+    of CAS (Compare-and-Set) operations and synchronized locking to
+    support concurrent updates.
+</p>
+
+<ul>
+    <li>
+        <b>Read operation:</b> Multiple threads can read values
+        concurrently without acquiring a lock.
+    </li>
+    <li>
+        <b>Write operation:</b> Uses CAS when possible or synchronizes
+        access to the particular bucket when necessary.
+    </li>
+    <li>
+        <b>Bucket-level locking:</b> Threads updating different buckets
+        can generally proceed independently.
+    </li>
+</ul>
+
+<p>
+    <b>Important:</b> Java 8 and later do not use the old
+    Segment-based locking mechanism.
+</p>
+
+<h3>4. Understanding Bucket-Level Locking</h3>
+
+<p>
+    A HashMap internally stores entries in an array of buckets.
+    ConcurrentHashMap also uses buckets to store key-value pairs.
+</p>
+
+<p>Imagine a map with four buckets:</p>
+
+<pre>
+       ConcurrentHashMap
+    -------------------------
+       Bucket-0
+       Bucket-1
+       Bucket-2
+       Bucket-3
+    -------------------------
+</pre>
+
+<p>Now imagine two threads updating different buckets:</p>
+
+<pre>
+Thread-1 updates Bucket-0
+
+Thread-2 updates Bucket-2
+
+Both threads can update their respective buckets
+without waiting for each other.
+</pre>
+
+<p>
+    However, if two threads need to update the same bucket,
+    synchronization is used when necessary to coordinate those updates.
+</p>
+
+<h3>5. Example Using ConcurrentHashMap</h3>
+
+<pre>
+import java.util.concurrent.ConcurrentHashMap;
+
+public class ConcurrentHashMapDemo {
+
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        // Create ConcurrentHashMap
+        ConcurrentHashMap&lt;Integer, String&gt; map =
+                new ConcurrentHashMap&lt;&gt;();
+
+        // Thread-1 adds data
+        Thread t1 = new Thread(() -> {
+
+            map.put(1, "Java");
+            map.put(2, "Spring Boot");
+
+            System.out.println("Thread-1 completed");
+        });
+
+        // Thread-2 adds data
+        Thread t2 = new Thread(() -> {
+
+            map.put(3, "Microservices");
+            map.put(4, "Hibernate");
+
+            System.out.println("Thread-2 completed");
+        });
+
+        // Start both threads
+        t1.start();
+        t2.start();
+
+        // Wait for both threads to finish
+        t1.join();
+        t2.join();
+
+        // Display map contents
+        System.out.println(map);
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Thread-1 completed
+Thread-2 completed
+{1=Java, 2=Spring Boot, 3=Microservices, 4=Hibernate}
+</pre>
+
+<p>
+    Both threads can update the same map safely without requiring
+    us to synchronize the entire map.
+</p>
+
+<h3>6. Important Features of ConcurrentHashMap</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Feature</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>Thread-safe</td>
+        <td>Supports concurrent access by multiple threads.</td>
+    </tr>
+    <tr>
+        <td>Concurrent Reads</td>
+        <td>Multiple threads can read the map concurrently.</td>
+    </tr>
+    <tr>
+        <td>CAS Operations</td>
+        <td>Uses CAS for certain updates without acquiring a lock.</td>
+    </tr>
+    <tr>
+        <td>Bucket-level Locking</td>
+        <td>Uses synchronized locking on individual buckets when required.</td>
+    </tr>
+    <tr>
+        <td>No Null Keys or Values</td>
+        <td>Does not allow null keys or null values.</td>
+    </tr>
+    <tr>
+        <td>Weakly Consistent Iterator</td>
+        <td>Allows iteration while other threads modify the map. It may reflect some concurrent updates.</td>
+    </tr>
+    <tr>
+        <td>Atomic Methods</td>
+        <td>Provides methods such as putIfAbsent(), replace() and computeIfAbsent().</td>
+    </tr>
+</table>
+
+<h3>7. Important Atomic Methods</h3>
+
+<h4>A. putIfAbsent()</h4>
+
+<p>
+    Adds a key-value pair only if the key is not already present.
+</p>
+
+<pre>
+ConcurrentHashMap&lt;Integer, String&gt; map =
+        new ConcurrentHashMap&lt;&gt;();
+
+map.putIfAbsent(1, "Java");
+
+map.putIfAbsent(1, "Python");
+
+System.out.println(map);
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+{1=Java}
+</pre>
+
+<h4>B. computeIfAbsent()</h4>
+
+<p>
+    Calculates and inserts a value only if the key is not already present.
+</p>
+
+<pre>
+map.computeIfAbsent(2, key -> "Spring Boot");
+
+System.out.println(map);
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+{1=Java, 2=Spring Boot}
+</pre>
+
+<h4>C. replace()</h4>
+
+<p>
+    Replaces the value associated with a key if the key is present.
+</p>
+
+<pre>
+map.replace(1, "Java", "Java 21");
+
+System.out.println(map);
+</pre>
+
+<p><b>Output:</b></p>
+
+<pre>
+{1=Java 21, 2=Spring Boot}
+</pre>
+
+<h3>8. Difference Between HashMap, Hashtable and ConcurrentHashMap</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Feature</th>
+        <th>HashMap</th>
+        <th>Hashtable</th>
+        <th>ConcurrentHashMap</th>
+    </tr>
+    <tr>
+        <td>Thread-safe</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>Locking</td>
+        <td>No internal synchronization</td>
+        <td>Synchronizes individual methods on the whole map</td>
+        <td>Uses CAS and bucket-level synchronization when required</td>
+    </tr>
+    <tr>
+        <td>Concurrent Reads</td>
+        <td>No thread-safety guarantee</td>
+        <td>Methods are synchronized</td>
+        <td>Supported</td>
+    </tr>
+    <tr>
+        <td>Null Key</td>
+        <td>One allowed</td>
+        <td>Not allowed</td>
+        <td>Not allowed</td>
+    </tr>
+    <tr>
+        <td>Null Values</td>
+        <td>Allowed</td>
+        <td>Not allowed</td>
+        <td>Not allowed</td>
+    </tr>
+</table>
+
+<h3>9. Interview Answer</h3>
+
+<p>
+    <b>Q: How does ConcurrentHashMap support concurrent access?</b>
+</p>
+
+<p>
+    ConcurrentHashMap supports concurrent access using a combination
+    of CAS operations and synchronized locking. In Java 8 and later,
+    it uses CAS for certain updates and synchronizes individual buckets
+    when required, instead of locking the entire map.
+</p>
+
+<p>
+    This allows multiple threads to read and update the map concurrently
+    while maintaining thread safety.
+</p>
+
+<h3>Remember</h3>
+
+<ul>
+    <li><b>ConcurrentHashMap:</b> Thread-safe Map implementation.</li>
+    <li><b>CAS:</b> Updates a value if the expected value matches.</li>
+    <li><b>Bucket-level locking:</b> Coordinates updates to the same bucket.</li>
+    <li><b>Java 8+:</b> Uses CAS and synchronized locking, not Segment-based locking.</li>
+    <li><b>Null:</b> Does not allow null keys or values.</li>
+    <li><b>putIfAbsent():</b> Inserts only if the key is absent.</li>
+</ul>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
