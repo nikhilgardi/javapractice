@@ -94,7 +94,7 @@ header{height:58px;border-bottom:1px solid #ddd;padding:17px 20px;font-weight:70
 <a href="#q77" class="completed"><span class="number">77.</span>Explain `ExecutorService`, thread pools and task submission.</a>
 <a href="#q78" class="completed"><span class="number">78.</span>Compare `Future` and `CompletableFuture`.</a>
 <a href="#q79" class="completed"><span class="number">79.</span>How does `ConcurrentHashMap` support concurrent access?</a>
-<a href="#q80"><span class="number">80.</span>What are virtual threads, and when would you choose them over platform threads?</a>
+<a href="#q80" class="completed"><span class="number">80.</span>What are virtual threads, and when would you choose them over platform threads?</a>
 <div class="topic">Java 8–26 features — 20 questions</div>
 <a href="#q81"><span class="number">81.</span>What are lambda expressions, and how do they differ from anonymous inner classes?</a>
 <a href="#q82"><span class="number">82.</span>What is a functional interface? Explain `Predicate`, `Function`, `Consumer` and `Supplier`.</a>
@@ -22368,7 +22368,343 @@ System.out.println(map);
 <div class="answer-title">Answer / Notes</div>
 <div class="answer">
 <!-- Write or paste your answer here. Keep the answer between this div and its closing tag. -->
-<p class="hint">Add your answer here...</p>
+<p class="hint">
+<h2>What are Virtual Threads, and When Would You Choose Them Over Platform Threads?</h2>
+
+<h3>1. What are Virtual Threads?</h3>
+
+<p>
+    <b>Virtual Threads</b> are lightweight threads introduced in
+    Java 21. They are managed by the JVM rather than being directly
+    mapped one-to-one to operating system threads.
+</p>
+
+<p>
+    In simple words, virtual threads allow us to create a large number
+    of threads using fewer operating system threads, making it easier
+    to handle many tasks concurrently.
+</p>
+
+<h3>2. What are Platform Threads?</h3>
+
+<p>
+    <b>Platform Threads</b> are traditional Java threads that are
+    directly mapped to operating system threads.
+</p>
+
+<p>
+    Creating and managing a large number of platform threads consumes
+    more system resources.
+</p>
+
+<h3>3. Difference Between Platform Threads and Virtual Threads</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Platform Threads</th>
+        <th>Virtual Threads</th>
+    </tr>
+    <tr>
+        <td>Traditional Java threads.</td>
+        <td>Lightweight Java threads introduced in Java 21.</td>
+    </tr>
+    <tr>
+        <td>Directly mapped to OS threads.</td>
+        <td>Scheduled by the JVM onto platform threads.</td>
+    </tr>
+    <tr>
+        <td>More resource-intensive.</td>
+        <td>Require fewer resources per thread.</td>
+    </tr>
+    <tr>
+        <td>Creating millions of threads is generally impractical.</td>
+        <td>Can support millions of threads, subject to available resources.</td>
+    </tr>
+    <tr>
+        <td>Suitable for CPU-intensive and general-purpose tasks.</td>
+        <td>Especially suitable for tasks that spend time waiting, such as I/O operations.</td>
+    </tr>
+    <tr>
+        <td>Thread scheduling is handled by the OS.</td>
+        <td>Virtual thread scheduling is handled by the JVM.</td>
+    </tr>
+</table>
+
+<h3>4. How Do Virtual Threads Work?</h3>
+
+<p>
+    Virtual threads run on platform threads called
+    <b>carrier threads</b>.
+</p>
+
+<p>
+    When a virtual thread performs a blocking operation, such as
+    waiting for a network response, the JVM can suspend that virtual
+    thread and use the carrier thread to execute another virtual thread.
+</p>
+
+<pre>
+       VIRTUAL THREADS
+    -----------------------
+       Virtual Thread-1
+       Virtual Thread-2
+       Virtual Thread-3
+       Virtual Thread-4
+    -----------------------
+               |
+               v
+        JVM SCHEDULER
+               |
+               v
+        CARRIER THREADS
+    -----------------------
+        Platform Thread-1
+        Platform Thread-2
+    -----------------------
+               |
+               v
+       OPERATING SYSTEM
+</pre>
+
+<p>
+    This allows fewer platform threads to support many virtual threads,
+    particularly when tasks spend most of their time waiting.
+</p>
+
+<h3>5. Example Using Platform Threads</h3>
+
+<pre>
+public class PlatformThreadDemo {
+
+    public static void main(String[] args) {
+
+        // Create and start a platform thread
+        Thread t1 = new Thread(() -> {
+
+            System.out.println(
+                Thread.currentThread().getName()
+                + " is executing"
+            );
+
+        });
+
+        t1.start();
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Thread-0 is executing
+</pre>
+
+<h3>6. Example Using Virtual Threads</h3>
+
+<p>
+    Java 21 provides <code>Thread.startVirtualThread()</code>
+    to create and start a virtual thread.
+</p>
+
+<pre>
+public class VirtualThreadDemo {
+
+    public static void main(String[] args) {
+
+        // Create and start a virtual thread
+        Thread t1 = Thread.startVirtualThread(() -> {
+
+            System.out.println(
+                Thread.currentThread().getName()
+                + " is executing"
+            );
+
+        });
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+VirtualThread-0 is executing
+</pre>
+
+<h3>7. Example: Creating Multiple Virtual Threads</h3>
+
+<p>
+    One of the main advantages of virtual threads is that we can
+    create a large number of threads to handle independent tasks.
+</p>
+
+<pre>
+public class MultipleVirtualThreadsDemo {
+
+    public static void main(String[] args)
+            throws InterruptedException {
+
+        // Create 5 virtual threads
+        for (int i = 1; i &lt;= 5; i++) {
+
+            final int taskId = i;
+
+            Thread.startVirtualThread(() -> {
+
+                System.out.println(
+                    "Task-" + taskId
+                    + " executing on "
+                    + Thread.currentThread()
+                );
+
+            });
+        }
+
+        // Keep main thread alive until the tasks finish
+        Thread.sleep(1000);
+    }
+}
+</pre>
+
+<p><b>Possible Output:</b></p>
+
+<pre>
+Task-1 executing on VirtualThread[#21]
+Task-3 executing on VirtualThread[#23]
+Task-2 executing on VirtualThread[#22]
+Task-5 executing on VirtualThread[#25]
+Task-4 executing on VirtualThread[#24]
+</pre>
+
+<p>
+    The execution order may vary because virtual threads execute
+    concurrently.
+</p>
+
+<h3>8. Using ExecutorService with Virtual Threads</h3>
+
+<p>
+    Java 21 also provides <code>newVirtualThreadPerTaskExecutor()</code>.
+    It creates a new virtual thread for each submitted task.
+</p>
+
+<pre>
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class VirtualThreadExecutorDemo {
+
+    public static void main(String[] args) {
+
+        // Create an executor that uses virtual threads
+        try (ExecutorService executor =
+                Executors.newVirtualThreadPerTaskExecutor()) {
+
+            // Submit tasks
+            for (int i = 1; i &lt;= 5; i++) {
+
+                final int taskId = i;
+
+                executor.submit(() -> {
+
+                    System.out.println(
+                        "Task-" + taskId
+                        + " executed by "
+                        + Thread.currentThread()
+                    );
+                });
+            }
+        }
+    }
+}
+</pre>
+
+<p>
+    The executor automatically shuts down when the try-with-resources
+    block exits and waits for submitted tasks to finish.
+</p>
+
+<h3>9. When Should You Choose Virtual Threads?</h3>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Scenario</th>
+        <th>Recommended</th>
+    </tr>
+    <tr>
+        <td>Handling thousands of HTTP requests.</td>
+        <td>Virtual Threads</td>
+    </tr>
+    <tr>
+        <td>Database calls involving waiting.</td>
+        <td>Virtual Threads</td>
+    </tr>
+    <tr>
+        <td>Calling external REST APIs.</td>
+        <td>Virtual Threads</td>
+    </tr>
+    <tr>
+        <td>File or network I/O operations.</td>
+        <td>Virtual Threads</td>
+    </tr>
+    <tr>
+        <td>CPU-intensive calculations.</td>
+        <td>Platform Threads or a bounded thread pool</td>
+    </tr>
+    <tr>
+        <td>Tasks requiring a limited number of concurrent workers.</td>
+        <td>Platform Thread Pool</td>
+    </tr>
+</table>
+
+<h3>10. Important Points to Remember</h3>
+
+<ul>
+    <li>Virtual threads were introduced in Java 21 as a permanent feature.</li>
+    <li>Virtual threads are lightweight and managed by the JVM.</li>
+    <li>Platform threads are directly mapped to operating system threads.</li>
+    <li>Virtual threads are particularly useful for I/O-intensive applications.</li>
+    <li>Virtual threads do not make CPU-intensive tasks execute faster.</li>
+    <li>Do not normally pool virtual threads; create one per task.</li>
+    <li>Virtual threads are not a replacement for synchronization or thread-safe programming.</li>
+</ul>
+
+<p>
+    <b>Java 21 Note:</b> Blocking operations while holding an intrinsic
+    monitor (such as inside a <code>synchronized</code> block) can pin
+    a virtual thread to its carrier thread. Avoid long blocking
+    operations inside synchronized sections when using Java 21.
+</p>
+
+<h3>11. Interview Answer</h3>
+
+<p>
+    <b>Q: What are virtual threads, and when would you choose them over platform threads?</b>
+</p>
+
+<p>
+    Virtual threads are lightweight threads introduced in Java 21.
+    They are managed by the JVM and scheduled onto platform threads.
+    They allow applications to handle a large number of concurrent
+    tasks using fewer operating system threads.
+</p>
+
+<p>
+    I would choose virtual threads for I/O-intensive applications,
+    such as handling HTTP requests, database calls and external API
+    calls. For CPU-intensive tasks, I would prefer platform threads
+    with a suitably sized thread pool.
+</p>
+
+<h3>Remember</h3>
+
+<ul>
+    <li><b>Platform Thread:</b> Traditional Java thread mapped to an OS thread.</li>
+    <li><b>Virtual Thread:</b> Lightweight thread managed by the JVM.</li>
+    <li><b>Carrier Thread:</b> Platform thread that executes a virtual thread.</li>
+    <li><b>Java 21:</b> Introduced virtual threads as a permanent feature.</li>
+    <li><b>Main Benefit:</b> Handle many concurrent I/O tasks with fewer OS threads.</li>
+</ul>
+</p>
 </div>
 <a class="backtop" href="#top">Back to top ↑</a>
 </section>
