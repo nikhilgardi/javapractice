@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full-Stack Java Developer - Quick Revision</title>
+<style>
+:root{--bg:#f4f6fb;--panel:#fff;--text:#172033;--muted:#64748b;--line:#e2e8f0;--accent:#2563eb;--accent-soft:#eff6ff;--code:#101827;--green:#15803d}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{height:64px;background:#111827;color:#fff;display:flex;align-items:center;padding:0 22px;gap:12px;position:sticky;top:0;z-index:5}
+header strong{font-size:17px}header span{color:#cbd5e1;font-size:13px}
+.layout{display:grid;grid-template-columns:290px minmax(0,1fr);min-height:calc(100vh - 64px)}
+aside{background:#fff;border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:64px;height:calc(100vh - 64px);overflow:auto}
+.side-title{font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.09em;padding:4px 10px 12px}
+.nav{width:100%;border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:9px;margin:2px 0;color:#334155;cursor:pointer;font-size:13px;display:flex;gap:10px;align-items:center}
+.nav:hover{background:#f1f5f9}.nav.active{background:var(--accent-soft);color:#1d4ed8;font-weight:700}
+.num{width:23px;height:23px;border-radius:7px;background:#f1f5f9;display:inline-grid;place-items:center;font-size:11px;flex:none}.nav.active .num{background:#dbeafe;color:#1d4ed8}
+main{padding:32px;max-width:1100px;width:100%;margin:0 auto}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+h1{font-size:30px;margin:8px 0 10px}h2{font-size:20px;margin:26px 0 12px}h3{font-size:15px;margin:18px 0 8px}
+.lead{color:var(--muted);line-height:1.65;margin:0 0 22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin:14px 0;box-shadow:0 2px 8px #0f172a08}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:10px 0 18px;background:#fff}
+th,td{padding:10px 12px;border:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.5}
+th{background:#f8fafc;font-weight:700}
+pre{background:var(--code);color:#e5e7eb;padding:16px;border-radius:10px;overflow:auto;font-size:12px;line-height:1.6;white-space:pre}
+code{font-family:Consolas,Monaco,monospace}
+p,li{line-height:1.65;font-size:14px}ul{padding-left:22px}
+.callout{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 14px;border-radius:7px;font-size:13px;line-height:1.6;margin:14px 0}
+.actions{display:flex;justify-content:space-between;gap:10px;margin-top:26px}
+button.action{border:1px solid var(--line);background:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;color:#334155;font-weight:600}
+button.action:hover{border-color:var(--accent);color:var(--accent)}
+.search{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;margin-bottom:12px}
+.mobile-menu{display:none}
+@media(max-width:760px){.layout{grid-template-columns:1fr}aside{position:relative;top:0;height:auto;max-height:260px;border-right:0;border-bottom:1px solid var(--line)}main{padding:20px}.mobile-menu{display:inline-block}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<header><strong>Full-Stack Java Developer</strong><span>Quick Revision Handbook · 17 Topics</span></header>
+<div class="layout">
+<aside>
+  <div class="side-title">Learning topics</div>
+  <input id="search" class="search" placeholder="Search topics..." aria-label="Search topics">
+  <nav id="nav"></nav>
+</aside>
+<main id="content" aria-live="polite"></main>
+</div>
+<script>
+const topics = [
+{title:"JavaScript (ES6+)",intro:"JavaScript is the programming language used to make web pages interactive. Angular applications are commonly written in TypeScript, which builds on JavaScript.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>var</td><td>Function-scoped variable</td><td><code>var name = "Nikhil";</code></td></tr>
+<tr><td>let</td><td>Block-scoped variable</td><td><code>let age = 40;</code></td></tr>
+<tr><td>const</td><td>Cannot be reassigned</td><td><code>const city = "Mumbai";</code></td></tr>
+<tr><td>Arrow function</td><td>Short function syntax</td><td><code>const add = (a,b) =&gt; a+b;</code></td></tr>
+<tr><td>map()</td><td>Transform array elements</td><td><code>nums.map(n =&gt; n*2)</code></td></tr>
+<tr><td>filter()</td><td>Filter array elements</td><td><code>nums.filter(n =&gt; n&gt;10)</code></td></tr>
+<tr><td>reduce()</td><td>Combine values into one result</td><td><code>nums.reduce((a,b)=&gt;a+b,0)</code></td></tr>
+<tr><td>Promise</td><td>Represents a future result</td><td><code>fetch(url).then(r =&gt; r.json())</code></td></tr>
+<tr><td>async/await</td><td>Work with asynchronous operations</td><td><code>const data = await fetch(url)</code></td></tr>
+<tr><td>Destructuring</td><td>Extract object properties</td><td><code>const {id,name}=emp</code></td></tr>
+<tr><td>Spread</td><td>Expand/copy arrays or objects</td><td><code>const copy = [...nums]</code></td></tr></table>`],
+["Practical example",`<pre><code>const employees = [
+  { id: 1, name: "Nikhil", salary: 50000 },
+  { id: 2, name: "Rahul", salary: 30000 }
+];
+
+const result = employees.filter(e =&gt; e.salary &gt; 40000);
+console.log(result);</code></pre><p>Result: the employee record for Nikhil. <code>filter()</code> returns a new array containing only matching records.</p>`],
+["Remember",`<div class="callout">JavaScript is the foundation for understanding TypeScript and Angular. Learn arrays, objects, functions, promises and asynchronous programming well.</div>`]
+]},
+{title:"TypeScript",intro:"TypeScript is JavaScript with static typing and additional development features. Angular applications are commonly written in TypeScript; the TypeScript compiler turns it into JavaScript for the browser.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>Types</td><td>Specify value types</td><td><code>let age: number = 40;</code></td></tr>
+<tr><td>Interface</td><td>Describe an object shape</td><td><code>interface Employee { id:number; }</code></td></tr>
+<tr><td>Class</td><td>Blueprint for objects</td><td><code>class Employee { }</code></td></tr>
+<tr><td>Constructor</td><td>Initializes an instance</td><td><code>constructor(public id:number) {}</code></td></tr>
+<tr><td>Access modifiers</td><td>Control member visibility</td><td><code>public, private, protected</code></td></tr>
+<tr><td>Inheritance</td><td>Extend a class</td><td><code>class Manager extends Employee {}</code></td></tr>
+<tr><td>Generics</td><td>Reusable type-safe code</td><td><code>function get&lt;T&gt;(data:T):T</code></td></tr>
+<tr><td>Union type</td><td>Allow alternative types</td><td><code>let id: number | string;</code></td></tr>
+<tr><td>Optional property</td><td>Property may be absent</td><td><code>email?: string;</code></td></tr>
+<tr><td>Modules</td><td>Share code between files</td><td><code>export / import</code></td></tr></table>`],
+["Practical example",`<pre><code>interface Employee {
+  id: number;
+  name: string;
+  department: string;
+}
+
+const employee: Employee = {
+  id: 101,
+  name: "Nikhil",
+  department: "IT"
+};</code></pre><p>The interface describes the expected shape of the object. TypeScript checks that the object matches it during development/compilation.</p>`],
+["Java comparison",`<p>A Java DTO class and a TypeScript interface can both describe data structure. They are not identical: Java classes exist at runtime, while TypeScript interfaces are removed during compilation.</p>`]
+]},
+{title:"Angular fundamentals",intro:"Angular is a frontend framework for building web applications. It uses TypeScript for application logic and HTML templates for the UI.",sections:[
+["Core concepts",`<table><tr><th>Topic</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>Component</td><td>Reusable UI building block</td><td><code>@Component({...})</code></td></tr>
+<tr><td>Template</td><td>HTML displayed by component</td><td><code>employee.html</code></td></tr>
+<tr><td>Interpolation</td><td>Display a value</td><td><code>{{employee.name}}</code></td></tr>
+<tr><td>Property binding</td><td>Bind component value to element property</td><td><code>[disabled]="isSaving"</code></td></tr>
+<tr><td>Event binding</td><td>Respond to user event</td><td><code>(click)="save()"</code></td></tr>
+<tr><td>Two-way binding</td><td>Synchronize view and component</td><td><code>[(ngModel)]="name"</code></td></tr>
+<tr><td>Directives</td><td>Control DOM behavior</td><td><code>@if, @for, ngClass</code></td></tr>
+<tr><td>Pipes</td><td>Format displayed values</td><td><code>{{salary | currency}}</code></td></tr>
+<tr><td>Lifecycle hooks</td><td>Run code at component lifecycle points</td><td><code>ngOnInit()</code></td></tr>
+<tr><td>Signals</td><td>Reactive state primitive</td><td><code>signal(0)</code></td></tr></table>`],
+["Practical component",`<pre><code>import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-employee',
+  standalone: true,
+  template: \`
+    &lt;h2&gt;{{ employeeName }}&lt;/h2&gt;
+    &lt;button (click)="changeName()"&gt;Change Name&lt;/button&gt;
+  \`
+})
+export class EmployeeComponent {
+  employeeName = 'Nikhil';
+
+  changeName() {
+    this.employeeName = 'Rahul';
+  }
+}</code></pre><p><code>@Component</code> defines the component. Interpolation displays the property, and <code>(click)</code> handles the button event.</p>`],
+["Remember",`<div class="callout">Angular = frontend framework. TypeScript = language used to write Angular logic. HTML template = structure displayed to the user. CSS/SCSS = presentation.</div>`]
+]},
+{title:"Spring MVC",intro:"Spring MVC is the Spring web framework that handles HTTP requests and responses using the Model-View-Controller pattern. In REST applications, controllers commonly return JSON rather than HTML views.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Purpose</th></tr><tr><td>DispatcherServlet</td><td>Front controller that receives and routes requests</td></tr><tr><td>@Controller</td><td>Typically handles MVC requests and views</td></tr><tr><td>@RestController</td><td>Controller whose methods return response data</td></tr><tr><td>@GetMapping</td><td>Handle GET request</td></tr><tr><td>@PostMapping</td><td>Handle POST request</td></tr><tr><td>@PutMapping / @PatchMapping</td><td>Handle update requests</td></tr><tr><td>@DeleteMapping</td><td>Handle DELETE request</td></tr><tr><td>@RequestBody</td><td>Bind request body to Java object</td></tr><tr><td>@PathVariable</td><td>Read a value from URL path</td></tr><tr><td>@RequestParam</td><td>Read query parameter</td></tr><tr><td>ResponseEntity</td><td>Control response body and HTTP status</td></tr></table>`],
+["Practical REST controller",`<pre><code>@RestController
+@RequestMapping("/api/employees")
+public class EmployeeController {
+
+    private final EmployeeService service;
+
+    public EmployeeController(EmployeeService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity&lt;Employee&gt; getEmployee(
+            @PathVariable Long id) {
+        Employee employee = service.getEmployee(id);
+        return ResponseEntity.ok(employee);
+    }
+}</code></pre>`],
+["Remember",`<p><code>@RestController</code> is effectively <code>@Controller</code> plus <code>@ResponseBody</code>. Spring MVC handles the HTTP request lifecycle and mapping to controller methods.</p>`]
+]},
+{title:"REST API & RESTful Web Services",intro:"REST (Representational State Transfer) is an architectural style for designing network-based services. A RESTful web service exposes resources through HTTP endpoints and follows REST constraints.",sections:[
+["HTTP methods",`<table><tr><th>Method</th><th>Purpose</th><th>Example</th></tr><tr><td>GET</td><td>Retrieve data</td><td><code>GET /api/employees</code></td></tr><tr><td>POST</td><td>Create resource</td><td><code>POST /api/employees</code></td></tr><tr><td>PUT</td><td>Replace/update resource</td><td><code>PUT /api/employees/101</code></td></tr><tr><td>PATCH</td><td>Partially update resource</td><td><code>PATCH /api/employees/101</code></td></tr><tr><td>DELETE</td><td>Delete resource</td><td><code>DELETE /api/employees/101</code></td></tr></table>`],
+["HTTP status codes",`<table><tr><th>Code</th><th>Meaning</th></tr><tr><td>200</td><td>OK</td></tr><tr><td>201</td><td>Created</td></tr><tr><td>204</td><td>No Content</td></tr><tr><td>400</td><td>Bad Request</td></tr><tr><td>401</td><td>Unauthorized</td></tr><tr><td>403</td><td>Forbidden</td></tr><tr><td>404</td><td>Not Found</td></tr><tr><td>500</td><td>Internal Server Error</td></tr></table>`],
+["JSON example",`<pre><code>// Request
+{
+  "name": "Nikhil",
+  "department": "IT"
+}
+
+// Response
+{
+  "id": 101,
+  "name": "Nikhil",
+  "department": "IT"
+}</code></pre><p>REST communication is generally stateless: each request contains the information required to process it.</p>`],
+["Remember",`<div class="callout">REST API and RESTful Web Service are closely related terms. A REST API is the interface; a RESTful web service is the server-side service that exposes that interface according to REST principles.</div>`]
+]},
+{title:"Spring Boot",intro:"Spring Boot simplifies Spring application development through auto-configuration, starter dependencies and embedded servers.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Meaning</th><th>Example</th></tr><tr><td>Auto-configuration</td><td>Configures beans based on dependencies/settings</td><td><code>@SpringBootApplication</code></td></tr><tr><td>Dependency Injection</td><td>Spring supplies dependencies</td><td>Constructor injection</td></tr><tr><td>Bean</td><td>Object managed by Spring</td><td><code>@Component</code></td></tr><tr><td>Service</td><td>Business logic layer</td><td><code>@Service</code></td></tr><tr><td>Repository</td><td>Data access layer</td><td><code>@Repository</code></td></tr><tr><td>Configuration</td><td>Application settings</td><td><code>application.yml</code></td></tr><tr><td>Validation</td><td>Validate input</td><td><code>@Valid</code></td></tr><tr><td>Exception handling</td><td>Centralized error handling</td><td><code>@ControllerAdvice</code></td></tr><tr><td>Actuator</td><td>Health and metrics endpoints</td><td><code>/actuator/health</code></td></tr></table>`],
+["Dependency injection example",`<pre><code>@Service
+public class EmployeeService {
+    public String getEmployeeName() {
+        return "Nikhil";
+    }
+}
+
+@RestController
+public class EmployeeController {
+    private final EmployeeService service;
+
+    public EmployeeController(EmployeeService service) {
+        this.service = service;
+    }
+}</code></pre><p>Spring creates and injects the service bean. Constructor injection makes the dependency explicit and testable.</p>`]
+]},
+{title:"JDBC",intro:"JDBC (Java Database Connectivity) is a Java API used to connect to relational databases and execute SQL statements.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Purpose</th></tr><tr><td>Connection</td><td>Represents a database connection</td></tr><tr><td>DriverManager / DataSource</td><td>Obtain connections; DataSource is preferred in managed applications</td></tr><tr><td>Statement</td><td>Execute SQL statements</td></tr><tr><td>PreparedStatement</td><td>Execute parameterized SQL safely</td></tr><tr><td>ResultSet</td><td>Read query results</td></tr><tr><td>executeQuery()</td><td>Execute SELECT</td></tr><tr><td>executeUpdate()</td><td>Execute INSERT, UPDATE, DELETE</td></tr><tr><td>Commit / Rollback</td><td>Finish or undo transaction</td></tr><tr><td>Connection pool</td><td>Reuse database connections</td></tr></table>`],
+["PreparedStatement example",`<pre><code>String sql = "SELECT * FROM employee WHERE id = ?";
+
+try (Connection con = dataSource.getConnection();
+     PreparedStatement ps = con.prepareStatement(sql)) {
+
+    ps.setLong(1, 101L);
+
+    try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            System.out.println(rs.getString("name"));
+        }
+    }
+}</code></pre><p>Use parameterized statements rather than concatenating user input into SQL. This helps prevent SQL injection.</p>`],
+["Remember",`<div class="callout">JDBC is the lower-level Java database connectivity API. Hibernate uses JDBC internally to communicate with the database.</div>`]
+]},
+{title:"JPA & Hibernate",intro:"JPA (now Jakarta Persistence) is a specification for object-relational mapping. Hibernate is a popular implementation. Spring Data JPA simplifies repository development on top of JPA.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Meaning</th><th>Example</th></tr><tr><td>Entity</td><td>Java class mapped to table</td><td><code>@Entity</code></td></tr><tr><td>Primary key</td><td>Unique identifier</td><td><code>@Id</code></td></tr><tr><td>Table mapping</td><td>Map class to table</td><td><code>@Table</code></td></tr><tr><td>Column mapping</td><td>Map field to column</td><td><code>@Column</code></td></tr><tr><td>Relationships</td><td>Connect entities</td><td><code>@OneToMany</code>, <code>@ManyToOne</code></td></tr><tr><td>JPQL</td><td>Query using entity model</td><td><code>SELECT e FROM Employee e</code></td></tr><tr><td>Native query</td><td>Database SQL query</td><td><code>nativeQuery=true</code></td></tr><tr><td>Fetch type</td><td>When related data is loaded</td><td><code>LAZY / EAGER</code></td></tr><tr><td>Transaction</td><td>Manage unit of work</td><td><code>@Transactional</code></td></tr><tr><td>Repository</td><td>Data access abstraction</td><td><code>JpaRepository</code></td></tr></table>`],
+["Entity and repository",`<pre><code>@Entity
+@Table(name = "employee")
+public class Employee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String department;
+}
+
+public interface EmployeeRepository
+        extends JpaRepository&lt;Employee, Long&gt; {
+    List&lt;Employee&gt; findByDepartment(String department);
+}</code></pre>`],
+["Java comparison",`<ul><li>JDBC: manual SQL execution and result handling.</li><li>JPA: persistence specification.</li><li>Hibernate: ORM implementation.</li><li>Spring Data JPA: repository abstraction that reduces boilerplate.</li></ul>`]
+]},
+{title:"PostgreSQL",intro:"PostgreSQL is an open-source relational database management system used to store and query structured application data.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Purpose / example</th></tr><tr><td>CREATE</td><td><code>CREATE TABLE employee (...);</code></td></tr><tr><td>INSERT</td><td><code>INSERT INTO employee ...;</code></td></tr><tr><td>SELECT</td><td><code>SELECT * FROM employee;</code></td></tr><tr><td>UPDATE</td><td><code>UPDATE employee SET name='Rahul' WHERE id=1;</code></td></tr><tr><td>DELETE</td><td><code>DELETE FROM employee WHERE id=1;</code></td></tr><tr><td>WHERE</td><td>Filter rows</td></tr><tr><td>JOIN</td><td>Combine related tables</td></tr><tr><td>GROUP BY / HAVING</td><td>Aggregate and filter groups</td></tr><tr><td>Index</td><td><code>CREATE INDEX idx_emp_name ON employee(name);</code></td></tr><tr><td>Constraints</td><td>PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK</td></tr><tr><td>CTE</td><td><code>WITH emp AS (...)</code></td></tr><tr><td>Transaction</td><td><code>BEGIN; COMMIT; ROLLBACK;</code></td></tr></table>`],
+["JOIN example",`<pre><code>SELECT e.name, d.department_name
+FROM employee e
+INNER JOIN department d
+    ON e.department_id = d.id;</code></pre><p>This returns employee names with their matching department names.</p>`],
+["Remember",`<div class="callout">PostgreSQL stores WorkFlowHub employee, request and approval data. Learn joins, constraints, indexes and transactions particularly well.</div>`]
+]},
+{title:"Spring Security & JWT",intro:"Spring Security provides authentication and authorization features. JWT is a compact signed token format often used to carry claims about an authenticated user.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Meaning</th></tr><tr><td>Authentication</td><td>Verify who the user is</td></tr><tr><td>Authorization</td><td>Determine what the user can access</td></tr><tr><td>SecurityFilterChain</td><td>Configure web security filters</td></tr><tr><td>UserDetails</td><td>Represent user authentication information</td></tr><tr><td>PasswordEncoder</td><td>Encode/hash passwords</td></tr><tr><td>BCrypt</td><td>Password hashing algorithm</td></tr><tr><td>JWT</td><td>Signed token carrying claims</td></tr><tr><td>Role-based access</td><td>Restrict operations by role</td></tr><tr><td>CORS</td><td>Control cross-origin browser requests</td></tr><tr><td>CSRF</td><td>Protection against cross-site request forgery</td></tr></table>`],
+["Role-based authorization example",`<pre><code>@PreAuthorize("hasRole('ADMIN')")
+@GetMapping("/employees")
+public List&lt;Employee&gt; getEmployees() {
+    return employeeService.getAllEmployees();
+}</code></pre><p>Only an authenticated user granted the ADMIN role can access this method, assuming method security is enabled and roles are configured correctly.</p>`],
+["JWT flow",`<ol><li>Angular submits login credentials.</li><li>Spring Boot validates credentials.</li><li>Backend issues a signed JWT.</li><li>Angular sends the token with protected API requests.</li><li>Spring Security validates the token and authorization.</li></ol><div class="callout">Keep signing secrets on the backend. Do not expose them in Angular/browser code. Token storage and transport require careful security design.</div>`]
+]},
+{title:"Swagger / OpenAPI & Postman",intro:"OpenAPI is a specification for describing HTTP APIs. Swagger is a family of tools that work with OpenAPI. Postman is an API client used to send requests and inspect responses.",sections:[
+["Quick reference",`<table><tr><th>Tool / concept</th><th>Purpose</th></tr><tr><td>OpenAPI</td><td>Standard API description specification</td></tr><tr><td>Swagger UI</td><td>Visual API documentation and exploration</td></tr><tr><td>Postman</td><td>Send HTTP requests and inspect responses</td></tr><tr><td>Collections</td><td>Group related API requests</td></tr><tr><td>Environments</td><td>Manage URLs and variables</td></tr><tr><td>Authorization</td><td>Test protected APIs with credentials/tokens</td></tr></table>`],
+["Springdoc dependency example",`<pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;org.springdoc&lt;/groupId&gt;
+  &lt;artifactId&gt;springdoc-openapi-starter-webmvc-ui&lt;/artifactId&gt;
+  &lt;version&gt;YOUR_COMPATIBLE_VERSION&lt;/version&gt;
+&lt;/dependency&gt;</code></pre><p>For a compatible Spring Boot 3 application, Springdoc can generate OpenAPI documentation. Swagger UI is commonly available at <code>/swagger-ui/index.html</code>.</p>`],
+["Postman example",`<pre><code>GET http://localhost:8080/api/employees</code></pre><p>Postman sends the request and displays the HTTP status, headers and response body.</p><div class="callout">Swagger UI helps view and explore API documentation. Postman is useful for manually testing API behavior.</div>`]
+]},
+{title:"JUnit 5 & Mockito",intro:"JUnit 5 is a Java testing framework. Mockito creates mock objects so a class can be tested without invoking its real dependencies.",sections:[
+["Quick reference",`<table><tr><th>Annotation / API</th><th>Purpose</th></tr><tr><td><code>@Test</code></td><td>Marks a test method</td></tr><tr><td><code>assertEquals()</code></td><td>Checks expected and actual values</td></tr><tr><td><code>@BeforeEach</code></td><td>Runs setup before each test</td></tr><tr><td><code>@Mock</code></td><td>Creates a mock dependency</td></tr><tr><td><code>@InjectMocks</code></td><td>Injects mocks into tested object</td></tr><tr><td><code>when().thenReturn()</code></td><td>Defines mock behavior</td></tr><tr><td><code>verify()</code></td><td>Verifies a mock interaction</td></tr><tr><td>MockMvc</td><td>Tests Spring MVC endpoints</td></tr><tr><td><code>@SpringBootTest</code></td><td>Loads application context for integration tests</td></tr></table>`],
+["Mockito example",`<pre><code>@ExtendWith(MockitoExtension.class)
+class EmployeeServiceTest {
+
+    @Mock
+    private EmployeeRepository repository;
+
+    @InjectMocks
+    private EmployeeService service;
+
+    @Test
+    void testGetEmployee() {
+        Employee emp = new Employee();
+        emp.setId(101L);
+
+        when(repository.findById(101L))
+            .thenReturn(Optional.of(emp));
+
+        Employee result = service.getEmployee(101L);
+
+        assertEquals(101L, result.getId());
+        verify(repository).findById(101L);
+    }
+}</code></pre>`],
+["Remember",`<p>JUnit runs and organizes tests. Mockito isolates the class under test by providing controlled mock dependencies. MockMvc tests the HTTP/controller layer.</p>`]
+]},
+{title:"Git, GitLab & Maven",intro:"Git is a distributed version control system. GitLab hosts repositories and collaboration workflows. Maven manages Java dependencies and builds.",sections:[
+["Git commands",`<table><tr><th>Command</th><th>Purpose</th></tr><tr><td><code>git init</code></td><td>Initialize repository</td></tr><tr><td><code>git clone URL</code></td><td>Clone repository</td></tr><tr><td><code>git status</code></td><td>Check working tree</td></tr><tr><td><code>git add .</code></td><td>Stage changes</td></tr><tr><td><code>git commit -m "message"</code></td><td>Commit changes</td></tr><tr><td><code>git push</code></td><td>Push commits</td></tr><tr><td><code>git pull</code></td><td>Fetch and integrate changes</td></tr><tr><td><code>git branch</code></td><td>List branches</td></tr><tr><td><code>git merge</code></td><td>Merge branch histories</td></tr></table>`],
+["Maven commands",`<table><tr><th>Command</th><th>Purpose</th></tr><tr><td><code>mvn clean</code></td><td>Clean previous build output</td></tr><tr><td><code>mvn compile</code></td><td>Compile source</td></tr><tr><td><code>mvn test</code></td><td>Run tests</td></tr><tr><td><code>mvn package</code></td><td>Package application</td></tr><tr><td><code>mvn install</code></td><td>Install artifact in local repository</td></tr></table>`],
+["Maven dependency example",`<pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-boot-starter-data-jpa&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre><p>Dependencies are declared in <code>pom.xml</code>. Maven resolves them and runs the build lifecycle.</p>`]
+]},
+{title:"Docker & Docker Compose",intro:"Docker packages applications and their dependencies into images, which run as containers. Docker Compose defines and runs multi-container applications.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Meaning / example</th></tr><tr><td>Image</td><td>Packaged template, e.g. <code>postgres:16</code></td></tr><tr><td>Container</td><td>Running instance of an image</td></tr><tr><td>Dockerfile</td><td>Instructions to build an image</td></tr><tr><td>Build</td><td><code>docker build -t app .</code></td></tr><tr><td>Run</td><td><code>docker run app</code></td></tr><tr><td>Ports</td><td><code>-p 8080:8080</code></td></tr><tr><td>Volumes</td><td>Persist data beyond container lifecycle</td></tr><tr><td>Networks</td><td>Enable container communication</td></tr><tr><td>Compose</td><td><code>docker compose up -d</code></td></tr></table>`],
+["Spring Boot Dockerfile",`<pre><code>FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY target/workflowhub.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]</code></pre><p>This assumes the JAR has already been built at the specified path.</p>`],
+["Remember",`<p>For WorkFlowHub, Docker Compose can run the Spring Boot backend and PostgreSQL database together. The Angular frontend can be served separately or packaged behind a web server.</p>`]
+]},
+{title:"CI/CD",intro:"CI/CD automates building, testing and delivering/deploying software whenever code changes are pushed.",sections:[
+["Pipeline stages",`<table><tr><th>Stage</th><th>Purpose</th></tr><tr><td>Source</td><td>Developer pushes code</td></tr><tr><td>Build</td><td>Compile application</td></tr><tr><td>Test</td><td>Run automated tests</td></tr><tr><td>Package</td><td>Create JAR or frontend build</td></tr><tr><td>Deploy</td><td>Deploy to an environment</td></tr><tr><td>Monitor</td><td>Check application health</td></tr></table>`],
+["Simplified GitLab pipeline",`<pre><code>stages:
+  - build
+  - test
+  - package
+
+build:
+  stage: build
+  script:
+    - mvn compile
+
+test:
+  stage: test
+  script:
+    - mvn test
+
+package:
+  stage: package
+  script:
+    - mvn package</code></pre><p>A real pipeline also needs the JDK/Maven environment, cache, artifacts, variables and deployment configuration.</p>`],
+["Remember",`<ul><li>Continuous Integration: frequently integrate and test code.</li><li>Continuous Delivery: keep changes ready for release.</li><li>Continuous Deployment: automatically release qualifying changes to production.</li></ul>`]
+]},
+{title:"OpenAI API Integration",intro:"The OpenAI API lets an application use OpenAI models for tasks such as text generation and structured responses. In our project, Spring Boot will call the API; Angular will communicate only with our backend.",sections:[
+["Quick reference",`<table><tr><th>Topic</th><th>Meaning</th></tr><tr><td>API authentication</td><td>Authenticate using a secret API key</td></tr><tr><td>Model</td><td>Select an available model</td></tr><tr><td>Prompt/input</td><td>Instructions and user message</td></tr><tr><td>Request</td><td>Send input to the API</td></tr><tr><td>Response</td><td>Process model output</td></tr><tr><td>Structured Outputs</td><td>Request output conforming to a schema</td></tr><tr><td>Tool calling</td><td>Allow a model to request application functions</td></tr><tr><td>Token usage</td><td>Measure input/output consumption</td></tr><tr><td>Error handling</td><td>Handle API errors, timeouts and rate limits</td></tr></table>`],
+["Architecture",`<ol><li>Angular chat UI sends a question to a Spring Boot endpoint.</li><li>Spring Boot validates the user and prepares the model request.</li><li>Spring Boot calls the OpenAI API using a server-side secret.</li><li>The backend processes the response and returns safe output to Angular.</li></ol><div class="callout">Never put the OpenAI API key in Angular/browser code. Keep secrets on the backend and apply authorization, rate limits and usage controls.</div>`],
+["Spring Boot integration outline",`<pre><code>@Service
+public class AiAssistantService {
+    // Configure an HTTP client.
+    // Add server-side API authentication.
+    // Send the selected model and input.
+    // Parse and validate the response.
+    // Handle timeouts and API errors.
+}</code></pre><p>This is an implementation outline, not a complete API request. The exact request schema depends on the API endpoint and model features selected.</p>`]
+]},
+{title:"Microservices & Advanced Architecture",intro:"Microservices architecture structures an application as independently deployable services. Learn the fundamentals first; introduce distributed architecture only after the modular monolith is working.",sections:[
+["Quick reference",`<table><tr><th>Technology / concept</th><th>Meaning</th></tr><tr><td>Microservices</td><td>Independently deployable services</td></tr><tr><td>API Gateway</td><td>Entry point that routes requests</td></tr><tr><td>Eureka</td><td>Service discovery / registry</td></tr><tr><td>Config Server</td><td>Centralized configuration</td></tr><tr><td>OpenFeign</td><td>Declarative HTTP client</td></tr><tr><td>RabbitMQ</td><td>Asynchronous messaging</td></tr><tr><td>Redis</td><td>In-memory cache/data store</td></tr><tr><td>Resilience4j</td><td>Circuit breaker, retry and fault tolerance</td></tr><tr><td>Saga pattern</td><td>Coordinate a distributed business transaction</td></tr><tr><td>System design</td><td>Design for scale, availability and maintainability</td></tr></table>`],
+["OpenFeign example",`<pre><code>@FeignClient(name = "employee-service")
+public interface EmployeeClient {
+    @GetMapping("/api/employees/{id}")
+    Employee getEmployee(@PathVariable Long id);
+}</code></pre>`],
+["RabbitMQ example",`<pre><code>rabbitTemplate.convertAndSend(
+    "employee.exchange",
+    "employee.created",
+    employee
+);</code></pre><p>Publishes a message to an exchange using a routing key. Queue bindings determine where it is routed.</p>`],
+["Redis example",`<pre><code>@Cacheable(value = "employees", key = "#id")
+public Employee getEmployee(Long id) {
+    return repository.findById(id).orElseThrow();
+}</code></pre>`],
+["Remember",`<ul><li>Eureka: discovers services.</li><li>Gateway: routes incoming requests.</li><li>OpenFeign: calls other services.</li><li>RabbitMQ: sends asynchronous messages.</li><li>Redis: caches data.</li><li>Resilience4j: handles service failures.</li></ul><div class="callout">Project strategy: build WorkFlowHub first as a modular monolith. Later, identify boundaries and extract microservices where there is a real need.</div>`]
+]}
+];
+
+const nav = document.getElementById('nav');
+const content = document.getElementById('content');
+const search = document.getElementById('search');
+let current = 0;
+function renderNav(filter=''){
+  nav.innerHTML='';
+  topics.forEach((t,i)=>{
+    if(!t.title.toLowerCase().includes(filter.toLowerCase())) return;
+    const b=document.createElement('button');
+    b.className='nav'+(i===current?' active':'');
+    b.innerHTML=`<span class="num">${i+1}</span><span>${t.title}</span>`;
+    b.onclick=()=>{current=i;renderNav(search.value);renderContent();};
+    nav.appendChild(b);
+  });
+}
+function renderContent(){
+  const t=topics[current];
+  content.innerHTML=`<div class="eyebrow">Topic ${current+1} of ${topics.length}</div>
+    <h1>${t.title}</h1><p class="lead">${t.intro}</p>
+    ${t.sections.map(s=>`<section class="card"><h2>${s[0]}</h2>${s[1]}</section>`).join('')}
+    <div class="actions">
+      <button class="action" ${current===0?'disabled':''} id="prev">← Previous topic</button>
+      <button class="action" ${current===topics.length-1?'disabled':''} id="next">Next topic →</button>
+    </div>`;
+  document.getElementById('prev').onclick=()=>{if(current>0){current--;renderNav(search.value);renderContent();}};
+  document.getElementById('next').onclick=()=>{if(current<topics.length-1){current++;renderNav(search.value);renderContent();}};
+}
+search.addEventListener('input',()=>renderNav(search.value));
+renderNav();renderContent();
+</script>
+</body>
+</html>
